@@ -1,0 +1,332 @@
+/* =========================================================
+   GENERAL
+   ========================================================= */
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f5f6f8;
+    color: #212529;
+}
+
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 30px auto;
+}
+
+
+/* =========================================================
+   SITE HEADER
+   ========================================================= */
+
+.site-title {
+    margin: 0 0 20px 0;
+    font-size: 32px;
+    color: #212529;
+}
+
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.card {
+    background: white;
+    padding: 30px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+
+.card h1 {
+    margin-top: 0;
+    margin-bottom: 30px;
+}
+
+
+.card h2 {
+    margin-top: 0;
+}
+
+
+/* =========================================================
+   PROFILE
+   ========================================================= */
+
+.profile-row {
+    display: flex;
+    padding: 15px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+
+.profile-label {
+    width: 30%;
+    font-weight: bold;
+}
+
+
+.profile-value {
+    width: 70%;
+}
+
+/* ==============================
+   DATA TABLE
+   ============================== */
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 25px;
+    background: white;
+}
+
+.data-table th {
+    background-color: #f1f3f5;
+    color: #222;
+    text-align: left;
+    padding: 14px 16px;
+    border: 1px solid #ddd;
+    font-weight: 600;
+}
+
+.data-table td {
+    padding: 14px 16px;
+    border: 1px solid #ddd;
+    vertical-align: middle;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+
+/* ==============================
+   ACTION COLUMN
+   ============================== */
+
+.action-cell {
+    white-space: nowrap;
+}
+
+
+/* ==============================
+   BUTTONS
+   ============================== */
+
+.btn {
+    display: inline-block;
+    padding: 9px 15px;
+    border-radius: 5px;
+    border: none;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 8px;
+}
+
+
+/* View */
+
+.btn-primary {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+}
+
+
+/* Delete */
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #bb2d3b;
+}
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin-top: 20px;
+}
+
+
+.data-table th {
+    background-color: #343a40;
+    color: white;
+    padding: 12px;
+    text-align: left;
+}
+
+
+.data-table td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+
+.data-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+
+/* =========================================================
+   FORMS
+   ========================================================= */
+
+.form-table {
+    margin: 20px auto;
+}
+
+
+.form-table td {
+    padding: 10px;
+}
+
+
+.form-table td:first-child {
+    font-weight: bold;
+    text-align: right;
+    padding-right: 20px;
+}
+
+
+.form-table input,
+.form-table select,
+.form-table textarea {
+    width: 300px;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn {
+    display: inline-block;
+    padding: 10px 18px;
+    border-radius: 5px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+
+.btn-primary {
+    background-color: #0d6efd;
+    color: white;
+}
+
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+}
+
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+
+.btn-success {
+    background-color: #198754;
+    color: white;
+}
+
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
+.nav {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+
+.nav a {
+    text-decoration: none;
+    color: #0d6efd;
+}
+
+
+.nav a:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   ERROR / SUCCESS
+   ========================================================= */
+
+.error-message {
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+}
+
+
+.success-message {
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
+}
+
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+a {
+    color: #0d6efd;
+}
+
+
+a:hover {
+    color: #0a58ca;
+}

@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.crimsonlogic.ecommerce.mapper.ReviewMapper">
+
+
+    <!-- ===================================================== -->
+    <!-- Result Map -->
+    <!-- ===================================================== -->
+
+    <resultMap id="ReviewResultMap"
+               type="com.crimsonlogic.ecommerce.model.Review">
+
+
+        <!-- ================================================= -->
+        <!-- Review -->
+        <!-- ================================================= -->
+
+        <id property="reviewId"
+            column="review_id"/>
+
+        <result property="rating"
+                column="rating"/>
+
+        <result property="reviewText"
+                column="review_text"/>
+
+        <result property="reviewDate"
+                column="review_date"/>
+
+
+        <!-- ================================================= -->
+        <!-- Order -->
+        <!-- ================================================= -->
+
+        <association property="order"
+                     javaType="com.crimsonlogic.ecommerce.model.Order">
+
+            <id property="orderId"
+                column="order_id"/>
+
+            <result property="quantity"
+                    column="order_quantity"/>
+
+            <result property="totalPrice"
+                    column="order_total_price"/>
+
+            <result property="orderStatus"
+                    column="order_status"/>
+
+            <result property="orderDate"
+                    column="order_date"/>
+
+            <result property="deliveredDate"
+                    column="delivered_date"/>
+
+        </association>
+
+
+        <!-- ================================================= -->
+        <!-- Product -->
+        <!-- ================================================= -->
+
+        <association property="product"
+                     javaType="com.crimsonlogic.ecommerce.model.Product">
+
+            <id property="productId"
+                column="product_id"/>
+
+            <result property="productName"
+                    column="product_name"/>
+
+            <result property="brand"
+                    column="brand"/>
+
+            <result property="productDescription"
+                    column="product_description"/>
+
+            <result property="productPrice"
+                    column="product_price"/>
+
+            <result property="productStatus"
+                    column="product_status"/>
+
+        </association>
+
+
+        <!-- ================================================= -->
+        <!-- Customer -->
+        <!-- ================================================= -->
+
+        <association property="customer"
+                     javaType="com.crimsonlogic.ecommerce.model.Customer">
+
+            <id property="userId"
+                column="customer_id"/>
+
+            <result property="userName"
+                    column="customer_name"/>
+
+            <result property="userEmail"
+                    column="user_email"/>
+
+            <result property="userPhNo"
+                    column="user_phone"/>
+
+        </association>
+
+    </resultMap>
+
+
+    <!-- ===================================================== -->
+    <!-- INSERT REVIEW -->
+    <!-- ===================================================== -->
+
+    <insert id="insertReview"
+            parameterType="com.crimsonlogic.ecommerce.model.Review">
+
+        INSERT INTO reviews
+        (
+        review_id,
+        order_id,
+        product_id,
+        customer_id,
+        rating,
+        review_text,
+        review_date
+        )
+
+        VALUES
+        (
+        #{reviewId},
+        #{order.orderId},
+        #{product.productId},
+        #{customer.userId},
+        #{rating},
+        #{reviewText},
+        #{reviewDate}
+        )
+
+    </insert>
+
+
+    <!-- ===================================================== -->
+    <!-- FIND REVIEW BY CUSTOMER + ORDER -->
+    <!-- ===================================================== -->
+
+    <select id="findReviewByCustomerAndOrder"
+            resultMap="ReviewResultMap">
+
+        SELECT
+
+        r.review_id,
+        r.rating,
+        r.review_text,
+        r.review_date,
+
+        r.order_id,
+
+        r.product_id,
+
+        r.customer_id,
+
+        o.quantity AS order_quantity,
+        o.total_price AS order_total_price,
+        o.order_status,
+        o.order_date,
+        o.delivered_date,
+
+        p.product_name,
+        p.brand,
+        p.product_description,
+        p.product_price,
+        p.product_status,
+
+        c.user_name AS customer_name,
+        c.user_email AS customer_email,
+        c.user_phone AS customer_phone
+
+        FROM reviews r
+
+
+        INNER JOIN orders o
+        ON r.order_id = o.order_id
+
+
+        INNER JOIN products p
+        ON r.product_id = p.product_id
+
+
+        INNER JOIN customers c
+        ON r.customer_id = c.user_id
+
+
+        WHERE r.customer_id = #{customerId}
+
+        AND r.order_id = #{orderId}
+
+    </select>
+
+
+</mapper>

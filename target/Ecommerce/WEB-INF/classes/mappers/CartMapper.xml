@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.crimsonlogic.ecommerce.dao.CartMapper">
+
+
+    <!-- ===================================================== -->
+    <!-- Result Map -->
+    <!-- ===================================================== -->
+
+    <resultMap id="CartResultMap"
+               type="com.crimsonlogic.ecommerce.model.Cart">
+
+
+        <!-- ================================================= -->
+        <!-- Cart -->
+        <!-- ================================================= -->
+
+        <id property="cartId"
+            column="cart_id"/>
+
+        <result property="quantity"
+                column="quantity"/>
+
+
+        <!-- ================================================= -->
+        <!-- Customer -->
+        <!-- ================================================= -->
+
+        <association property="customer"
+                     javaType="com.crimsonlogic.ecommerce.model.Customer">
+
+            <id property="userId"
+                column="customer_id"/>
+
+            <result property="userName"
+                    column="customer_name"/>
+
+            <result property="userEmail"
+                    column="customer_email"/>
+
+            <result property="userPhNo"
+                    column="customer_phone"/>
+
+            <result property="walletBalance"
+                    column="wallet_balance"/>
+
+        </association>
+
+
+        <!-- ================================================= -->
+        <!-- Product -->
+        <!-- ================================================= -->
+
+        <association property="product"
+                     javaType="com.crimsonlogic.ecommerce.model.Product">
+
+            <id property="productId"
+                column="product_id"/>
+
+            <result property="productName"
+                    column="product_name"/>
+
+            <result property="brand"
+                    column="brand"/>
+
+            <result property="productDescription"
+                    column="product_description"/>
+
+            <result property="productPrice"
+                    column="product_price"/>
+
+            <result property="productStatus"
+                    column="product_status"/>
+
+
+            <!-- ============================================= -->
+            <!-- Category -->
+            <!-- ============================================= -->
+
+            <association property="category"
+                         javaType="com.crimsonlogic.ecommerce.model.Category">
+
+                <id property="categoryId"
+                    column="category_id"/>
+
+                <result property="categoryName"
+                        column="category_name"/>
+
+                <result property="categoryDescription"
+                        column="category_description"/>
+
+            </association>
+
+
+            <!-- ============================================= -->
+            <!-- Seller -->
+            <!-- ============================================= -->
+
+            <association property="seller"
+                         javaType="com.crimsonlogic.ecommerce.model.Seller">
+
+                <id property="userId"
+                    column="seller_id"/>
+
+                <result property="userName"
+                        column="seller_name"/>
+
+                <result property="userEmail"
+                        column="seller_email"/>
+
+                <result property="userPhNo"
+                        column="seller_phone"/>
+
+                <result property="shopName"
+                        column="shop_name"/>
+
+                <result property="shopAddress"
+                        column="shop_address"/>
+
+            </association>
+
+        </association>
+
+    </resultMap>
+
+
+    <!-- ===================================================== -->
+    <!-- INSERT CART ITEM -->
+    <!-- ===================================================== -->
+
+    <insert id="insertCartItem">
+
+        INSERT INTO cart
+        (
+        cart_id,
+        user_id,
+        product_id,
+        quantity
+        )
+
+        VALUES
+        (
+        #{cartId},
+        #{customer.userId},
+        #{product.productId},
+        #{quantity}
+        )
+
+    </insert>
+
+
+    <!-- ===================================================== -->
+    <!-- UPDATE CART ITEM -->
+    <!-- ===================================================== -->
+
+    <update id="updateCartItem">
+
+        UPDATE cart
+
+        SET quantity = #{quantity}
+
+        WHERE cart_id = #{cartId}
+
+    </update>
+
+
+    <!-- ===================================================== -->
+    <!-- DELETE CART ITEM -->
+    <!-- ===================================================== -->
+
+    <delete id="deleteCartItem">
+
+        DELETE FROM cart
+
+        WHERE cart_id = #{cartId}
+
+    </delete>
+
+
+    <!-- ===================================================== -->
+    <!-- CLEAR CUSTOMER CART -->
+    <!-- ===================================================== -->
+
+    <delete id="clearCart">
+
+        DELETE FROM cart
+
+        WHERE user_id = #{customerId}
+
+    </delete>
+
+
+    <!-- ===================================================== -->
+    <!-- FIND CART ITEM BY ID -->
+    <!-- ===================================================== -->
+
+    <select id="findCartItemById"
+            resultMap="CartResultMap">
+
+        SELECT
+
+        ct.cart_id,
+        ct.user_id AS customer_id,
+        ct.product_id,
+        ct.quantity,
+
+        cu.user_name AS customer_name,
+        cu.user_email AS customer_email,
+        cu.user_phone AS customer_phone,
+        cu.wallet_balance,
+
+        p.product_name,
+        p.brand,
+        p.product_description,
+        p.product_price,
+        p.product_status,
+
+        c.category_id,
+        c.category_name,
+        c.category_description,
+
+        s.user_id AS seller_id,
+        s.user_name AS seller_name,
+        s.user_email AS seller_email,
+        s.user_phone AS seller_phone,
+        s.shop_name,
+        s.shop_address
+
+        FROM cart ct
+
+        INNER JOIN customers cu
+        ON ct.user_id = cu.user_id
+
+        INNER JOIN products p
+        ON ct.product_id = p.product_id
+
+        INNER JOIN categories c
+        ON p.category_id = c.category_id
+
+        INNER JOIN sellers s
+        ON p.user_id = s.user_id
+
+        WHERE ct.cart_id = #{cartId}
+
+    </select>
+
+
+    <!-- ===================================================== -->
+    <!-- FIND CART ITEM BY CUSTOMER + PRODUCT -->
+    <!-- ===================================================== -->
+
+    <select id="findCartItem"
+            resultMap="CartResultMap">
+
+        SELECT
+
+        ct.cart_id,
+        ct.user_id AS customer_id,
+        ct.product_id,
+        ct.quantity,
+
+        cu.user_name AS customer_name,
+        cu.user_email AS customer_email,
+        cu.user_phone AS customer_phone,
+        cu.wallet_balance,
+
+        p.product_name,
+        p.brand,
+        p.product_description,
+        p.product_price,
+        p.product_status,
+
+        c.category_id,
+        c.category_name,
+        c.category_description,
+
+        s.user_id AS seller_id,
+        s.user_name AS seller_name,
+        s.user_email AS seller_email,
+        s.user_phone AS seller_phone,
+        s.shop_name,
+        s.shop_address
+
+        FROM cart ct
+
+        INNER JOIN customers cu
+        ON ct.user_id = cu.user_id
+
+        INNER JOIN products p
+        ON ct.product_id = p.product_id
+
+        INNER JOIN categories c
+        ON p.category_id = c.category_id
+
+        INNER JOIN sellers s
+        ON p.user_id = s.user_id
+
+        WHERE ct.user_id = #{customerId}
+
+        AND ct.product_id = #{productId}
+
+    </select>
+
+
+    <!-- ===================================================== -->
+    <!-- FIND CART BY CUSTOMER -->
+    <!-- ===================================================== -->
+
+    <select id="findCartByCustomer"
+            resultMap="CartResultMap">
+
+        SELECT
+
+        ct.cart_id,
+        ct.user_id AS customer_id,
+        ct.product_id,
+        ct.quantity,
+
+        cu.user_name AS customer_name,
+        cu.user_email AS customer_email,
+        cu.user_phone AS customer_phone,
+        cu.wallet_balance,
+
+        p.product_name,
+        p.brand,
+        p.product_description,
+        p.product_price,
+        p.product_status,
+
+        c.category_id,
+        c.category_name,
+        c.category_description,
+
+        s.user_id AS seller_id,
+        s.user_name AS seller_name,
+        s.user_email AS seller_email,
+        s.user_phone AS seller_phone,
+        s.shop_name,
+        s.shop_address
+
+        FROM cart ct
+
+        INNER JOIN customers cu
+        ON ct.user_id = cu.user_id
+
+        INNER JOIN products p
+        ON ct.product_id = p.product_id
+
+        INNER JOIN categories c
+        ON p.category_id = c.category_id
+
+        INNER JOIN sellers s
+        ON p.user_id = s.user_id
+
+        WHERE ct.user_id = #{customerId}
+
+        ORDER BY p.product_name
+
+    </select>
+
+
+    <!-- ===================================================== -->
+    <!-- FIND ALL CART ITEMS -->
+    <!-- ===================================================== -->
+
+    <select id="findAllCartItems"
+            resultMap="CartResultMap">
+
+        SELECT
+
+        ct.cart_id,
+        ct.user_id AS customer_id,
+        ct.product_id,
+        ct.quantity,
+
+        cu.user_name AS customer_name,
+        cu.user_email AS customer_email,
+        cu.user_phone AS customer_phone,
+        cu.wallet_balance,
+
+        p.product_name,
+        p.brand,
+        p.product_description,
+        p.product_price,
+        p.product_status,
+
+        c.category_id,
+        c.category_name,
+        c.category_description,
+
+        s.user_id AS seller_id,
+        s.user_name AS seller_name,
+        s.user_email AS seller_email,
+        s.user_phone AS seller_phone,
+        s.shop_name,
+        s.shop_address
+
+        FROM cart ct
+
+        INNER JOIN customers cu
+        ON ct.user_id = cu.user_id
+
+        INNER JOIN products p
+        ON ct.product_id = p.product_id
+
+        INNER JOIN categories c
+        ON p.category_id = c.category_id
+
+        INNER JOIN sellers s
+        ON p.user_id = s.user_id
+
+        ORDER BY cu.user_name,
+        p.product_name
+
+    </select>
+
+</mapper>

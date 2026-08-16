@@ -17,6 +17,7 @@ import com.crimsonlogic.ecommerce.exception.ValidationException;
 import com.crimsonlogic.ecommerce.model.Address;
 import com.crimsonlogic.ecommerce.model.Admin;
 import com.crimsonlogic.ecommerce.model.Customer;
+import com.crimsonlogic.ecommerce.model.Order;
 import com.crimsonlogic.ecommerce.model.Product;
 import com.crimsonlogic.ecommerce.model.Seller;
 import com.crimsonlogic.ecommerce.model.report.CategorySalesReport;
@@ -27,6 +28,7 @@ import com.crimsonlogic.ecommerce.model.report.SalesReport;
 import com.crimsonlogic.ecommerce.model.report.SellerSalesReport;
 import com.crimsonlogic.ecommerce.service.AdminService;
 import com.crimsonlogic.ecommerce.service.CustomerService;
+import com.crimsonlogic.ecommerce.service.OrderService;
 import com.crimsonlogic.ecommerce.service.ProductService;
 import com.crimsonlogic.ecommerce.service.ReportService;
 import com.crimsonlogic.ecommerce.service.SellerService;
@@ -36,45 +38,68 @@ import com.crimsonlogic.ecommerce.service.SellerService;
 public class AdminController {
 
     private final AdminService adminService;
-
     private final CustomerService customerService;
-
     private final SellerService sellerService;
-
     private final ProductService productService;
-
     private final ReportService reportService;
-
+    private final OrderService orderService;
 
     public AdminController(
             AdminService adminService,
             CustomerService customerService,
             SellerService sellerService,
             ProductService productService,
-            ReportService reportService) {
+            ReportService reportService,
+            OrderService orderService) {
 
         this.adminService = adminService;
-
         this.customerService = customerService;
-
         this.sellerService = sellerService;
-
         this.productService = productService;
-
         this.reportService = reportService;
+        this.orderService = orderService;
     }
-
 
     // =====================================================
     // ADMIN DASHBOARD
     // =====================================================
 
     @GetMapping("/dashboard")
-    public String dashboard() {
+    public String dashboard(Model model) {
+
+        // 1. Total Customers
+        int totalCustomers = adminService.getAllCustomers().size();
+
+        // 2. Total Sellers
+        int totalSellers = adminService.getAllSellers().size();
+
+        // 3. Total Products
+        int totalProducts = productService.findAllProducts().size();
+
+        // 4. Total Orders
+        List<Order> allOrders = orderService.findAllOrders();
+        int totalOrders = allOrders.size();
+
+        // 5. Total Revenue
+        ReportFilter emptyFilter = new ReportFilter();
+        SalesReport salesReport = reportService.getSalesReport(emptyFilter);
+        double totalRevenue = (salesReport != null) ? salesReport.getTotalSales() : 0.0;
+
+        // 6. Pending Orders
+        long pendingOrders = allOrders.stream()
+                .filter(o -> o.getOrderStatus() != null &&
+                        (o.getOrderStatus().name().contains("PENDING")))
+                .count();
+
+        model.addAttribute("totalCustomers", totalCustomers);
+        model.addAttribute("totalSellers", totalSellers);
+        model.addAttribute("totalProducts", totalProducts);
+        model.addAttribute("totalOrders", totalOrders);
+        model.addAttribute("totalRevenue", totalRevenue);
+        model.addAttribute("pendingOrders", pendingOrders);
 
         return "admin/dashboard";
     }
-
 
     // =====================================================
     // CUSTOMER MANAGEMENT

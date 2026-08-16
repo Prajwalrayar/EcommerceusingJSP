@@ -43,303 +43,160 @@
 
 
     <!-- ===================================================== -->
-    <!-- OVERVIEW -->
+    <!-- SYSTEM OVERVIEW METRICS -->
     <!-- ===================================================== -->
 
     <section class="dashboard-section">
 
-        <h2>Overview</h2>
+        <h2>System Overview</h2>
 
 
         <div class="summary-grid">
 
 
-            <!-- CUSTOMERS -->
-
-            <a href="${pageContext.request.contextPath}/admin/customers"
-               class="summary-card">
-
-                <div class="summary-icon">
-                    👥
-                </div>
-
+            <!-- TOTAL CUSTOMERS -->
+            <div class="summary-card">
+                <div class="summary-icon">👥</div>
                 <div>
-
-                    <span class="summary-title">
-                        Customers
-                    </span>
-
-                    <span class="summary-description">
-                        Manage registered customers
-                    </span>
-
+                    <span class="summary-title">${totalCustomers}</span>
+                    <span class="summary-description">Total Customers</span>
                 </div>
+            </div>
 
+
+            <!-- TOTAL SELLERS -->
+            <div class="summary-card">
+                <div class="summary-icon">🏪</div>
+                <div>
+                    <span class="summary-title">${totalSellers}</span>
+                    <span class="summary-description">Total Sellers</span>
+                </div>
+            </div>
+
+
+            <!-- TOTAL PRODUCTS -->
+            <div class="summary-card">
+                <div class="summary-icon">📦</div>
+                <div>
+                    <span class="summary-title">${totalProducts}</span>
+                    <span class="summary-description">Total Products</span>
+                </div>
+            </div>
+
+
+            <!-- TOTAL ORDERS -->
+            <div class="summary-card">
+                <div class="summary-icon">🛒</div>
+                <div>
+                    <span class="summary-title">${totalOrders}</span>
+                    <span class="summary-description">Total Orders</span>
+                </div>
+            </div>
+
+
+            <!-- TOTAL REVENUE -->
+            <div class="summary-card">
+                <div class="summary-icon">💵</div>
+                <div>
+                    <span class="summary-title">₹${totalRevenue}</span>
+                    <span class="summary-description">Total Revenue</span>
+                </div>
+            </div>
+
+
+            <!-- PENDING ORDERS -->
+            <div class="summary-card">
+                <div class="summary-icon">⏳</div>
+                <div>
+                    <span class="summary-title">${pendingOrders}</span>
+                    <span class="summary-description">Pending Orders</span>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ===================================================== -->
+    <!-- MANAGEMENT OPERATIONS -->
+    <!-- ===================================================== -->
+
+    <section class="dashboard-section">
+
+        <h2>Management Operations</h2>
+
+
+        <div class="operation-grid">
+
+            <!-- CUSTOMERS -->
+            <a href="${pageContext.request.contextPath}/admin/customers" class="operation-card">
+                <div class="operation-icon">👥</div>
+                <h3>Customers</h3>
+                <p>Manage registered customers and view their profiles.</p>
+                <span class="operation-link">Manage Customers →</span>
             </a>
-
 
             <!-- SELLERS -->
-
-            <a href="${pageContext.request.contextPath}/admin/sellers"
-               class="summary-card">
-
-                <div class="summary-icon">
-                    🏪
-                </div>
-
-                <div>
-
-                    <span class="summary-title">
-                        Sellers
-                    </span>
-
-                    <span class="summary-description">
-                        Manage marketplace sellers
-                    </span>
-
-                </div>
-
+            <a href="${pageContext.request.contextPath}/admin/sellers" class="operation-card">
+                <div class="operation-icon">🏪</div>
+                <h3>Sellers</h3>
+                <p>Manage marketplace sellers and monitor their shops.</p>
+                <span class="operation-link">Manage Sellers →</span>
             </a>
-
 
             <!-- PRODUCTS -->
-
-            <a href="${pageContext.request.contextPath}/admin/products"
-               class="summary-card">
-
-                <div class="summary-icon">
-                    📦
-                </div>
-
-                <div>
-
-                    <span class="summary-title">
-                        Products
-                    </span>
-
-                    <span class="summary-description">
-                        Manage marketplace products
-                    </span>
-
-                </div>
-
+            <a href="${pageContext.request.contextPath}/admin/products" class="operation-card">
+                <div class="operation-icon">📦</div>
+                <h3>Products</h3>
+                <p>Add, view and manage products available in the marketplace.</p>
+                <span class="operation-link">Manage Products →</span>
             </a>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- ===================================================== -->
-    <!-- MANAGEMENT -->
-    <!-- ===================================================== -->
-
-    <section class="dashboard-section">
-
-        <h2>Management</h2>
-
-
-        <div class="operation-grid">
-
-
-            <!-- PRODUCTS -->
-
-            <a href="${pageContext.request.contextPath}/admin/products"
-               class="operation-card">
-
-                <div class="operation-icon">
-                    📦
-                </div>
-
-                <h3>
-                    Products
-                </h3>
-
-                <p>
-                    Add, view and manage products available
-                    in the marketplace.
-                </p>
-
-                <span class="operation-link">
-                    Manage Products →
-                </span>
-
-            </a>
-
-
 
             <!-- CATEGORIES -->
-
-            <a href="${pageContext.request.contextPath}/admin/categories"
-               class="operation-card">
-
-                <div class="operation-icon">
-                    🏷️
-                </div>
-
-                <h3>
-                    Categories
-                </h3>
-
-                <p>
-                    Add and manage product categories
-                    available to sellers.
-                </p>
-
-                <span class="operation-link">
-                    Manage Categories →
-                </span>
-
+            <a href="${pageContext.request.contextPath}/admin/categories" class="operation-card">
+                <div class="operation-icon">🏷️</div>
+                <h3>Categories</h3>
+                <p>Add and manage product categories available to sellers.</p>
+                <span class="operation-link">Manage Categories →</span>
             </a>
-
-
 
             <!-- INVENTORY -->
-
-            <a href="${pageContext.request.contextPath}/admin/inventory"
-               class="operation-card">
-
-                <div class="operation-icon">
-                    📊
-                </div>
-
-                <h3>
-                    Inventory
-                </h3>
-
-                <p>
-                    Monitor stock levels, low-stock products
-                    and product availability.
-                </p>
-
-                <span class="operation-link">
-                    Manage Inventory →
-                </span>
-
+            <a href="${pageContext.request.contextPath}/admin/inventory" class="operation-card">
+                <div class="operation-icon">📊</div>
+                <h3>Inventory</h3>
+                <p>Monitor stock levels, low-stock products and product availability.</p>
+                <span class="operation-link">Manage Inventory →</span>
             </a>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- ===================================================== -->
-    <!-- TRANSACTIONS -->
-    <!-- ===================================================== -->
-
-    <section class="dashboard-section">
-
-        <h2>Transactions</h2>
-
-
-        <div class="operation-grid">
-
 
             <!-- ORDERS -->
-
-            <a href="${pageContext.request.contextPath}/admin/orders"
-               class="operation-card">
-
-                <div class="operation-icon">
-                    🛒
-                </div>
-
-                <h3>
-                    Orders
-                </h3>
-
-                <p>
-                    View customer orders, purchased items,
-                    quantities and order totals.
-                </p>
-
-                <span class="operation-link">
-                    View Orders →
-                </span>
-
+            <a href="${pageContext.request.contextPath}/orders/admin" class="operation-card">
+                <div class="operation-icon">🛒</div>
+                <h3>Orders</h3>
+                <p>View customer orders, purchased items, and manage statuses.</p>
+                <span class="operation-link">View Orders →</span>
             </a>
-
-
 
             <!-- PAYMENTS -->
-
-            <a href="${pageContext.request.contextPath}/admin/payments"
-               class="operation-card">
-
-                <div class="operation-icon">
-                    💳
-                </div>
-
-                <h3>
-                    Payments
-                </h3>
-
-                <p>
-                    View payment transactions, payment modes
-                    and payment status.
-                </p>
-
-                <span class="operation-link">
-                    View Payments →
-                </span>
-
+            <a href="${pageContext.request.contextPath}/payment/list" class="operation-card">
+                <div class="operation-icon">💳</div>
+                <h3>Payments</h3>
+                <p>View payment transactions, modes, and statuses securely.</p>
+                <span class="operation-link">View Payments →</span>
             </a>
 
+            <!-- REPORTS -->
+            <a href="${pageContext.request.contextPath}/admin/reports" class="operation-card">
+                <div class="operation-icon">📈</div>
+                <h3>Reports & Analytics</h3>
+                <p>Generate sales, product, seller, and customer reports using filters.</p>
+                <span class="operation-link">Open Reports →</span>
+            </a>
 
         </div>
 
     </section>
-
-
-
-    <!-- ===================================================== -->
-    <!-- ANALYTICS -->
-    <!-- ===================================================== -->
-
-    <section class="dashboard-section">
-
-        <h2>Analytics & Reports</h2>
-
-
-        <div class="analytics-card">
-
-
-            <div class="analytics-icon">
-                📈
-            </div>
-
-
-            <div class="analytics-content">
-
-                <h3>
-                    Reports & Analytics
-                </h3>
-
-                <p>
-                    Analyse sales, products, categories,
-                    sellers and customers using the available
-                    reporting operations.
-                </p>
-
-
-                <a href="${pageContext.request.contextPath}/admin/reports"
-                   class="primary-btn">
-
-                    Open Reports
-
-                </a>
-
-            </div>
-
-
-        </div>
-
-    </section>
-
 
 
     <!-- ===================================================== -->
@@ -353,11 +210,9 @@
 
         <div class="account-card">
 
-
             <div class="account-icon">
                 👤
             </div>
-
 
             <div class="account-content">
 
@@ -371,24 +226,18 @@
                     your password.
                 </p>
 
-
                 <a href="${pageContext.request.contextPath}/admin/profile"
                    class="secondary-btn">
-
                     View Profile
-
                 </a>
 
             </div>
-
 
         </div>
 
     </section>
 
-
 </div>
-
 
 
 <style>
@@ -549,8 +398,6 @@
 
     border-radius: 10px;
 
-    text-decoration: none;
-
     color: #212529;
 
     box-shadow:
@@ -598,9 +445,11 @@
 
     display: block;
 
-    font-size: 19px;
+    font-size: 24px;
 
     font-weight: 700;
+
+    color: #0d6efd;
 
 }
 
@@ -613,7 +462,9 @@
 
     color: #6c757d;
 
-    font-size: 14px;
+    font-size: 15px;
+
+    font-weight: 600;
 
 }
 
@@ -628,7 +479,7 @@
     display: grid;
 
     grid-template-columns:
-        repeat(3, 1fr);
+        repeat(4, 1fr);
 
     gap: 20px;
 
@@ -684,7 +535,7 @@
 
     margin: 0 0 10px;
 
-    font-size: 21px;
+    font-size: 20px;
 
 }
 
@@ -697,7 +548,7 @@
 
     line-height: 1.5;
 
-    font-size: 15px;
+    font-size: 14px;
 
 }
 
@@ -708,76 +559,9 @@
 
     font-weight: 600;
 
-}
-
-
-
-/* ========================================================= */
-/* ANALYTICS */
-/* ========================================================= */
-
-.analytics-card {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 25px;
-
-    padding: 30px;
-
-    background-color: white;
-
-    border: 1px solid #e1e5e9;
-
-    border-radius: 10px;
-
-    box-shadow:
-        0 3px 10px rgba(0,0,0,0.05);
+    font-size: 14px;
 
 }
-
-
-.analytics-icon {
-
-    width: 70px;
-
-    height: 70px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    background-color: #f1f3f5;
-
-    border-radius: 12px;
-
-    font-size: 38px;
-
-}
-
-
-.analytics-content h3 {
-
-    margin: 0 0 8px;
-
-    font-size: 23px;
-
-}
-
-
-.analytics-content p {
-
-    margin: 0 0 18px;
-
-    color: #6c757d;
-
-    line-height: 1.5;
-
-}
-
 
 
 /* ========================================================= */
@@ -905,6 +689,13 @@
 /* RESPONSIVE */
 /* ========================================================= */
 
+@media (max-width: 1100px) {
+
+    .operation-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 @media (max-width: 950px) {
 
     .summary-grid {
@@ -960,7 +751,6 @@
     }
 
 
-    .analytics-card,
     .account-card {
 
         flex-direction: column;

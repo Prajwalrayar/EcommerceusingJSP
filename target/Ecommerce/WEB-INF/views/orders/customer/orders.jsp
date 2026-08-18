@@ -5,7 +5,7 @@
 
 <c:set var="pageTitle" value="My Orders"/>
 
-<%@ include file="../common/header.jsp" %>
+<%@ include file="../../common/header.jsp" %>
 
 
 <div class="card">
@@ -155,4 +155,4 @@
 </div>
 
 
-<%@ include file="../common/footer.jsp" %>
+<%@ include file="../../common/footer.jsp" %>

@@ -5,7 +5,7 @@
 
 <c:set var="pageTitle" value="Seller Profile"/>
 
-<%@ include file="common/header.jsp" %>
+<%@ include file="../common/header.jsp" %>
 
 
 <!-- ===================================================== -->
@@ -130,7 +130,7 @@
             value="${seller.userId}"/>
 
 
-    <%@ include file="common/address-table.jsp" %>
+    <%@ include file="../common/address-table.jsp" %>
 
 </div>
 
@@ -151,4 +151,4 @@
 </div>
 
 
-<%@ include file="common/footer.jsp" %>
+<%@ include file="../common/footer.jsp" %>

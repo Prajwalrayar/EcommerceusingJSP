@@ -213,7 +213,7 @@
 		LEFT JOIN orders o
 		ON p.product_id = o.product_id
 
-		LEFT JOIN reviews r
+		LEFT JOIN review r
 		ON p.product_id = r.product_id
 
 		<if test="paymentStatus != null and paymentStatus != ''">
@@ -455,104 +455,149 @@
 		REPORT ===================================================== -->
 
 	<select id="getSellerSalesReport"
-		resultType="com.crimsonlogic.ecommerce.model.report.SellerSalesReport">
+        resultType="com.crimsonlogic.ecommerce.model.report.SellerSalesReport">
 
-		SELECT
+    SELECT
 
-		s.user_id AS sellerId,
+        s.user_id AS sellerId,
 
-		s.user_name AS sellerName,
+        s.user_name AS sellerName,
 
-		s.shop_name AS shopName,
-
-		COUNT(DISTINCT o.order_id) AS orderCount,
-
-		COALESCE(
-		SUM(o.quantity),
-		0
-		) AS quantitySold,
-
-		COALESCE(
-		SUM(o.total_price),
-		0
-		) AS revenue
-
-		FROM sellers s
-
-		INNER JOIN products p
-		ON s.user_id = p.user_id
-
-		LEFT JOIN orders o
-		ON p.product_id = o.product_id
-
-		WHERE 1 = 1
+        s.shop_name AS shopName,
 
 
-		<if test="sellerId != null and sellerId != ''">
-
-			AND s.user_id = #{sellerId}
-
-		</if>
+        COUNT(DISTINCT o.order_id)
+            AS orderCount,
 
 
-		<if test="categoryId != null and categoryId != ''">
-
-			AND p.category_id = #{categoryId}
-
-		</if>
-
-
-		<if test="productId != null and productId != ''">
-
-			AND p.product_id = #{productId}
-
-		</if>
+        COALESCE(
+            SUM(o.quantity),
+            0
+        ) AS quantitySold,
 
 
-		<if test="minPrice != null">
-
-			AND p.product_price >= #{minPrice}
-
-		</if>
-
-
-		<if test="maxPrice != null">
-
-			AND p.product_price &lt;= #{maxPrice}
-
-		</if>
+        COALESCE(
+            SUM(o.total_price),
+            0
+        ) AS revenue
 
 
-		<if test="orderStatus != null and orderStatus != ''">
-
-			AND o.order_status = #{orderStatus}
-
-		</if>
+    FROM sellers s
 
 
-		<if test="fromDate != null">
-
-			AND o.order_date >= #{fromDate}
-
-		</if>
+    INNER JOIN products p
+        ON s.user_id = p.user_id
 
 
-		<if test="toDate != null">
-
-			AND o.order_date &lt;= #{toDate}
-
-		</if>
+    LEFT JOIN orders o
+        ON p.product_id = o.product_id
 
 
-		GROUP BY
+        <!-- ==========================================
+             DATE FILTERING IS DONE IN DATABASE
+             ========================================== -->
 
-		s.user_id,
-		s.user_name,
-		s.shop_name
 
-		ORDER BY revenue DESC
+        <if test="fromDate != null">
 
-	</select>
+            AND o.order_date >= #{fromDate}
+
+        </if>
+
+
+        <if test="toDate != null">
+
+            AND o.order_date &lt;= #{toDate}
+
+        </if>
+
+
+        <!-- ==========================================
+             ORDER STATUS
+             ========================================== -->
+
+        <if test="orderStatus != null
+                  and orderStatus != ''">
+
+            AND o.order_status = #{orderStatus}
+
+        </if>
+
+
+    WHERE 1 = 1
+
+
+    <!-- ==========================================
+         SELECTED SELLER
+         ========================================== -->
+
+    <if test="sellerId != null
+              and sellerId != ''">
+
+        AND s.user_id = #{sellerId}
+
+    </if>
+
+
+    <!-- ==========================================
+         CATEGORY
+         ========================================== -->
+
+    <if test="categoryId != null
+              and categoryId != ''">
+
+        AND p.category_id = #{categoryId}
+
+    </if>
+
+
+    <!-- ==========================================
+         PRODUCT
+         ========================================== -->
+
+    <if test="productId != null
+              and productId != ''">
+
+        AND p.product_id = #{productId}
+
+    </if>
+
+
+    <!-- ==========================================
+         MIN PRICE
+         ========================================== -->
+
+    <if test="minPrice != null">
+
+        AND p.product_price >= #{minPrice}
+
+    </if>
+
+
+    <!-- ==========================================
+         MAX PRICE
+         ========================================== -->
+
+    <if test="maxPrice != null">
+
+        AND p.product_price &lt;= #{maxPrice}
+
+    </if>
+
+
+    GROUP BY
+
+        s.user_id,
+
+        s.user_name,
+
+        s.shop_name
+
+
+    ORDER BY
+        revenue DESC
+
+</select>
 
 
 	<!-- ===================================================== CUSTOMER SUMMARY 

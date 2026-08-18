@@ -1,11 +1,21 @@
 package com.crimsonlogic.ecommerce.controller;
 
+import com.crimsonlogic.ecommerce.model.Seller;
+import com.crimsonlogic.ecommerce.model.report.CategorySalesReport;
+import com.crimsonlogic.ecommerce.model.report.CustomerReport;
+import com.crimsonlogic.ecommerce.model.report.ProductSalesReport;
 import com.crimsonlogic.ecommerce.model.report.ReportFilter;
+import com.crimsonlogic.ecommerce.model.report.SalesReport;
+import com.crimsonlogic.ecommerce.model.report.SellerSalesReport;
 import com.crimsonlogic.ecommerce.service.CategoryService;
 import com.crimsonlogic.ecommerce.service.ReportService;
+import com.crimsonlogic.ecommerce.service.SellerService;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/reports")
@@ -15,6 +25,12 @@ public class ReportController {
 
     private CategoryService categoryService;
 
+    private SellerService sellerService;
+
+
+    // ==========================================================
+    // SETTERS
+    // ==========================================================
 
     public void setReportService(
             ReportService reportService) {
@@ -30,8 +46,15 @@ public class ReportController {
     }
 
 
+    public void setSellerService(
+            SellerService sellerService) {
+
+        this.sellerService = sellerService;
+    }
+
+
     // ==========================================================
-    // ADMIN REPORT
+    // ADMIN REPORT PAGE
     // ==========================================================
 
     @GetMapping("/admin")
@@ -39,30 +62,38 @@ public class ReportController {
             @ModelAttribute ReportFilter filter,
             Model model) {
 
+        loadAdminReportPage(filter, model);
 
-        model.addAttribute(
-                "salesReport",
-                reportService.getSalesReport(filter)
-        );
-
-
-        model.addAttribute(
-                "productReports",
-                reportService.getProductSalesReport(filter)
-        );
+        return "admin/reports";
+    }
 
 
-        model.addAttribute(
-                "categoryReports",
-                reportService.getCategorySalesReport(filter)
-        );
+    // ==========================================================
+    // ADMIN GENERATE REPORT
+    // ==========================================================
+
+    @PostMapping("/admin")
+    public String generateAdminReport(
+            @ModelAttribute ReportFilter filter,
+            Model model) {
+
+        loadAdminReportPage(filter, model);
+
+        return "admin/reports";
+    }
 
 
-        model.addAttribute(
-                "sellerReports",
-                reportService.getSellerSalesReport(filter)
-        );
+    // ==========================================================
+    // LOAD ADMIN REPORT PAGE
+    // ==========================================================
 
+    private void loadAdminReportPage(
+            ReportFilter filter,
+            Model model) {
+
+        // ------------------------------------------------------
+        // Categories for dropdown
+        // ------------------------------------------------------
 
         model.addAttribute(
                 "categories",
@@ -70,13 +101,128 @@ public class ReportController {
         );
 
 
+        // ------------------------------------------------------
+        // Sellers for dropdown
+        // ------------------------------------------------------
+
+        List<Seller> sellers =
+                sellerService.findAllSellers();
+
+        model.addAttribute(
+                "sellers",
+                sellers
+        );
+
+
+        // ------------------------------------------------------
+        // Keep filter
+        // ------------------------------------------------------
+
         model.addAttribute(
                 "filter",
                 filter
         );
 
 
-        return "reports/admin-reports";
+        // ------------------------------------------------------
+        // SELLER SALES REPORT
+        // ------------------------------------------------------
+
+        if (filter.getSellerId() != null
+                && !filter.getSellerId().trim().isEmpty()) {
+
+            List<SellerSalesReport> sellerReports =
+                    reportService.getSellerSalesReport(filter);
+
+            model.addAttribute(
+                    "sellerReports",
+                    sellerReports
+            );
+
+
+            // Seller's products
+            List<ProductSalesReport> productReports =
+                    reportService.getProductSalesReport(filter);
+
+            model.addAttribute(
+                    "sellerProductReports",
+                    productReports
+            );
+
+
+            // Seller summary
+            SalesReport salesReport =
+                    reportService.getSalesReport(filter);
+
+            model.addAttribute(
+                    "salesReport",
+                    salesReport
+            );
+
+
+            // Seller category report
+            List<CategorySalesReport> categoryReports =
+                    reportService.getCategorySalesReport(filter);
+
+            model.addAttribute(
+                    "categoryReports",
+                    categoryReports
+            );
+
+
+            model.addAttribute(
+                    "reportType",
+                    "seller"
+            );
+
+            return;
+        }
+
+
+        // ------------------------------------------------------
+        // NORMAL ADMIN SALES REPORT
+        // ------------------------------------------------------
+
+        SalesReport salesReport =
+                reportService.getSalesReport(filter);
+
+        model.addAttribute(
+                "salesReport",
+                salesReport
+        );
+
+
+        List<ProductSalesReport> productReports =
+                reportService.getProductSalesReport(filter);
+
+        model.addAttribute(
+                "productReports",
+                productReports
+        );
+
+
+        List<CategorySalesReport> categoryReports =
+                reportService.getCategorySalesReport(filter);
+
+        model.addAttribute(
+                "categoryReports",
+                categoryReports
+        );
+
+
+        List<SellerSalesReport> sellerReports =
+                reportService.getSellerSalesReport(filter);
+
+        model.addAttribute(
+                "sellerReports",
+                sellerReports
+        );
+
+
+        model.addAttribute(
+                "reportType",
+                "general"
+        );
     }
 
 
@@ -93,17 +239,12 @@ public class ReportController {
 
             Model model) {
 
-
-        /*
-         * The seller ID comes from the authenticated/
-         * authorized seller context in a real application.
-         *
-         * For your current JSP application we accept
-         * sellerId in the URL.
-         */
-
         filter.setSellerId(sellerId);
 
+
+        // ------------------------------------------------------
+        // Seller sales summary
+        // ------------------------------------------------------
 
         model.addAttribute(
                 "salesReport",
@@ -111,17 +252,29 @@ public class ReportController {
         );
 
 
+        // ------------------------------------------------------
+        // Seller products
+        // ------------------------------------------------------
+
         model.addAttribute(
                 "productReports",
                 reportService.getProductSalesReport(filter)
         );
 
 
+        // ------------------------------------------------------
+        // Seller category report
+        // ------------------------------------------------------
+
         model.addAttribute(
                 "categoryReports",
                 reportService.getCategorySalesReport(filter)
         );
 
+
+        // ------------------------------------------------------
+        // Categories
+        // ------------------------------------------------------
 
         model.addAttribute(
                 "categories",
@@ -158,9 +311,12 @@ public class ReportController {
 
             Model model) {
 
-
         filter.setCustomerId(customerId);
 
+
+        // ------------------------------------------------------
+        // Customer summary
+        // ------------------------------------------------------
 
         model.addAttribute(
                 "customerReport",
@@ -168,11 +324,19 @@ public class ReportController {
         );
 
 
+        // ------------------------------------------------------
+        // Customer products
+        // ------------------------------------------------------
+
         model.addAttribute(
                 "productReports",
                 reportService.getCustomerProductReport(filter)
         );
 
+
+        // ------------------------------------------------------
+        // Categories
+        // ------------------------------------------------------
 
         model.addAttribute(
                 "categories",

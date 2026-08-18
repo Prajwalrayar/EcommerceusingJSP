@@ -4,7 +4,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.crimsonlogic.ecommerce.mapper.OrderMapper">
+<mapper namespace="com.crimsonlogic.ecommerce.dao.OrderMapper">
 
 
     <!-- ===================================================== -->
@@ -99,7 +99,7 @@
         INSERT INTO orders
         (
         order_id,
-        user_id,
+        customer_id,
         product_id,
         quantity,
         total_price,
@@ -107,6 +107,7 @@
         order_date,
         delivered_date
         )
+        
 
         VALUES
         (
@@ -187,7 +188,7 @@
         SELECT
 
         o.order_id,
-        o.user_id,
+        o.customer_id,
         o.product_id,
         o.quantity,
         o.total_price,
@@ -211,7 +212,7 @@
         FROM orders o
 
         INNER JOIN customers c
-        ON o.user_id = c.user_id
+        ON o.customer_id = c.user_id
 
         INNER JOIN products p
         ON o.product_id = p.product_id
@@ -231,7 +232,7 @@
         SELECT
 
         o.order_id,
-        o.user_id,
+        o.customer_id,
         o.product_id,
         o.quantity,
         o.total_price,
@@ -255,12 +256,12 @@
         FROM orders o
 
         INNER JOIN customers c
-        ON o.user_id = c.user_id
+        ON o.customer_id = c.user_id
 
         INNER JOIN products p
         ON o.product_id = p.product_id
 
-        WHERE o.user_id = #{customerId}
+        WHERE o.customer_id = #{customerId}
 
         ORDER BY o.order_date DESC
 
@@ -277,7 +278,7 @@
         SELECT
 
         o.order_id,
-        o.user_id,
+        o.customer_id,
         o.product_id,
         o.quantity,
         o.total_price,
@@ -301,7 +302,7 @@
         FROM orders o
 
         INNER JOIN customers c
-        ON o.user_id = c.user_id
+        ON o.customer_id = c.user_id
 
         INNER JOIN products p
         ON o.product_id = p.product_id
@@ -325,7 +326,7 @@
         SELECT
 
         o.order_id,
-        o.user_id,
+        o.customer_id,
         o.product_id,
         o.quantity,
         o.total_price,
@@ -349,7 +350,7 @@
         FROM orders o
 
         INNER JOIN customers c
-        ON o.user_id = c.user_id
+        ON o.customer_id = c.user_id
 
         INNER JOIN products p
         ON o.product_id = p.product_id
@@ -371,7 +372,7 @@
         SELECT
 
         o.order_id,
-        o.user_id,
+        o.customer_id,
         o.product_id,
         o.quantity,
         o.total_price,
@@ -395,7 +396,7 @@
         FROM orders o
 
         INNER JOIN customers c
-        ON o.user_id = c.user_id
+        ON o.customer_id = c.user_id
 
         INNER JOIN products p
         ON o.product_id = p.product_id
@@ -403,7 +404,7 @@
         LEFT JOIN payments pay
         ON o.order_id = pay.order_id
 
-        WHERE o.user_id = #{customerId}
+        WHERE o.customer_id = #{customerId}
 
         AND pay.order_id IS NULL
 
@@ -424,7 +425,7 @@
         SELECT
 
         o.order_id,
-        o.user_id,
+        o.customer_id,
         o.product_id,
         o.quantity,
         o.total_price,
@@ -448,7 +449,7 @@
         FROM orders o
 
         INNER JOIN customers c
-        ON o.user_id = c.user_id
+        ON o.customer_id = c.user_id
 
         INNER JOIN products p
         ON o.product_id = p.product_id
@@ -470,7 +471,7 @@
         SELECT
 
         o.order_id,
-        o.user_id,
+        o.customer_id,
         o.product_id,
         o.quantity,
         o.total_price,
@@ -494,7 +495,7 @@
         FROM orders o
 
         INNER JOIN customers c
-        ON o.user_id = c.user_id
+        ON o.customer_id = c.user_id
 
         INNER JOIN products p
         ON o.product_id = p.product_id
@@ -514,7 +515,7 @@
         SELECT
 
         o.order_id,
-        o.user_id,
+        o.customer_id,
         o.product_id,
         o.quantity,
         o.total_price,
@@ -538,12 +539,12 @@
         FROM orders o
 
         INNER JOIN customers c
-        ON o.user_id = c.user_id
+        ON o.customer_id = c.user_id
 
         INNER JOIN products p
         ON o.product_id = p.product_id
 
-        WHERE o.user_id = #{customerId}
+        WHERE o.customer_id = #{customerId}
 
         AND LOWER(p.product_name)
         LIKE LOWER(CONCAT('%', #{productName}, '%'))
@@ -563,7 +564,7 @@
         SELECT
 
         o.order_id,
-        o.user_id,
+        o.customer_id,
         o.product_id,
         o.quantity,
         o.total_price,
@@ -587,12 +588,12 @@
         FROM orders o
 
         INNER JOIN customers c
-        ON o.user_id = c.user_id
+        ON o.customer_id = c.user_id
 
         INNER JOIN products p
         ON o.product_id = p.product_id
 
-        WHERE o.user_id = #{customerId}
+        WHERE o.customer_id = #{customerId}
 
         AND o.order_status != 'CANCELLED'
 
@@ -611,7 +612,7 @@
         SELECT
 
         o.order_id,
-        o.user_id,
+        o.customer_id,
         o.product_id,
         o.quantity,
         o.total_price,
@@ -635,7 +636,7 @@
         FROM orders o
 
         INNER JOIN customers c
-        ON o.user_id = c.user_id
+        ON o.customer_id = c.user_id
 
         INNER JOIN products p
         ON o.product_id = p.product_id
@@ -660,7 +661,7 @@
         SELECT
 
         o.order_id,
-        o.user_id,
+        o.customer_id,
         o.product_id,
         o.quantity,
         o.total_price,
@@ -684,14 +685,14 @@
         FROM orders o
 
         INNER JOIN customers c
-        ON o.user_id = c.user_id
+        ON o.customer_id = c.user_id
 
         INNER JOIN products p
         ON o.product_id = p.product_id
 
         WHERE o.order_id = #{orderId}
 
-        AND o.user_id = #{customerId}
+        AND o.customer_id = #{customerId}
 
     </select>
 
@@ -706,7 +707,7 @@
         SELECT
 
         o.order_id,
-        o.user_id,
+        o.customer_id,
         o.product_id,
         o.quantity,
         o.total_price,
@@ -730,7 +731,7 @@
         FROM orders o
 
         INNER JOIN customers c
-        ON o.user_id = c.user_id
+        ON o.customer_id = c.user_id
 
         INNER JOIN products p
         ON o.product_id = p.product_id
@@ -752,7 +753,7 @@
         SELECT
 
         o.order_id,
-        o.user_id,
+        o.customer_id,
         o.product_id,
         o.quantity,
         o.total_price,
@@ -776,7 +777,7 @@
         FROM orders o
 
         INNER JOIN customers c
-        ON o.user_id = c.user_id
+        ON o.customer_id = c.user_id
 
         INNER JOIN products p
         ON o.product_id = p.product_id

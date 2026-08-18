@@ -118,7 +118,7 @@
 
     <insert id="insertPayment">
 
-        INSERT INTO payments
+        INSERT INTO payment
         (
         payment_id,
         transaction_id,
@@ -153,7 +153,7 @@
 
     <update id="updatePayment">
 
-        UPDATE payments
+        UPDATE payment
 
         SET
         transaction_id = #{transactionId},
@@ -173,7 +173,7 @@
 
     <update id="updatePaymentStatus">
 
-        UPDATE payments
+        UPDATE payment
 
         SET
         payment_status = #{paymentStatus}
@@ -189,7 +189,7 @@
 
     <delete id="deletePayment">
 
-        DELETE FROM payments
+        DELETE FROM payment
 
         WHERE payment_id = #{paymentId}
 
@@ -207,7 +207,7 @@
 
         p.payment_id,
         p.transaction_id,
-        p.user_id,
+        p.customer_id,
         p.order_id,
         p.payment_method,
         p.payment_status,
@@ -233,10 +233,10 @@
         pr.product_price,
         pr.product_status
 
-        FROM payments p
+        FROM payment p
 
         INNER JOIN customers c
-        ON p.user_id = c.user_id
+        ON p.customer_id = c.user_id
 
         INNER JOIN orders o
         ON p.order_id = o.order_id
@@ -260,7 +260,7 @@
 
         p.payment_id,
         p.transaction_id,
-        p.user_id,
+        p.customer_id,
         p.order_id,
         p.payment_method,
         p.payment_status,
@@ -286,10 +286,10 @@
         pr.product_price,
         pr.product_status
 
-        FROM payments p
+        FROM payment p
 
         INNER JOIN customers c
-        ON p.user_id = c.user_id
+        ON p.customer_id = c.user_id
 
         INNER JOIN orders o
         ON p.order_id = o.order_id
@@ -313,7 +313,7 @@
 
         p.payment_id,
         p.transaction_id,
-        p.user_id,
+        p.customer_id,
         p.order_id,
         p.payment_method,
         p.payment_status,
@@ -339,10 +339,10 @@
         pr.product_price,
         pr.product_status
 
-        FROM payments p
+        FROM payment p
 
         INNER JOIN customers c
-        ON p.user_id = c.user_id
+        ON p.customer_id = c.user_id
 
         INNER JOIN orders o
         ON p.order_id = o.order_id
@@ -366,7 +366,7 @@
 
         p.payment_id,
         p.transaction_id,
-        p.user_id,
+        p.customer_id,
         p.order_id,
         p.payment_method,
         p.payment_status,
@@ -392,10 +392,10 @@
         pr.product_price,
         pr.product_status
 
-        FROM payments p
+        FROM payment p
 
         INNER JOIN customers c
-        ON p.user_id = c.user_id
+        ON p.customer_id = c.user_id
 
         INNER JOIN orders o
         ON p.order_id = o.order_id
@@ -403,7 +403,7 @@
         INNER JOIN products pr
         ON o.product_id = pr.product_id
 
-        WHERE p.user_id = #{customerId}
+        WHERE p.customer_id = #{customerId}
 
         ORDER BY p.payment_date DESC
 
@@ -421,7 +421,7 @@
 
         p.payment_id,
         p.transaction_id,
-        p.user_id,
+        p.customer_id,
         p.order_id,
         p.payment_method,
         p.payment_status,
@@ -447,10 +447,10 @@
         pr.product_price,
         pr.product_status
 
-        FROM payments p
+        FROM payment p
 
         INNER JOIN customers c
-        ON p.user_id = c.user_id
+        ON p.customer_id = c.user_id
 
         INNER JOIN orders o
         ON p.order_id = o.order_id
@@ -476,7 +476,7 @@
 
         p.payment_id,
         p.transaction_id,
-        p.user_id,
+        p.customer_id,
         p.order_id,
         p.payment_method,
         p.payment_status,
@@ -502,10 +502,10 @@
         pr.product_price,
         pr.product_status
 
-        FROM payments p
+        FROM payment p
 
         INNER JOIN customers c
-        ON p.user_id = c.user_id
+        ON p.customer_id = c.user_id
 
         INNER JOIN orders o
         ON p.order_id = o.order_id
@@ -529,7 +529,7 @@
 
         p.payment_id,
         p.transaction_id,
-        p.user_id,
+        p.customer_id,
         p.order_id,
         p.payment_method,
         p.payment_status,
@@ -555,10 +555,10 @@
         pr.product_price,
         pr.product_status
 
-        FROM payments p
+        FROM payment p
 
         LEFT JOIN customers c
-        ON p.user_id = c.user_id
+        ON p.customer_id = c.user_id
 
         LEFT JOIN orders o
         ON p.order_id = o.order_id
@@ -584,7 +584,7 @@
 
         p.payment_id,
         p.transaction_id,
-        p.user_id,
+        p.customer_id,
         p.order_id,
         p.payment_method,
         p.payment_status,
@@ -610,10 +610,10 @@
         pr.product_price,
         pr.product_status
 
-        FROM payments p
+        FROM payment p
 
         INNER JOIN customers c
-        ON p.user_id = c.user_id
+        ON p.customer_id = c.user_id
 
         INNER JOIN orders o
         ON p.order_id = o.order_id
@@ -621,7 +621,7 @@
         INNER JOIN products pr
         ON o.product_id = pr.product_id
 
-        WHERE p.user_id = #{customerId}
+        WHERE p.customer_id = #{customerId}
 
         AND
         (
@@ -650,7 +650,7 @@
 
         p.payment_id,
         p.transaction_id,
-        p.user_id,
+        p.customer_id,
         p.order_id,
         p.payment_method,
         p.payment_status,
@@ -676,10 +676,10 @@
         pr.product_price,
         pr.product_status
 
-        FROM payments p
+        FROM payment p
 
         INNER JOIN customers c
-        ON p.user_id = c.user_id
+        ON p.customer_id = c.user_id
 
         INNER JOIN orders o
         ON p.order_id = o.order_id
@@ -721,7 +721,7 @@
 
         p.payment_id,
         p.transaction_id,
-        p.user_id,
+        p.customer_id,
         p.order_id,
         p.payment_method,
         p.payment_status,
@@ -747,10 +747,10 @@
         pr.product_price,
         pr.product_status
 
-        FROM payments p
+        FROM payment p
 
         INNER JOIN customers c
-        ON p.user_id = c.user_id
+        ON p.customer_id = c.user_id
 
         INNER JOIN orders o
         ON p.order_id = o.order_id

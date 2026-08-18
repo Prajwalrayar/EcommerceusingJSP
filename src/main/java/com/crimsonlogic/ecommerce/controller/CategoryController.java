@@ -36,7 +36,7 @@ public class CategoryController {
                 categories
         );
 
-        return "categories";
+        return "category/categories";
     }
 
 
@@ -52,7 +52,7 @@ public class CategoryController {
                 new Category()
         );
 
-        return "category-form";
+        return "category/category-form";
     }
 
 
@@ -93,7 +93,7 @@ public class CategoryController {
                 category
         );
 
-        return "category-form";
+        return "category/category-form";
     }
 
 

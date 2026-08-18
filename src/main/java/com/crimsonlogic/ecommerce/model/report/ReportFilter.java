@@ -2,6 +2,8 @@ package com.crimsonlogic.ecommerce.model.report;
 
 import java.time.LocalDateTime;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 public class ReportFilter {
 
     private String categoryId;
@@ -26,8 +28,16 @@ public class ReportFilter {
 
     private Integer maxQuantity;
 
+
+    @DateTimeFormat(
+            iso = DateTimeFormat.ISO.DATE_TIME
+    )
     private LocalDateTime fromDate;
 
+
+    @DateTimeFormat(
+            iso = DateTimeFormat.ISO.DATE_TIME
+    )
     private LocalDateTime toDate;
 
 
@@ -39,6 +49,7 @@ public class ReportFilter {
         return categoryId;
     }
 
+
     public void setCategoryId(String categoryId) {
         this.categoryId = categoryId;
     }
@@ -47,6 +58,7 @@ public class ReportFilter {
     public String getProductId() {
         return productId;
     }
+
 
     public void setProductId(String productId) {
         this.productId = productId;
@@ -57,6 +69,7 @@ public class ReportFilter {
         return sellerId;
     }
 
+
     public void setSellerId(String sellerId) {
         this.sellerId = sellerId;
     }
@@ -65,6 +78,7 @@ public class ReportFilter {
     public String getCustomerId() {
         return customerId;
     }
+
 
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
@@ -75,6 +89,7 @@ public class ReportFilter {
         return productName;
     }
 
+
     public void setProductName(String productName) {
         this.productName = productName;
     }
@@ -83,6 +98,7 @@ public class ReportFilter {
     public String getOrderStatus() {
         return orderStatus;
     }
+
 
     public void setOrderStatus(String orderStatus) {
         this.orderStatus = orderStatus;
@@ -93,6 +109,7 @@ public class ReportFilter {
         return paymentStatus;
     }
 
+
     public void setPaymentStatus(String paymentStatus) {
         this.paymentStatus = paymentStatus;
     }
@@ -101,6 +118,7 @@ public class ReportFilter {
     public Double getMinPrice() {
         return minPrice;
     }
+
 
     public void setMinPrice(Double minPrice) {
         this.minPrice = minPrice;
@@ -111,6 +129,7 @@ public class ReportFilter {
         return maxPrice;
     }
 
+
     public void setMaxPrice(Double maxPrice) {
         this.maxPrice = maxPrice;
     }
@@ -119,6 +138,7 @@ public class ReportFilter {
     public Integer getMinQuantity() {
         return minQuantity;
     }
+
 
     public void setMinQuantity(Integer minQuantity) {
         this.minQuantity = minQuantity;
@@ -129,6 +149,7 @@ public class ReportFilter {
         return maxQuantity;
     }
 
+
     public void setMaxQuantity(Integer maxQuantity) {
         this.maxQuantity = maxQuantity;
     }
@@ -138,6 +159,7 @@ public class ReportFilter {
         return fromDate;
     }
 
+
     public void setFromDate(LocalDateTime fromDate) {
         this.fromDate = fromDate;
     }
@@ -146,6 +168,7 @@ public class ReportFilter {
     public LocalDateTime getToDate() {
         return toDate;
     }
+
 
     public void setToDate(LocalDateTime toDate) {
         this.toDate = toDate;

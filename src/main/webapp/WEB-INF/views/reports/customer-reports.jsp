@@ -8,26 +8,49 @@
 <%@ include file="../common/header.jsp" %>
 
 
-<!-- =====================================================
-     FILTERS
-     ===================================================== -->
+<!-- =========================================================
+     CUSTOMER REPORT HEADER
+     ========================================================= -->
 
 <div class="card">
 
     <h1>My Purchase Reports</h1>
 
+    <p>
+        View your purchase history, spending summary and
+        purchased products.
+    </p>
 
-    <form method="get"
-          action="${pageContext.request.contextPath}/reports/customer/${customerId}">
+</div>
 
 
-        <!-- CATEGORY -->
+<!-- =========================================================
+     FILTERS
+     ========================================================= -->
+
+<div class="card">
+
+    <h2>Report Filters</h2>
+
+
+    <form
+            method="get"
+            action="${pageContext.request.contextPath}/reports/customer/${customerId}">
+
+
+        <!-- =================================================
+             CATEGORY
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>Category</label>
+            <label for="categoryId">
+                Category
+            </label>
 
-            <select name="categoryId">
+            <select
+                    id="categoryId"
+                    name="categoryId">
 
                 <option value="">
                     All Categories
@@ -52,239 +75,360 @@
         </div>
 
 
-        <!-- PRODUCT -->
+        <!-- =================================================
+             PRODUCT
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>Product</label>
+            <label for="productName">
+                Product
+            </label>
 
             <input
                     type="text"
+                    id="productName"
                     name="productName"
                     value="${filter.productName}"
-                    placeholder="Product name"/>
+                    placeholder="Enter product name"/>
 
         </div>
 
 
-        <!-- MINIMUM PRICE -->
+        <!-- =================================================
+             MINIMUM PRICE
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>Minimum Price</label>
+            <label for="minPrice">
+                Minimum Price
+            </label>
 
             <input
                     type="number"
-                    step="0.01"
+                    id="minPrice"
                     name="minPrice"
-                    value="${filter.minPrice}"/>
+                    step="0.01"
+                    min="0"
+                    value="${filter.minPrice}"
+                    placeholder="Minimum price"/>
 
         </div>
 
 
-        <!-- MAXIMUM PRICE -->
+        <!-- =================================================
+             MAXIMUM PRICE
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>Maximum Price</label>
+            <label for="maxPrice">
+                Maximum Price
+            </label>
 
             <input
                     type="number"
-                    step="0.01"
+                    id="maxPrice"
                     name="maxPrice"
-                    value="${filter.maxPrice}"/>
+                    step="0.01"
+                    min="0"
+                    value="${filter.maxPrice}"
+                    placeholder="Maximum price"/>
 
         </div>
 
 
-        <!-- FROM DATE -->
+        <!-- =================================================
+             FROM DATE
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>From Date</label>
+            <label for="fromDate">
+                From Date
+            </label>
 
             <input
                     type="datetime-local"
+                    id="fromDate"
                     name="fromDate"
                     value="${filter.fromDate}"/>
 
         </div>
 
 
-        <!-- TO DATE -->
+        <!-- =================================================
+             TO DATE
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>To Date</label>
+            <label for="toDate">
+                To Date
+            </label>
 
             <input
                     type="datetime-local"
+                    id="toDate"
                     name="toDate"
                     value="${filter.toDate}"/>
 
         </div>
 
 
-        <!-- APPLY -->
+        <!-- =================================================
+             BUTTONS
+             ================================================= -->
 
-        <button
-                type="submit"
-                class="btn edit-btn">
+        <div class="form-actions">
 
-            Apply Filters
+            <button
+                    type="submit"
+                    class="btn edit-btn">
 
-        </button>
+                Apply Filters
+
+            </button>
+
+
+            <a
+                    href="${pageContext.request.contextPath}/reports/customer/${customerId}"
+                    class="btn">
+
+                Clear
+
+            </a>
+
+        </div>
 
     </form>
 
 </div>
 
 
-<!-- =====================================================
+<!-- =========================================================
      CUSTOMER SUMMARY
-     ===================================================== -->
+     ========================================================= -->
 
-<div class="card">
+<c:if test="${not empty customerReport}">
 
-    <h2>Purchase Summary</h2>
+    <div class="card">
 
-    <table>
-
-        <tr>
-
-            <th>Customer</th>
-
-            <td>
-                ${customerReport.customerName}
-            </td>
-
-        </tr>
+        <h2>Purchase Summary</h2>
 
 
-        <tr>
+        <table>
 
-            <th>Total Orders</th>
+            <thead>
 
-            <td>
-                ${customerReport.orderCount}
-            </td>
+            <tr>
 
-        </tr>
+                <th>Metric</th>
+                <th>Value</th>
 
+            </tr>
 
-        <tr>
-
-            <th>Products Purchased</th>
-
-            <td>
-                ${customerReport.quantityPurchased}
-            </td>
-
-        </tr>
+            </thead>
 
 
-        <tr>
+            <tbody>
 
-            <th>Total Spent</th>
+            <!-- CUSTOMER -->
 
-            <td>
-                ₹${customerReport.totalSpent}
-            </td>
+            <tr>
 
-        </tr>
+                <td>
+                    Customer
+                </td>
 
+                <td>
+                    ${customerReport.customerName}
+                </td>
 
-        <tr>
-
-            <th>Average Order Value</th>
-
-            <td>
-                ₹${customerReport.averageOrderValue}
-            </td>
-
-        </tr>
-
-    </table>
-
-</div>
+            </tr>
 
 
-<!-- =====================================================
+            <!-- TOTAL ORDERS -->
+
+            <tr>
+
+                <td>
+                    Total Orders
+                </td>
+
+                <td>
+                    ${customerReport.orderCount}
+                </td>
+
+            </tr>
+
+
+            <!-- PRODUCTS PURCHASED -->
+
+            <tr>
+
+                <td>
+                    Products Purchased
+                </td>
+
+                <td>
+                    ${customerReport.quantityPurchased}
+                </td>
+
+            </tr>
+
+
+            <!-- TOTAL SPENT -->
+
+            <tr>
+
+                <td>
+                    Total Spent
+                </td>
+
+                <td>
+                    ₹${customerReport.totalSpent}
+                </td>
+
+            </tr>
+
+
+            <!-- AVERAGE ORDER VALUE -->
+
+            <tr>
+
+                <td>
+                    Average Order Value
+                </td>
+
+                <td>
+                    ₹${customerReport.averageOrderValue}
+                </td>
+
+            </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</c:if>
+
+
+<!-- =========================================================
      PURCHASED PRODUCTS
-     ===================================================== -->
+     ========================================================= -->
 
 <div class="card">
 
     <h2>Purchased Products</h2>
 
-    <table>
 
-        <thead>
+    <c:choose>
 
-        <tr>
+        <c:when test="${not empty productReports}">
 
-            <th>Product</th>
-            <th>Category</th>
-            <th>Seller</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Amount</th>
+            <div class="table-container">
 
-        </tr>
+                <table>
 
-        </thead>
+                    <thead>
 
+                    <tr>
 
-        <tbody>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Seller</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Amount</th>
 
-        <c:forEach
-                var="product"
-                items="${productReports}">
+                    </tr>
 
-            <tr>
-
-                <td>
-                    ${product.productName}
-                </td>
-
-                <td>
-                    ${product.categoryName}
-                </td>
-
-                <td>
-                    ${product.sellerName}
-                </td>
-
-                <td>
-                    ₹${product.productPrice}
-                </td>
-
-                <td>
-                    ${product.quantitySold}
-                </td>
-
-                <td>
-                    ₹${product.revenue}
-                </td>
-
-            </tr>
-
-        </c:forEach>
-
-        </tbody>
-
-    </table>
+                    </thead>
 
 
-    <c:if test="${empty productReports}">
+                    <tbody>
 
-        <p class="empty-message">
-            No purchased products found for the selected filters.
-        </p>
+                    <c:forEach
+                            var="product"
+                            items="${productReports}">
 
-    </c:if>
+                        <tr>
+
+                            <!-- PRODUCT -->
+
+                            <td>
+                                ${product.productName}
+                            </td>
+
+
+                            <!-- CATEGORY -->
+
+                            <td>
+                                ${product.categoryName}
+                            </td>
+
+
+                            <!-- SELLER -->
+
+                            <td>
+                                ${product.sellerName}
+                            </td>
+
+
+                            <!-- PRICE -->
+
+                            <td>
+                                ₹${product.productPrice}
+                            </td>
+
+
+                            <!-- QUANTITY -->
+
+                            <td>
+                                ${product.quantitySold}
+                            </td>
+
+
+                            <!-- AMOUNT -->
+
+                            <td>
+                                ₹${product.revenue}
+                            </td>
+
+                        </tr>
+
+                    </c:forEach>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </c:when>
+
+
+        <c:otherwise>
+
+            <p class="empty-message">
+
+                No purchased products found for the selected filters.
+
+            </p>
+
+        </c:otherwise>
+
+    </c:choose>
 
 </div>
 
+
+<!-- =========================================================
+     FOOTER
+     ========================================================= -->
 
 <%@ include file="../common/footer.jsp" %>

@@ -31,7 +31,7 @@ public class PaymentController {
 
         model.addAttribute("payments", payments);
 
-        return "payments/payments";
+        return "payment/payments";
     }
 
 
@@ -49,7 +49,7 @@ public class PaymentController {
 
         model.addAttribute("payment", payment);
 
-        return "payments/payment-details";
+        return "payment/payment-details";
     }
 
 
@@ -69,7 +69,7 @@ public class PaymentController {
 
         model.addAttribute("customerId", customerId);
 
-        return "payments/customer-payments";
+        return "payment/customer-payments";
     }
 
 
@@ -89,7 +89,7 @@ public class PaymentController {
 
         model.addAttribute("sellerId", sellerId);
 
-        return "payments/seller-payments";
+        return "payment/seller-payments";
     }
 
 
@@ -109,7 +109,7 @@ public class PaymentController {
 
         model.addAttribute("keyword", keyword);
 
-        return "payments/payments";
+        return "payment/payments";
     }
 
 
@@ -135,7 +135,7 @@ public class PaymentController {
 
         model.addAttribute("keyword", keyword);
 
-        return "payments/customer-payments";
+        return "payment/customer-payments";
     }
 
 
@@ -161,7 +161,7 @@ public class PaymentController {
 
         model.addAttribute("keyword", keyword);
 
-        return "payments/seller-payments";
+        return "payment/seller-payments";
     }
 
 

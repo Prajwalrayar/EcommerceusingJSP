@@ -49,7 +49,7 @@ public class ProductController {
                 products
         );
 
-        return "products";
+        return "product/products";
     }
 
 
@@ -74,7 +74,7 @@ public class ProductController {
                 product
         );
 
-        return "product-details";
+        return "product/product-details";
     }
 
 
@@ -93,7 +93,7 @@ public class ProductController {
 
         loadFormData(model);
 
-        return "product-form";
+        return "product/product-form";
     }
 
 
@@ -134,7 +134,7 @@ public class ProductController {
 
         loadFormData(model);
 
-        return "product-form";
+        return "product/product-form";
     }
 
 
@@ -190,7 +190,7 @@ public class ProductController {
                 sellerId
         );
 
-        return "products";
+        return "product/products";
     }
 
 
@@ -218,7 +218,7 @@ public class ProductController {
                 categoryId
         );
 
-        return "products";
+        return "product/products";
     }
 
 
@@ -238,7 +238,7 @@ public class ProductController {
                 products
         );
 
-        return "products";
+        return "product/products";
     }
 
 

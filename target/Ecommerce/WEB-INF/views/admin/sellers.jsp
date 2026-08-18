@@ -5,7 +5,7 @@
 
 <c:set var="pageTitle" value="Sellers - Admin"/>
 
-<%@ include file="common/header.jsp" %>
+<%@ include file="../common/header.jsp" %>
 
 
 <div class="card">
@@ -13,137 +13,126 @@
     <h1>Seller Management</h1>
 
 
-    <!-- Navigation -->
-
     <div class="nav">
 
-        <a
-                href="${pageContext.request.contextPath}/admin/customers">
-
+        <a href="${pageContext.request.contextPath}/admin/customers">
             View Customers
-
         </a>
 
-
-        <a
-                href="${pageContext.request.contextPath}/admin/profile?adminId=ADM001">
-
+        <a href="${pageContext.request.contextPath}/admin/profile">
             Admin Profile
-
-        </a>
-
-
-        <a
-                href="${pageContext.request.contextPath}/address/list">
-
-            Address Management
-
         </a>
 
     </div>
 
 
-    <!-- Seller Table -->
-
-    <table>
+    <table class="data-table">
 
         <thead>
 
-        <tr>
+            <tr>
 
-            <th>Seller ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Shop Name</th>
-            <th>Action</th>
+                <th>Seller ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Shop Name</th>
+                <th>Action</th>
 
-        </tr>
+            </tr>
 
         </thead>
 
 
         <tbody>
 
-        <c:forEach
-                var="seller"
-                items="${sellers}">
+            <c:choose>
 
-            <tr>
+                <c:when test="${not empty sellers}">
 
-                <td>
-                    ${seller.userId}
-                </td>
+                    <c:forEach
+                            var="seller"
+                            items="${sellers}">
 
-                <td>
-                    ${seller.userName}
-                </td>
+                        <tr>
 
-                <td>
-                    ${seller.userEmail}
-                </td>
+                            <td>
+                                ${seller.userId}
+                            </td>
 
-                <td>
-                    ${seller.userPhNo}
-                </td>
+                            <td>
+                                ${seller.userName}
+                            </td>
 
-                <td>
-                    ${seller.shopName}
-                </td>
+                            <td>
+                                ${seller.userEmail}
+                            </td>
 
-                <td>
+                            <td>
+                                ${seller.userPhNo}
+                            </td>
 
-                    <!-- View Profile -->
+                            <td>
+                                ${seller.shopName}
+                            </td>
 
-                    <a
-                            href="${pageContext.request.contextPath}/seller/profile/${seller.userId}"
-                            class="btn edit-btn">
+                            <td class="action-cell">
 
-                        View Profile
+                                <a
+                                    href="${pageContext.request.contextPath}/admin/seller/${seller.userId}"
+                                    class="btn btn-primary">
 
-                    </a>
+                                    View Profile
+
+                                </a>
 
 
-                    <!-- Delete -->
+                                <form
+                                    method="post"
+                                    action="${pageContext.request.contextPath}/admin/sellers/delete/${seller.userId}"
+                                    style="display:inline;"
+                                    onsubmit="return confirm('Are you sure you want to delete this seller?');">
 
-                    <form
-                            action="${pageContext.request.contextPath}/admin/sellers/delete/${seller.userId}"
-                            method="post"
-                            style="display:inline;"
-                            onsubmit="return confirm('Are you sure you want to delete this seller?');">
+                                    <button
+                                        type="submit"
+                                        class="btn btn-danger">
 
-                        <button
-                                type="submit"
-                                class="btn delete-btn">
+                                        Delete
 
-                            Delete
+                                    </button>
 
-                        </button>
+                                </form>
 
-                    </form>
+                            </td>
 
-                </td>
+                        </tr>
 
-            </tr>
+                    </c:forEach>
 
-        </c:forEach>
+                </c:when>
+
+
+                <c:otherwise>
+
+                    <tr>
+
+                        <td colspan="6">
+
+                            No sellers found.
+
+                        </td>
+
+                    </tr>
+
+                </c:otherwise>
+
+            </c:choose>
 
         </tbody>
 
     </table>
 
-
-    <c:if test="${empty sellers}">
-
-        <div class="empty-message">
-
-            No sellers found.
-
-        </div>
-
-    </c:if>
-
 </div>
 
 
-<%@ include file="common/footer.jsp" %>
+<%@ include file="../common/footer.jsp" %>

@@ -99,7 +99,7 @@
         COALESCE(
         (
         SELECT AVG(r.rating)
-        FROM reviews r
+        FROM review r
         WHERE r.product_id = p.product_id
         ),
         0
@@ -107,7 +107,7 @@
 
         (
         SELECT COUNT(r.review_id)
-        FROM reviews r
+        FROM review r
         WHERE r.product_id = p.product_id
         ) AS review_count
 
@@ -505,7 +505,7 @@
         SELECT
         COALESCE(AVG(rating), 0)
 
-        FROM reviews
+        FROM review
 
         WHERE product_id = #{productId}
 
@@ -522,7 +522,7 @@
         SELECT
         COUNT(*)
 
-        FROM reviews
+        FROM review
 
         WHERE product_id = #{productId}
 

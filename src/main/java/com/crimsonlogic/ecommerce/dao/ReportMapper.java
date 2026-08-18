@@ -10,33 +10,15 @@ import com.crimsonlogic.ecommerce.model.report.SellerSalesReport;
 import java.util.List;
 
 public interface ReportMapper {
+    SalesReport getSalesReport(ReportFilter filter);
 
-    SalesReport getSalesReport(
-            ReportFilter filter
-    );
+    List<ProductSalesReport> getProductSalesReport(ReportFilter filter);
 
+    List<CategorySalesReport> getCategorySalesReport(ReportFilter filter);
 
-    List<ProductSalesReport> getProductSalesReport(
-            ReportFilter filter
-    );
+    List<SellerSalesReport> getSellerSalesReport(ReportFilter filter);
 
+    CustomerReport getCustomerReport(ReportFilter filter);
 
-    List<CategorySalesReport> getCategorySalesReport(
-            ReportFilter filter
-    );
-
-
-    List<SellerSalesReport> getSellerSalesReport(
-            ReportFilter filter
-    );
-
-
-    CustomerReport getCustomerReport(
-            ReportFilter filter
-    );
-
-
-    List<ProductSalesReport> getCustomerProductReport(
-            ReportFilter filter
-    );
+    List<ProductSalesReport> getCustomerProductReport(ReportFilter filter);
 }

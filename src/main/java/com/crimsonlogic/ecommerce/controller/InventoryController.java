@@ -7,7 +7,11 @@ import com.crimsonlogic.ecommerce.service.ProductService;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
@@ -19,6 +23,10 @@ public class InventoryController {
     private final ProductService productService;
 
 
+    // ==========================================================
+    // CONSTRUCTOR
+    // ==========================================================
+
     public InventoryController(
             InventoryService inventoryService,
             ProductService productService) {
@@ -29,12 +37,13 @@ public class InventoryController {
 
 
     // ==========================================================
-    // List All Inventory
+    // LIST ALL INVENTORY
+    // URL: /inventory/list
+    // JSP: /WEB-INF/views/inventory/inventories.jsp
     // ==========================================================
 
     @GetMapping("/list")
-    public String listInventory(
-            Model model) {
+    public String listInventory(Model model) {
 
         List<Inventory> inventoryList =
                 inventoryService.findAllInventory();
@@ -44,12 +53,14 @@ public class InventoryController {
                 inventoryList
         );
 
-        return "inventory";
+        return "inventory/inventories";
     }
 
 
     // ==========================================================
-    // View Inventory
+    // VIEW INVENTORY
+    // URL: /inventory/view/{inventoryId}
+    // JSP: /WEB-INF/views/inventory/inventory-details.jsp
     // ==========================================================
 
     @GetMapping("/view/{inventoryId}")
@@ -63,6 +74,7 @@ public class InventoryController {
                 );
 
         if (inventory == null) {
+
             return "redirect:/inventory/list";
         }
 
@@ -71,22 +83,30 @@ public class InventoryController {
                 inventory
         );
 
-        return "inventory-details";
+        return "inventory/inventory-details";
     }
 
 
     // ==========================================================
-    // Add Inventory Form
+    // SHOW ADD INVENTORY FORM
+    // URL: /inventory/add
+    // JSP: /WEB-INF/views/inventory/inventory-form.jsp
     // ==========================================================
 
     @GetMapping("/add")
     public String showAddInventoryForm(
             Model model) {
 
+        Inventory inventory =
+                new Inventory();
+
         model.addAttribute(
                 "inventory",
-                new Inventory()
+                inventory
         );
+
+
+        // Load products for dropdown
 
         List<Product> products =
                 productService.findAllProducts();
@@ -96,12 +116,14 @@ public class InventoryController {
                 products
         );
 
-        return "inventory-form";
+
+        return "inventory/inventory-form";
     }
 
 
     // ==========================================================
-    // Insert Inventory
+    // INSERT INVENTORY
+    // URL: /inventory/add
     // ==========================================================
 
     @PostMapping("/add")
@@ -117,7 +139,9 @@ public class InventoryController {
 
 
     // ==========================================================
-    // Edit Inventory Form
+    // SHOW EDIT INVENTORY FORM
+    // URL: /inventory/edit/{inventoryId}
+    // JSP: /WEB-INF/views/inventory/inventory-form.jsp
     // ==========================================================
 
     @GetMapping("/edit/{inventoryId}")
@@ -131,13 +155,18 @@ public class InventoryController {
                 );
 
         if (inventory == null) {
+
             return "redirect:/inventory/list";
         }
+
 
         model.addAttribute(
                 "inventory",
                 inventory
         );
+
+
+        // Load products for dropdown
 
         List<Product> products =
                 productService.findAllProducts();
@@ -147,12 +176,14 @@ public class InventoryController {
                 products
         );
 
-        return "inventory-form";
+
+        return "inventory/inventory-form";
     }
 
 
     // ==========================================================
-    // Update Inventory
+    // UPDATE INVENTORY
+    // URL: /inventory/edit
     // ==========================================================
 
     @PostMapping("/edit")
@@ -168,7 +199,8 @@ public class InventoryController {
 
 
     // ==========================================================
-    // Update Quantity
+    // UPDATE INVENTORY QUANTITY
+    // URL: /inventory/quantity/update
     // ==========================================================
 
     @PostMapping("/quantity/update")
@@ -184,7 +216,8 @@ public class InventoryController {
 
 
     // ==========================================================
-    // Delete Inventory
+    // DELETE INVENTORY
+    // URL: /inventory/delete/{inventoryId}
     // ==========================================================
 
     @PostMapping("/delete/{inventoryId}")
@@ -200,7 +233,9 @@ public class InventoryController {
 
 
     // ==========================================================
-    // Inventory By Seller
+    // INVENTORY BY SELLER
+    // URL: /inventory/seller/{sellerId}
+    // JSP: /WEB-INF/views/inventory/inventories.jsp
     // ==========================================================
 
     @GetMapping("/seller/{sellerId}")
@@ -223,6 +258,7 @@ public class InventoryController {
                 sellerId
         );
 
-        return "inventory";
+
+        return "inventory/inventories";
     }
 }

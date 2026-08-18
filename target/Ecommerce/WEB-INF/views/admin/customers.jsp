@@ -5,7 +5,7 @@
 
 <c:set var="pageTitle" value="Customers - Admin"/>
 
-<%@ include file="common/header.jsp" %>
+<%@ include file="../common/header.jsp" %>
 
 
 <div class="card">
@@ -13,133 +13,121 @@
     <h1>Customer Management</h1>
 
 
-    <!-- Navigation -->
-
     <div class="nav">
 
-        <a
-                href="${pageContext.request.contextPath}/admin/sellers">
-
+        <a href="${pageContext.request.contextPath}/admin/sellers">
             View Sellers
-
         </a>
 
-
-        <a
-                href="${pageContext.request.contextPath}/admin/profile?adminId=ADM001">
-
+        <a href="${pageContext.request.contextPath}/admin/profile">
             Admin Profile
-
         </a>
-
-
-        <a
-                href="${pageContext.request.contextPath}/address/list">
-
-            Address Management
-
-        </a>
-
 
     </div>
 
 
-    <!-- Customer Table -->
-
-    <table>
+    <table class="data-table">
 
         <thead>
 
-        <tr>
+            <tr>
 
-            <th>User ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Action</th>
+                <th>User ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Action</th>
 
-        </tr>
+            </tr>
 
         </thead>
 
 
         <tbody>
 
-        <c:forEach
-                var="customer"
-                items="${customers}">
+            <c:choose>
 
-            <tr>
+                <c:when test="${not empty customers}">
 
-                <td>
-                    ${customer.userId}
-                </td>
+                    <c:forEach
+                            var="customer"
+                            items="${customers}">
 
-                <td>
-                    ${customer.userName}
-                </td>
+                        <tr>
 
-                <td>
-                    ${customer.userEmail}
-                </td>
+                            <td>
+                                ${customer.userId}
+                            </td>
 
-                <td>
-                    ${customer.userPhNo}
-                </td>
+                            <td>
+                                ${customer.userName}
+                            </td>
 
-                <td>
+                            <td>
+                                ${customer.userEmail}
+                            </td>
 
-                    <!-- View Profile -->
+                            <td>
+                                ${customer.userPhNo}
+                            </td>
 
-                    <a
-                            href="${pageContext.request.contextPath}/customer/profile/${customer.userId}"
-                            class="btn edit-btn">
+                            <td class="action-cell">
 
-                        View Profile
+                                <a
+                                    href="${pageContext.request.contextPath}/admin/customer/${customer.userId}"
+                                    class="btn btn-primary">
 
-                    </a>
+                                    View Profile
+
+                                </a>
 
 
-                    <!-- Delete -->
+                                <form
+                                    method="post"
+                                    action="${pageContext.request.contextPath}/admin/customers/delete/${customer.userId}"
+                                    style="display:inline;"
+                                    onsubmit="return confirm('Are you sure you want to delete this customer?');">
 
-                    <form
-                            action="${pageContext.request.contextPath}/admin/customers/delete/${customer.userId}"
-                            method="post"
-                            style="display:inline;"
-                            onsubmit="return confirm('Are you sure you want to delete this customer?');">
+                                    <button
+                                        type="submit"
+                                        class="btn btn-danger">
 
-                        <button
-                                type="submit"
-                                class="btn delete-btn">
+                                        Delete
 
-                            Delete
+                                    </button>
 
-                        </button>
+                                </form>
 
-                    </form>
+                            </td>
 
-                </td>
+                        </tr>
 
-            </tr>
+                    </c:forEach>
 
-        </c:forEach>
+                </c:when>
+
+
+                <c:otherwise>
+
+                    <tr>
+
+                        <td colspan="5">
+
+                            No customers found.
+
+                        </td>
+
+                    </tr>
+
+                </c:otherwise>
+
+            </c:choose>
 
         </tbody>
 
     </table>
 
-
-    <c:if test="${empty customers}">
-
-        <div class="empty-message">
-
-            No customers found.
-
-        </div>
-
-    </c:if>
-
 </div>
 
 
-<%@ include file="common/footer.jsp" %>
+<%@ include file="../common/footer.jsp" %>

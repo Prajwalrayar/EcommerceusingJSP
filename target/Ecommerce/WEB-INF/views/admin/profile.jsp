@@ -5,7 +5,7 @@
 
 <c:set var="pageTitle" value="Admin Profile"/>
 
-<%@ include file="common/header.jsp" %>
+<%@ include file="../common/header.jsp" %>
 
 
 <div class="card">
@@ -73,43 +73,39 @@
     </div>
 
 
-    <!-- Buttons -->
+    <!-- Main Actions -->
+
+    <div class="actions">
+
+        <a href="${pageContext.request.contextPath}/admin/profile/edit"
+           class="btn btn-primary">
+            Edit Profile
+        </a>
+
+ 		<a href="${pageContext.request.contextPath}/admin/profile/change-password?adminId=${admin.userId}"
+           class="btn btn-warning">
+        	Change Password
+    	</a>
+        <a href="${pageContext.request.contextPath}/admin/dashboard"
+           class="btn btn-secondary">
+            Back to Dashboard
+        </a>
+
+    </div>
+
+
+    <!-- Admin Navigation -->
 
     <div class="nav">
 
-        <a
-                class="btn edit-btn"
-                href="${pageContext.request.contextPath}/admin/profile/edit?adminId=${admin.userId}">
-
-            Edit Profile
-
-        </a>
-
-
-        <a
-                class="btn add-btn"
-                href="${pageContext.request.contextPath}/admin/customers">
-
+        <a href="${pageContext.request.contextPath}/admin/customers"
+           class="btn btn-secondary">
             Customers
-
         </a>
 
-
-        <a
-                class="btn back-btn"
-                href="${pageContext.request.contextPath}/admin/sellers">
-
+        <a href="${pageContext.request.contextPath}/admin/sellers"
+           class="btn btn-secondary">
             Sellers
-
-        </a>
-
-
-        <a
-                class="btn back-btn"
-                href="${pageContext.request.contextPath}/address/list">
-
-            Addresses
-
         </a>
 
     </div>
@@ -117,4 +113,4 @@
 </div>
 
 
-<%@ include file="common/footer.jsp" %>
+<%@ include file="../common/footer.jsp" %>

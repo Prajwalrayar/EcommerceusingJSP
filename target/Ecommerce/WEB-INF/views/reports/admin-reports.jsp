@@ -8,28 +8,162 @@
 <%@ include file="../common/header.jsp" %>
 
 
-<!-- =====================================================
-     ADMIN REPORT FILTERS
-     ===================================================== -->
+<!-- =========================================================
+     PAGE HEADER
+     ========================================================= -->
+
+<div class="reports-header">
+
+    <div>
+
+        <h1>Reports & Analytics</h1>
+
+        <p>
+            Analyse marketplace sales, products, categories,
+            sellers and customers.
+        </p>
+
+    </div>
+
+    <a
+            href="${pageContext.request.contextPath}/admin/dashboard"
+            class="btn back-btn">
+
+        &larr; Dashboard
+
+    </a>
+
+</div>
+
+
+<!-- =========================================================
+     ERROR MESSAGE
+     ========================================================= -->
+
+<c:if test="${not empty error}">
+
+    <div
+            class="alert alert-error"
+            style="padding:12px;
+                   background:#fee2e2;
+                   color:#991b1b;
+                   border-radius:8px;
+                   margin-bottom:16px;">
+
+        ${error}
+
+    </div>
+
+</c:if>
+
+
+<!-- =========================================================
+     REPORT FILTER CARD
+     ========================================================= -->
 
 <div class="card">
 
-    <h1>Admin Reports</h1>
-
-    <h2>Report Filters</h2>
+    <h2>Select Report</h2>
 
 
-    <form method="get"
-          action="${pageContext.request.contextPath}/reports/admin">
+    <form
+            method="post"
+            action="${pageContext.request.contextPath}/admin/reports"
+            id="reportForm">
 
 
-        <!-- CATEGORY -->
+        <!-- =================================================
+             REPORT TYPE
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>Category</label>
+            <label for="reportType">
+                Report Type
+            </label>
 
-            <select name="categoryId">
+            <select
+                    id="reportType"
+                    name="reportType"
+                    onchange="changeReportType()"
+                    required>
+
+                <option
+                        value="sales"
+                        ${reportType == 'sales' || empty reportType ? 'selected' : ''}>
+
+                    Sales Report
+
+                </option>
+
+                <option
+                        value="product"
+                        ${reportType == 'product' ? 'selected' : ''}>
+
+                    Product Sales
+
+                </option>
+
+                <option
+                        value="category"
+                        ${reportType == 'category' ? 'selected' : ''}>
+
+                    Category Sales
+
+                </option>
+
+                <option
+                        value="seller"
+                        ${reportType == 'seller' ? 'selected' : ''}>
+
+                    Seller Sales
+
+                </option>
+
+                <option
+                        value="customer"
+                        ${reportType == 'customer' ? 'selected' : ''}>
+
+                    Customer Report
+
+                </option>
+
+                <option
+                        value="customerProduct"
+                        ${reportType == 'customerProduct' ? 'selected' : ''}>
+
+                    Customer Product Report
+
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <hr>
+
+
+        <!-- =================================================
+             FILTERS
+             ================================================= -->
+
+        <h2>Filters</h2>
+
+
+        <!-- =================================================
+             CATEGORY
+             ================================================= -->
+
+        <div class="form-group">
+
+            <label for="categoryId">
+                Category
+            </label>
+
+            <select
+                    id="categoryId"
+                    name="categoryId">
 
                 <option value="">
                     All Categories
@@ -54,14 +188,19 @@
         </div>
 
 
-        <!-- PRODUCT ID -->
+        <!-- =================================================
+             PRODUCT ID
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>Product ID</label>
+            <label for="productId">
+                Product ID
+            </label>
 
             <input
                     type="text"
+                    id="productId"
                     name="productId"
                     value="${filter.productId}"
                     placeholder="Product ID"/>
@@ -69,14 +208,19 @@
         </div>
 
 
-        <!-- PRODUCT NAME -->
+        <!-- =================================================
+             PRODUCT NAME
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>Product Name</label>
+            <label for="productName">
+                Product Name
+            </label>
 
             <input
                     type="text"
+                    id="productName"
                     name="productName"
                     value="${filter.productName}"
                     placeholder="Search product"/>
@@ -84,48 +228,145 @@
         </div>
 
 
-        <!-- MINIMUM PRICE -->
+        <!-- =================================================
+             SELLER FILTER
+             ONLY USED FOR SELLER SALES
+             ================================================= -->
+
+        <div
+                id="sellerFilter"
+                class="form-group">
+
+            <label for="sellerSelect">
+                Seller
+            </label>
+
+
+            <select
+                    id="sellerSelect"
+                    name="sellerId"
+                    onchange="sellerSelected()">
+
+                <option value="">
+                    -- Select Seller --
+                </option>
+
+
+                <c:forEach
+                        var="seller"
+                        items="${sellers}">
+
+                    <option
+                            value="${seller.userId}"
+                            ${filter.sellerId == seller.userId ? 'selected' : ''}>
+
+                        ${seller.shopName} - ${seller.userName}
+
+                    </option>
+
+                </c:forEach>
+
+            </select>
+
+
+            <small style="color:#666;">
+
+                Select a seller by name.
+                The corresponding Seller ID will be submitted.
+
+            </small>
+
+        </div>
+
+
+        <!-- =================================================
+             MANUAL SELLER ID
+             ================================================= -->
+
+        <div
+                id="sellerIdFilter"
+                class="form-group">
+
+            <label for="manualSellerId">
+                Seller ID
+            </label>
+
+
+            <input
+                    type="text"
+                    id="manualSellerId"
+                    placeholder="Example: SEL1001"
+                    value="${filter.sellerId}"
+                    oninput="manualSellerIdEntered()"/>
+
+
+            <small style="color:#666;">
+
+                You may enter Seller ID instead of selecting
+                a seller from the dropdown.
+
+            </small>
+
+        </div>
+
+
+        <!-- =================================================
+             MINIMUM PRICE
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>Minimum Price</label>
+            <label for="minPrice">
+                Minimum Price
+            </label>
 
             <input
                     type="number"
+                    id="minPrice"
                     step="0.01"
                     min="0"
                     name="minPrice"
                     value="${filter.minPrice}"
-                    placeholder="Minimum price"/>
+                    placeholder="0.00"/>
 
         </div>
 
 
-        <!-- MAXIMUM PRICE -->
+        <!-- =================================================
+             MAXIMUM PRICE
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>Maximum Price</label>
+            <label for="maxPrice">
+                Maximum Price
+            </label>
 
             <input
                     type="number"
+                    id="maxPrice"
                     step="0.01"
                     min="0"
                     name="maxPrice"
                     value="${filter.maxPrice}"
-                    placeholder="Maximum price"/>
+                    placeholder="0.00"/>
 
         </div>
 
 
-        <!-- MINIMUM QUANTITY -->
+        <!-- =================================================
+             MINIMUM QUANTITY
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>Minimum Quantity Sold</label>
+            <label for="minQuantity">
+                Minimum Quantity Sold
+            </label>
 
             <input
                     type="number"
+                    id="minQuantity"
                     min="0"
                     name="minQuantity"
                     value="${filter.minQuantity}"
@@ -134,14 +375,19 @@
         </div>
 
 
-        <!-- MAXIMUM QUANTITY -->
+        <!-- =================================================
+             MAXIMUM QUANTITY
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>Maximum Quantity Sold</label>
+            <label for="maxQuantity">
+                Maximum Quantity Sold
+            </label>
 
             <input
                     type="number"
+                    id="maxQuantity"
                     min="0"
                     name="maxQuantity"
                     value="${filter.maxQuantity}"
@@ -150,13 +396,19 @@
         </div>
 
 
-        <!-- ORDER STATUS -->
+        <!-- =================================================
+             ORDER STATUS
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>Order Status</label>
+            <label for="orderStatus">
+                Order Status
+            </label>
 
-            <select name="orderStatus">
+            <select
+                    id="orderStatus"
+                    name="orderStatus">
 
                 <option value="">
                     All Order Statuses
@@ -181,13 +433,19 @@
         </div>
 
 
-        <!-- PAYMENT STATUS -->
+        <!-- =================================================
+             PAYMENT STATUS
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>Payment Status</label>
+            <label for="paymentStatus">
+                Payment Status
+            </label>
 
-            <select name="paymentStatus">
+            <select
+                    id="paymentStatus"
+                    name="paymentStatus">
 
                 <option value="">
                     All Payment Statuses
@@ -212,351 +470,545 @@
         </div>
 
 
-        <!-- FROM DATE -->
+        <!-- =================================================
+             CUSTOMER ID
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>From Date</label>
+            <label for="customerId">
+                Customer ID
+            </label>
+
+            <input
+                    type="text"
+                    id="customerId"
+                    name="customerId"
+                    value="${filter.customerId}"
+                    placeholder="Example: CUS1001"/>
+
+        </div>
+
+
+        <!-- =================================================
+             FROM DATE
+             ================================================= -->
+
+        <div class="form-group">
+
+            <label for="fromDate">
+                From Date
+            </label>
 
             <input
                     type="datetime-local"
+                    id="fromDate"
                     name="fromDate"
                     value="${filter.fromDate}"/>
 
         </div>
 
 
-        <!-- TO DATE -->
+        <!-- =================================================
+             TO DATE
+             ================================================= -->
 
         <div class="form-group">
 
-            <label>To Date</label>
+            <label for="toDate">
+                To Date
+            </label>
 
             <input
                     type="datetime-local"
+                    id="toDate"
                     name="toDate"
                     value="${filter.toDate}"/>
 
         </div>
 
 
-        <!-- APPLY -->
+        <!-- =================================================
+             BUTTONS
+             ================================================= -->
 
-        <button
-                type="submit"
-                class="btn edit-btn">
+        <div
+                style="margin-top:20px;
+                       display:flex;
+                       gap:12px;">
 
-            Apply Filters
+            <button
+                    type="submit"
+                    class="btn add-btn">
 
-        </button>
+                Generate Report
+
+            </button>
 
 
-        <!-- CLEAR -->
+            <a
+                    href="${pageContext.request.contextPath}/admin/reports"
+                    class="btn back-btn">
 
-        <a
-                href="${pageContext.request.contextPath}/reports/admin"
-                class="btn">
+                Clear
 
-            Clear
+            </a>
 
-        </a>
+        </div>
+
 
     </form>
 
 </div>
 
 
-<!-- =====================================================
+<!-- =========================================================
      SALES SUMMARY
-     ===================================================== -->
+     ========================================================= -->
 
-<div class="card">
+<c:if test="${not empty salesReport}">
 
-    <h2>Sales Summary</h2>
+    <div class="card">
 
-    <table>
+        <h2>Sales Summary</h2>
 
-        <tr>
+        <table>
 
-            <th>Total Orders</th>
+            <tr>
 
-            <td>
-                ${salesReport.totalOrders}
-            </td>
+                <th>Total Orders</th>
 
-        </tr>
+                <td>
+                    ${salesReport.totalOrders}
+                </td>
 
-
-        <tr>
-
-            <th>Total Quantity Sold</th>
-
-            <td>
-                ${salesReport.totalQuantity}
-            </td>
-
-        </tr>
+            </tr>
 
 
-        <tr>
+            <tr>
 
-            <th>Total Sales</th>
+                <th>Total Quantity Sold</th>
 
-            <td>
-                ₹${salesReport.totalSales}
-            </td>
+                <td>
+                    ${salesReport.totalQuantity}
+                </td>
 
-        </tr>
-
-
-        <tr>
-
-            <th>Average Order Value</th>
-
-            <td>
-                ₹${salesReport.averageOrderValue}
-            </td>
-
-        </tr>
-
-    </table>
-
-</div>
+            </tr>
 
 
-<!-- =====================================================
+            <tr>
+
+                <th>Total Sales</th>
+
+                <td>
+                    ₹${salesReport.totalSales}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <th>Average Order Value</th>
+
+                <td>
+                    ₹${salesReport.averageOrderValue}
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+</c:if>
+
+
+<!-- =========================================================
      PRODUCT SALES REPORT
-     ===================================================== -->
+     ========================================================= -->
 
-<div class="card">
+<c:if test="${not empty productReports}">
 
-    <h2>Product Sales</h2>
+    <div class="card">
 
-    <table>
+        <h2>Product Sales</h2>
 
-        <thead>
+        <table>
 
-        <tr>
-
-            <th>Product</th>
-            <th>Category</th>
-            <th>Seller</th>
-            <th>Price</th>
-            <th>Quantity Sold</th>
-            <th>Revenue</th>
-            <th>Rating</th>
-            <th>Reviews</th>
-
-        </tr>
-
-        </thead>
-
-
-        <tbody>
-
-        <c:forEach
-                var="product"
-                items="${productReports}">
+            <thead>
 
             <tr>
 
-                <td>
-                    ${product.productName}
-                </td>
-
-                <td>
-                    ${product.categoryName}
-                </td>
-
-                <td>
-                    ${product.sellerName}
-                </td>
-
-                <td>
-                    ₹${product.productPrice}
-                </td>
-
-                <td>
-                    ${product.quantitySold}
-                </td>
-
-                <td>
-                    ₹${product.revenue}
-                </td>
-
-                <td>
-                    ${product.averageRating}
-                </td>
-
-                <td>
-                    ${product.reviewCount}
-                </td>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Seller</th>
+                <th>Price</th>
+                <th>Quantity Sold</th>
+                <th>Revenue</th>
+                <th>Rating</th>
+                <th>Reviews</th>
 
             </tr>
 
-        </c:forEach>
-
-        </tbody>
-
-    </table>
+            </thead>
 
 
-    <c:if test="${empty productReports}">
+            <tbody>
 
-        <p class="empty-message">
+            <c:forEach
+                    var="product"
+                    items="${productReports}">
 
-            No product sales found for the selected filters.
+                <tr>
 
-        </p>
+                    <td>
+                        ${product.productName}
+                    </td>
 
-    </c:if>
+                    <td>
+                        ${product.categoryName}
+                    </td>
 
-</div>
+                    <td>
+                        ${product.sellerName}
+                    </td>
+
+                    <td>
+                        ₹${product.productPrice}
+                    </td>
+
+                    <td>
+                        ${product.quantitySold}
+                    </td>
+
+                    <td>
+                        ₹${product.revenue}
+                    </td>
+
+                    <td>
+                        ${product.averageRating}
+                    </td>
+
+                    <td>
+                        ${product.reviewCount}
+                    </td>
+
+                </tr>
+
+            </c:forEach>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</c:if>
 
 
-<!-- =====================================================
+<!-- =========================================================
      CATEGORY SALES REPORT
-     ===================================================== -->
+     ========================================================= -->
 
-<div class="card">
+<c:if test="${not empty categoryReports}">
 
-    <h2>Category Sales</h2>
+    <div class="card">
 
-    <table>
+        <h2>Category Sales</h2>
 
-        <thead>
+        <table>
 
-        <tr>
-
-            <th>Category</th>
-            <th>Products</th>
-            <th>Quantity Sold</th>
-            <th>Revenue</th>
-
-        </tr>
-
-        </thead>
-
-
-        <tbody>
-
-        <c:forEach
-                var="category"
-                items="${categoryReports}">
+            <thead>
 
             <tr>
 
-                <td>
-                    ${category.categoryName}
-                </td>
-
-                <td>
-                    ${category.productCount}
-                </td>
-
-                <td>
-                    ${category.quantitySold}
-                </td>
-
-                <td>
-                    ₹${category.revenue}
-                </td>
+                <th>Category</th>
+                <th>Products</th>
+                <th>Quantity Sold</th>
+                <th>Revenue</th>
 
             </tr>
 
-        </c:forEach>
-
-        </tbody>
-
-    </table>
+            </thead>
 
 
-    <c:if test="${empty categoryReports}">
+            <tbody>
 
-        <p class="empty-message">
+            <c:forEach
+                    var="category"
+                    items="${categoryReports}">
 
-            No category sales found for the selected filters.
+                <tr>
 
-        </p>
+                    <td>
+                        ${category.categoryName}
+                    </td>
 
-    </c:if>
+                    <td>
+                        ${category.productCount}
+                    </td>
 
-</div>
+                    <td>
+                        ${category.quantitySold}
+                    </td>
+
+                    <td>
+                        ₹${category.revenue}
+                    </td>
+
+                </tr>
+
+            </c:forEach>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</c:if>
 
 
-<!-- =====================================================
+<!-- =========================================================
      SELLER PERFORMANCE
-     ===================================================== -->
+     ========================================================= -->
 
-<div class="card">
+<c:if test="${not empty sellerReports}">
 
-    <h2>Seller Performance</h2>
+    <div class="card">
 
-    <table>
+        <h2>Seller Performance</h2>
 
-        <thead>
+        <table>
 
-        <tr>
-
-            <th>Seller</th>
-            <th>Shop</th>
-            <th>Orders</th>
-            <th>Quantity Sold</th>
-            <th>Revenue</th>
-
-        </tr>
-
-        </thead>
-
-
-        <tbody>
-
-        <c:forEach
-                var="seller"
-                items="${sellerReports}">
+            <thead>
 
             <tr>
 
-                <td>
-                    ${seller.sellerName}
-                </td>
-
-                <td>
-                    ${seller.shopName}
-                </td>
-
-                <td>
-                    ${seller.orderCount}
-                </td>
-
-                <td>
-                    ${seller.quantitySold}
-                </td>
-
-                <td>
-                    ₹${seller.revenue}
-                </td>
+                <th>Seller</th>
+                <th>Shop</th>
+                <th>Orders</th>
+                <th>Quantity Sold</th>
+                <th>Revenue</th>
 
             </tr>
 
-        </c:forEach>
-
-        </tbody>
-
-    </table>
+            </thead>
 
 
-    <c:if test="${empty sellerReports}">
+            <tbody>
 
-        <p class="empty-message">
+            <c:forEach
+                    var="seller"
+                    items="${sellerReports}">
 
-            No seller performance data found for the selected filters.
+                <tr>
 
-        </p>
+                    <td>
+                        ${seller.sellerName}
+                    </td>
 
-    </c:if>
+                    <td>
+                        ${seller.shopName}
+                    </td>
 
-</div>
+                    <td>
+                        ${seller.orderCount}
+                    </td>
+
+                    <td>
+                        ${seller.quantitySold}
+                    </td>
+
+                    <td>
+                        ₹${seller.revenue}
+                    </td>
+
+                </tr>
+
+            </c:forEach>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</c:if>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+     ========================================================= -->
+
+<script>
+
+    function changeReportType() {
+
+        var reportType =
+            document.getElementById("reportType").value;
+
+        var sellerFilter =
+            document.getElementById("sellerFilter");
+
+        var sellerIdFilter =
+            document.getElementById("sellerIdFilter");
+
+
+        /*
+         * Seller Name and Seller ID are only relevant
+         * for Seller Sales report.
+         */
+
+        if (reportType === "seller") {
+
+            sellerFilter.style.display = "block";
+
+            sellerIdFilter.style.display = "block";
+
+        } else {
+
+            sellerFilter.style.display = "none";
+
+            sellerIdFilter.style.display = "none";
+
+        }
+
+    }
+
+
+    /*
+     * Seller selected from dropdown.
+     */
+    function sellerSelected() {
+
+        var sellerSelect =
+            document.getElementById("sellerSelect");
+
+        var manualSellerId =
+            document.getElementById("manualSellerId");
+
+
+        if (sellerSelect.value !== "") {
+
+            manualSellerId.value = "";
+
+        }
+
+    }
+
+
+    /*
+     * Seller ID entered manually.
+     */
+    function manualSellerIdEntered() {
+
+        var manualSellerId =
+            document.getElementById("manualSellerId");
+
+        var sellerSelect =
+            document.getElementById("sellerSelect");
+
+
+        if (manualSellerId.value.trim() !== "") {
+
+            sellerSelect.value = "";
+
+        }
+
+    }
+
+
+    /*
+     * Validate Seller Sales.
+     *
+     * Either Seller Name OR Seller ID must be provided.
+     */
+    document.getElementById("reportForm")
+        .addEventListener("submit", function(event) {
+
+            var reportType =
+                document.getElementById("reportType").value;
+
+
+            if (reportType === "seller") {
+
+                var sellerSelect =
+                    document.getElementById("sellerSelect").value;
+
+                var manualSellerId =
+                    document.getElementById("manualSellerId").value.trim();
+
+
+                if (
+                    sellerSelect === "" &&
+                    manualSellerId === ""
+                ) {
+
+                    alert(
+                        "Please select a Seller Name or enter a Seller ID."
+                    );
+
+                    event.preventDefault();
+
+                    return false;
+                }
+
+
+                /*
+                 * If Seller Name is selected,
+                 * put its ID into the actual sellerId field.
+                 *
+                 * If Seller ID is manually entered,
+                 * put that value into sellerId.
+                 */
+
+                var sellerIdField =
+                    document.getElementById("sellerIdHidden");
+
+
+                if (sellerSelect !== "") {
+
+                    sellerIdField.value =
+                        sellerSelect;
+
+                } else {
+
+                    sellerIdField.value =
+                        manualSellerId;
+
+                }
+
+            }
+
+        });
+
+
+    /*
+     * Load correct filter visibility when page opens.
+     */
+    document.addEventListener(
+        "DOMContentLoaded",
+        function() {
+
+            changeReportType();
+
+        }
+    );
+
+</script>
+
+
+<!-- =========================================================
+     HIDDEN SELLER ID
+     ========================================================= -->
+
+<input
+        type="hidden"
+        id="sellerIdHidden"
+        name="sellerId"
+        value="${filter.sellerId}"/>
 
 
 <%@ include file="../common/footer.jsp" %>

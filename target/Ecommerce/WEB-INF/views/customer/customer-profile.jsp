@@ -5,17 +5,14 @@
 
 <c:set var="pageTitle" value="Customer Profile"/>
 
-<%@ include file="common/header.jsp" %>
+<%@ include file="../common/header.jsp" %>
 
 
-<!-- ===================================================== -->
 <!-- CUSTOMER PROFILE -->
-<!-- ===================================================== -->
 
 <div class="card">
 
     <h1>Customer Profile</h1>
-
 
     <div class="profile-row">
 
@@ -84,49 +81,45 @@
 </div>
 
 
-<!-- ===================================================== -->
 <!-- CUSTOMER ADDRESSES -->
-<!-- ===================================================== -->
 
 <div class="card">
 
     <h2>Customer Addresses</h2>
 
+    <div class="actions">
 
-    <a
-            href="${pageContext.request.contextPath}/customer/${customer.userId}/addresses/add"
-            class="btn add-btn">
+        <a
+                class="btn btn-primary"
+                href="${pageContext.request.contextPath}/customer/${customer.userId}/addresses/add">
 
-        Add / Assign Address
+            Add / Assign Address
 
-    </a>
+        </a>
 
-
-    <br>
-    <br>
+    </div>
 
 
-    <!-- ================================================= -->
     <!-- REUSABLE ADDRESS TABLE -->
-    <!-- ================================================= -->
 
-    <c:set var="userType" value="customer"/>
-    <c:set var="userId" value="${customer.userId}"/>
+    <c:set
+            var="userType"
+            value="customer"/>
 
-    <%@ include file="common/address-table.jsp" %>
+    <c:set
+            var="userId"
+            value="${customer.userId}"/>
 
+    <%@ include file="../common/address-table.jsp" %>
 
 </div>
 
 
-<!-- ===================================================== -->
 <!-- NAVIGATION -->
-<!-- ===================================================== -->
 
 <div class="nav">
 
-    <a
-            href="${pageContext.request.contextPath}/admin/customers">
+    <a href="${pageContext.request.contextPath}/admin/customers">
 
         Back to Customers
 
@@ -135,4 +128,4 @@
 </div>
 
 
-<%@ include file="common/footer.jsp" %>
+<%@ include file="../common/footer.jsp" %>

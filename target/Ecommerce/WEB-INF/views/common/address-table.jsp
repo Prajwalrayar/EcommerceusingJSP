@@ -1,99 +1,104 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-
 <%@ taglib prefix="c"
            uri="http://java.sun.com/jsp/jstl/core" %>
 
-<table>
+
+<table class="data-table">
 
     <thead>
 
-    <tr>
+        <tr>
 
-        <th>Address ID</th>
-        <th>House Number</th>
-        <th>Street</th>
-        <th>City</th>
-        <th>State</th>
-        <th>Country</th>
-        <th>ZIP Code</th>
-        <th>Action</th>
+            <th>House Number</th>
+            <th>Street</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Country</th>
+            <th>ZIP Code</th>
 
-    </tr>
+            <c:if test="${canEdit}">
+                <th>Action</th>
+            </c:if>
+
+        </tr>
 
     </thead>
 
 
     <tbody>
 
-    <c:forEach
-            var="address"
-            items="${addresses}">
+        <c:choose>
 
-        <tr>
+            <c:when test="${not empty addresses}">
 
-            <td>
-                ${address.addressId}
-            </td>
+                <c:forEach
+                        var="address"
+                        items="${addresses}">
 
-            <td>
-                ${address.houseNumber}
-            </td>
+                    <tr>
 
-            <td>
-                ${address.street}
-            </td>
+                        <td>
+                            ${address.houseNumber}
+                        </td>
 
-            <td>
-                ${address.city}
-            </td>
+                        <td>
+                            ${address.street}
+                        </td>
 
-            <td>
-                ${address.state}
-            </td>
+                        <td>
+                            ${address.city}
+                        </td>
 
-            <td>
-                ${address.country}
-            </td>
+                        <td>
+                            ${address.state}
+                        </td>
 
-            <td>
-                ${address.zipCode}
-            </td>
+                        <td>
+                            ${address.country}
+                        </td>
 
-            <td>
+                        <td>
+                            ${address.zipCode}
+                        </td>
 
-                <form
-                        action="${pageContext.request.contextPath}/${userType}/${userId}/addresses/remove/${address.addressId}"
-                        method="post"
-                        style="display:inline;"
-                        onsubmit="return confirm('Remove this address?');">
 
-                    <button
-                            type="submit"
-                            class="btn remove-btn">
+                        <c:if test="${canEdit}">
 
-                        Remove
+                            <td>
 
-                    </button>
+                                <a href="${pageContext.request.contextPath}/address/edit/${address.addressId}"
+                                   class="btn btn-primary">
 
-                </form>
+                                    Edit
 
-            </td>
+                                </a>
 
-        </tr>
+                            </td>
 
-    </c:forEach>
+                        </c:if>
+
+                    </tr>
+
+                </c:forEach>
+
+            </c:when>
+
+
+            <c:otherwise>
+
+                <tr>
+
+                    <td colspan="${canEdit ? 7 : 6}">
+
+                        No addresses added.
+
+                    </td>
+
+                </tr>
+
+            </c:otherwise>
+
+        </c:choose>
 
     </tbody>
 
 </table>
-
-
-<c:if test="${empty addresses}">
-
-    <div class="empty-message">
-
-        No addresses assigned.
-
-    </div>
-
-</c:if>

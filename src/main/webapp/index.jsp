@@ -87,6 +87,10 @@
 <div class="content">
 
 
+    <!-- ==========================================================
+         WELCOME
+         ========================================================== -->
+
     <div class="welcome">
 
         <h1>Welcome</h1>
@@ -102,23 +106,49 @@
     </div>
 
 
+    <!-- ==========================================================
+         LOGIN
+         ========================================================== -->
+
     <div class="login-section">
 
         <h2>Login</h2>
 
         <div class="login-links">
 
+
+            <!-- ==================================================
+                 ADMIN LOGIN
+                 ================================================== -->
+
             <a href="${pageContext.request.contextPath}/admin/login">
+
                 Admin Login
+
             </a>
+
+
+            <!-- ==================================================
+                 SELLER LOGIN
+                 ================================================== -->
 
             <a href="${pageContext.request.contextPath}/seller/login">
+
                 Seller Login
+
             </a>
 
+
+            <!-- ==================================================
+                 CUSTOMER LOGIN
+                 ================================================== -->
+
             <a href="${pageContext.request.contextPath}/customer/login">
+
                 Customer Login
+
             </a>
+
 
         </div>
 

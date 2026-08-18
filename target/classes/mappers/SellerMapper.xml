@@ -8,7 +8,7 @@
 
 
     <!-- ===================================================== -->
-    <!-- Result Map -->
+    <!-- Seller Result Map -->
     <!-- ===================================================== -->
 
     <resultMap id="SellerResultMap"
@@ -34,6 +34,37 @@
 
         <result property="shopAddress"
                 column="shop_address"/>
+
+    </resultMap>
+
+
+    <!-- ===================================================== -->
+    <!-- Address Result Map -->
+    <!-- ===================================================== -->
+
+    <resultMap id="AddressResultMap"
+               type="com.crimsonlogic.ecommerce.model.Address">
+
+        <id property="addressId"
+            column="address_id"/>
+
+        <result property="houseNumber"
+                column="house_number"/>
+
+        <result property="street"
+                column="street"/>
+
+        <result property="city"
+                column="city"/>
+
+        <result property="state"
+                column="state"/>
+
+        <result property="country"
+                column="country"/>
+
+        <result property="zipCode"
+                column="zip_code"/>
 
     </resultMap>
 
@@ -97,7 +128,8 @@
 
         UPDATE sellers
 
-        SET user_password = #{userPassword}
+        SET
+        user_password = #{userPassword}
 
         WHERE user_id = #{userId}
 
@@ -112,7 +144,7 @@
 
         DELETE FROM sellers
 
-        WHERE user_id = #{userId}
+        WHERE user_id = #{sellerId}
 
     </delete>
 
@@ -253,7 +285,6 @@
             resultMap="AddressResultMap">
 
         SELECT
-
         a.address_id,
         a.house_number,
         a.street,
@@ -265,7 +296,6 @@
         FROM address a
 
         INNER JOIN seller_address sa
-
         ON a.address_id = sa.address_id
 
         WHERE sa.seller_id = #{sellerId}
@@ -286,37 +316,6 @@
         WHERE seller_id = #{sellerId}
 
     </delete>
-
-
-    <!-- ===================================================== -->
-    <!-- Address Result Map -->
-    <!-- ===================================================== -->
-
-    <resultMap id="AddressResultMap"
-               type="com.crimsonlogic.ecommerce.model.Address">
-
-        <id property="addressId"
-            column="address_id"/>
-
-        <result property="houseNumber"
-                column="house_number"/>
-
-        <result property="street"
-                column="street"/>
-
-        <result property="city"
-                column="city"/>
-
-        <result property="state"
-                column="state"/>
-
-        <result property="country"
-                column="country"/>
-
-        <result property="zipCode"
-                column="zip_code"/>
-
-    </resultMap>
 
 
 </mapper>

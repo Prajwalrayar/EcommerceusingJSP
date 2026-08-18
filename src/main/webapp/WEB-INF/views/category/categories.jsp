@@ -12,64 +12,21 @@
 
     <h1>Category Management</h1>
 
-
-    <!-- ===================================================== -->
-    <!-- Navigation -->
-    <!-- ===================================================== -->
-
-    <div class="nav">
-
-        <a
-                href="${pageContext.request.contextPath}/admin/customers">
-
-            Customers
-
-        </a>
-
-
-        <a
-                href="${pageContext.request.contextPath}/admin/sellers">
-
-            Sellers
-
-        </a>
-
-
-        <a
-                href="${pageContext.request.contextPath}/address/list">
-
-            Addresses
-
-        </a>
-
-
-        <a
-                href="${pageContext.request.contextPath}/category/list">
-
-            Categories
-
-        </a>
-
-
-        <a
-                href="${pageContext.request.contextPath}/product/list">
-
-            Products
-
-        </a>
-
-    </div>
-
-
     <!-- ===================================================== -->
     <!-- Add Category -->
     <!-- ===================================================== -->
 
     <div style="margin-bottom: 20px;">
+    
+    <a href="${pageContext.request.contextPath}/admin/dashboard"
+        	class="btn btn-primary" style="color: white;">
+            Dashboard
+        </a>
+    
 
         <a
                 href="${pageContext.request.contextPath}/category/add"
-                class="btn add-btn">
+                class="btn btn-primary">
 
             Add Category
 

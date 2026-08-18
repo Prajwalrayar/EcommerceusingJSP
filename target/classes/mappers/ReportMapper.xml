@@ -7,845 +7,961 @@
 <mapper namespace="com.crimsonlogic.ecommerce.dao.ReportMapper">
 
 
-	<!-- ===================================================== SALES REPORT 
-		===================================================== -->
+    <!-- ==========================================================
+         SALES REPORT
+         ========================================================== -->
 
-	<select id="getSalesReport"
-		resultType="com.crimsonlogic.ecommerce.model.report.SalesReport">
+    <select id="getSalesReport"
+            resultType="com.crimsonlogic.ecommerce.model.report.SalesReport">
 
-		SELECT
+        SELECT
 
-		COUNT(DISTINCT o.order_id) AS totalOrders,
+            COUNT(DISTINCT o.order_id) AS totalOrders,
 
-		COALESCE(SUM(o.quantity), 0) AS totalQuantity,
+            COALESCE(
+                SUM(o.quantity),
+                0
+            ) AS totalQuantity,
 
-		COALESCE(SUM(o.total_price), 0) AS totalSales,
+            COALESCE(
+                SUM(o.total_price),
+                0
+            ) AS totalSales,
 
-		COALESCE(
-		AVG(o.total_price),
-		0
-		) AS averageOrderValue
+            COALESCE(
+                AVG(o.total_price),
+                0
+            ) AS averageOrderValue
 
-		FROM orders o
+        FROM orders o
 
-		INNER JOIN products p
-		ON o.product_id = p.product_id
+        INNER JOIN products p
+            ON o.product_id = p.product_id
 
-		INNER JOIN categories c
-		ON p.category_id = c.category_id
+        INNER JOIN categories c
+            ON p.category_id = c.category_id
 
-		INNER JOIN sellers s
-		ON p.user_id = s.user_id
+        INNER JOIN sellers s
+            ON p.user_id = s.user_id
 
-		<if test="paymentStatus != null and paymentStatus != ''">
+        <if test="paymentStatus != null and paymentStatus != ''">
 
-			INNER JOIN payments pay
-			ON o.order_id = pay.order_id
+            INNER JOIN payments pay
+                ON o.order_id = pay.order_id
 
-		</if>
+        </if>
 
-		WHERE 1 = 1
+        WHERE 1 = 1
 
 
-		<!-- Customer restriction -->
+        <!-- CUSTOMER -->
 
-		<if test="customerId != null and customerId != ''">
+        <if test="customerId != null and customerId != ''">
 
-			AND o.customer_id = #{customerId}
-
-		</if>
-
-
-		<!-- Seller restriction -->
-
-		<if test="sellerId != null and sellerId != ''">
-
-			AND p.user_id = #{sellerId}
-
-		</if>
-
-
-		<!-- Category -->
-
-		<if test="categoryId != null and categoryId != ''">
-
-			AND p.category_id = #{categoryId}
-
-		</if>
-
-
-		<!-- Product -->
-
-		<if test="productId != null and productId != ''">
-
-			AND p.product_id = #{productId}
-
-		</if>
-
-
-		<!-- Product Name -->
-
-		<if test="productName != null and productName != ''">
-
-			AND LOWER(p.product_name)
-			LIKE CONCAT(
-			'%',
-			LOWER(#{productName}),
-			'%'
-			)
-
-		</if>
-
-
-		<!-- Product Price -->
-
-		<if test="minPrice != null">
-
-			AND p.product_price >= #{minPrice}
-
-		</if>
-
-
-		<if test="maxPrice != null">
-
-			AND p.product_price &lt;= #{maxPrice}
-
-		</if>
-
-
-		<!-- Quantity -->
-
-		<if test="minQuantity != null">
-
-			AND o.quantity >= #{minQuantity}
-
-		</if>
-
-
-		<if test="maxQuantity != null">
-
-			AND o.quantity &lt;= #{maxQuantity}
-
-		</if>
-
-
-		<!-- Order Status -->
-
-		<if test="orderStatus != null and orderStatus != ''">
-
-			AND o.order_status = #{orderStatus}
-
-		</if>
-
-
-		<!-- Payment Status -->
-
-		<if test="paymentStatus != null and paymentStatus != ''">
-
-			AND pay.payment_status = #{paymentStatus}
-
-		</if>
-
-
-		<!-- Date -->
-
-		<if test="fromDate != null">
-
-			AND o.order_date >= #{fromDate}
-
-		</if>
-
-
-		<if test="toDate != null">
-
-			AND o.order_date &lt;= #{toDate}
-
-		</if>
-
-	</select>
-
-
-	<!-- ===================================================== PRODUCT SALES 
-		REPORT ===================================================== -->
-
-	<select id="getProductSalesReport"
-		resultType="com.crimsonlogic.ecommerce.model.report.ProductSalesReport">
-
-		SELECT
-
-		p.product_id AS productId,
-
-		p.product_name AS productName,
-
-		c.category_name AS categoryName,
-
-		s.user_id AS sellerId,
-
-		s.user_name AS sellerName,
-
-		p.product_price AS productPrice,
-
-		COALESCE(
-		SUM(o.quantity),
-		0
-		) AS quantitySold,
-
-		COALESCE(
-		SUM(o.total_price),
-		0
-		) AS revenue,
-
-		COALESCE(
-		AVG(r.rating),
-		0
-		) AS averageRating,
-
-		COUNT(DISTINCT r.review_id) AS reviewCount
-
-		FROM products p
-
-		INNER JOIN categories c
-		ON p.category_id = c.category_id
-
-		INNER JOIN sellers s
-		ON p.user_id = s.user_id
-
-		LEFT JOIN orders o
-		ON p.product_id = o.product_id
-
-		LEFT JOIN review r
-		ON p.product_id = r.product_id
-
-		<if test="paymentStatus != null and paymentStatus != ''">
-
-			LEFT JOIN payments pay
-			ON o.order_id = pay.order_id
-
-		</if>
-
-		WHERE 1 = 1
-
-
-		<if test="sellerId != null and sellerId != ''">
-
-			AND p.user_id = #{sellerId}
-
-		</if>
-
-
-		<if test="customerId != null and customerId != ''">
-
-			AND o.customer_id = #{customerId}
-
-		</if>
-
-
-		<if test="categoryId != null and categoryId != ''">
-
-			AND p.category_id = #{categoryId}
-
-		</if>
-
-
-		<if test="productId != null and productId != ''">
-
-			AND p.product_id = #{productId}
-
-		</if>
-
-
-		<if test="productName != null and productName != ''">
-
-			AND LOWER(p.product_name)
-			LIKE CONCAT(
-			'%',
-			LOWER(#{productName}),
-			'%'
-			)
-
-		</if>
-
-
-		<if test="minPrice != null">
-
-			AND p.product_price >= #{minPrice}
-
-		</if>
-
-
-		<if test="maxPrice != null">
-
-			AND p.product_price &lt;= #{maxPrice}
-
-		</if>
-
-
-		<if test="minQuantity != null">
-
-			AND o.quantity >= #{minQuantity}
-
-		</if>
-
-
-		<if test="maxQuantity != null">
-
-			AND o.quantity &lt;= #{maxQuantity}
-
-		</if>
-
-
-		<if test="orderStatus != null and orderStatus != ''">
-
-			AND o.order_status = #{orderStatus}
-
-		</if>
-
-
-		<if test="paymentStatus != null and paymentStatus != ''">
-
-			AND pay.payment_status = #{paymentStatus}
-
-		</if>
-
-
-		<if test="fromDate != null">
-
-			AND o.order_date >= #{fromDate}
-
-		</if>
-
-
-		<if test="toDate != null">
-
-			AND o.order_date &lt;= #{toDate}
-
-		</if>
-
-
-		GROUP BY
-
-		p.product_id,
-		p.product_name,
-		c.category_name,
-		s.user_id,
-		s.user_name,
-		p.product_price
-
-		ORDER BY quantitySold DESC
-
-	</select>
-
-
-	<!-- ===================================================== CATEGORY SALES 
-		REPORT ===================================================== -->
-
-	<select id="getCategorySalesReport"
-		resultType="com.crimsonlogic.ecommerce.model.report.CategorySalesReport">
-
-		SELECT
-
-		c.category_id AS categoryId,
-
-		c.category_name AS categoryName,
-
-		COUNT(DISTINCT p.product_id) AS productCount,
-
-		COALESCE(
-		SUM(o.quantity),
-		0
-		) AS quantitySold,
-
-		COALESCE(
-		SUM(o.total_price),
-		0
-		) AS revenue
-
-		FROM categories c
-
-		INNER JOIN products p
-		ON c.category_id = p.category_id
-
-		LEFT JOIN orders o
-		ON p.product_id = o.product_id
-
-		WHERE 1 = 1
-
-
-		<if test="sellerId != null and sellerId != ''">
-
-			AND p.user_id = #{sellerId}
-
-		</if>
-
-
-		<if test="customerId != null and customerId != ''">
-
-			AND o.customer_id = #{customerId}
-
-		</if>
-
-
-		<if test="categoryId != null and categoryId != ''">
-
-			AND c.category_id = #{categoryId}
-
-		</if>
-
-
-		<if test="minPrice != null">
-
-			AND p.product_price >= #{minPrice}
-
-		</if>
-
-
-		<if test="maxPrice != null">
-
-			AND p.product_price &lt;= #{maxPrice}
-
-		</if>
-
-
-		<if test="minQuantity != null">
-
-			AND o.quantity >= #{minQuantity}
-
-		</if>
-
-
-		<if test="maxQuantity != null">
-
-			AND o.quantity &lt;= #{maxQuantity}
-
-		</if>
-
-
-		<if test="orderStatus != null and orderStatus != ''">
-
-			AND o.order_status = #{orderStatus}
-
-		</if>
-
-
-		<if test="fromDate != null">
-
-			AND o.order_date >= #{fromDate}
-
-		</if>
-
-
-		<if test="toDate != null">
-
-			AND o.order_date &lt;= #{toDate}
-
-		</if>
-
-
-		GROUP BY
-
-		c.category_id,
-		c.category_name
-
-		ORDER BY revenue DESC
-
-	</select>
-
-
-	<!-- ===================================================== SELLER SALES 
-		REPORT ===================================================== -->
-
-	<select id="getSellerSalesReport"
-        resultType="com.crimsonlogic.ecommerce.model.report.SellerSalesReport">
-
-    SELECT
-
-        s.user_id AS sellerId,
-
-        s.user_name AS sellerName,
-
-        s.shop_name AS shopName,
-
-
-        COUNT(DISTINCT o.order_id)
-            AS orderCount,
-
-
-        COALESCE(
-            SUM(o.quantity),
-            0
-        ) AS quantitySold,
-
-
-        COALESCE(
-            SUM(o.total_price),
-            0
-        ) AS revenue
-
-
-    FROM sellers s
-
-
-    INNER JOIN products p
-        ON s.user_id = p.user_id
-
-
-    LEFT JOIN orders o
-        ON p.product_id = o.product_id
-
-
-        <!-- ==========================================
-             DATE FILTERING IS DONE IN DATABASE
-             ========================================== -->
-
-
-        <if test="fromDate != null">
-
-            AND o.order_date >= #{fromDate}
+            AND o.customer_id = #{customerId}
 
         </if>
 
 
-        <if test="toDate != null">
+        <!-- SELLER -->
 
-            AND o.order_date &lt;= #{toDate}
+        <if test="sellerId != null and sellerId != ''">
+
+            AND p.user_id = #{sellerId}
 
         </if>
 
 
-        <!-- ==========================================
-             ORDER STATUS
-             ========================================== -->
+        <!-- CATEGORY -->
 
-        <if test="orderStatus != null
-                  and orderStatus != ''">
+        <if test="categoryId != null and categoryId != ''">
+
+            AND p.category_id = #{categoryId}
+
+        </if>
+
+
+        <!-- PRODUCT -->
+
+        <if test="productId != null and productId != ''">
+
+            AND p.product_id = #{productId}
+
+        </if>
+
+
+        <!-- PRODUCT NAME -->
+
+        <if test="productName != null and productName != ''">
+
+            AND LOWER(p.product_name)
+                LIKE CONCAT(
+                    '%',
+                    LOWER(#{productName}),
+                    '%'
+                )
+
+        </if>
+
+
+        <!-- MIN PRICE -->
+
+        <if test="minPrice != null">
+
+            AND p.product_price >= #{minPrice}
+
+        </if>
+
+
+        <!-- MAX PRICE -->
+
+        <if test="maxPrice != null">
+
+            AND p.product_price &lt;= #{maxPrice}
+
+        </if>
+
+
+        <!-- MIN QUANTITY -->
+
+        <if test="minQuantity != null">
+
+            AND o.quantity >= #{minQuantity}
+
+        </if>
+
+
+        <!-- MAX QUANTITY -->
+
+        <if test="maxQuantity != null">
+
+            AND o.quantity &lt;= #{maxQuantity}
+
+        </if>
+
+
+        <!-- ORDER STATUS -->
+
+        <if test="orderStatus != null and orderStatus != ''">
 
             AND o.order_status = #{orderStatus}
 
         </if>
 
 
-    WHERE 1 = 1
+        <!-- PAYMENT STATUS -->
 
+        <if test="paymentStatus != null and paymentStatus != ''">
 
-    <!-- ==========================================
-         SELECTED SELLER
-         ========================================== -->
+            AND pay.payment_status = #{paymentStatus}
 
-    <if test="sellerId != null
-              and sellerId != ''">
+        </if>
 
-        AND s.user_id = #{sellerId}
 
-    </if>
+        <!-- FROM DATE -->
 
+        <if test="fromDate != null and fromDate != ''">
 
-    <!-- ==========================================
-         CATEGORY
-         ========================================== -->
+            AND o.order_date >= STR_TO_DATE(
+                #{fromDate},
+                '%Y-%m-%dT%H:%i'
+            )
 
-    <if test="categoryId != null
-              and categoryId != ''">
+        </if>
 
-        AND p.category_id = #{categoryId}
 
-    </if>
+        <!-- TO DATE -->
 
+        <if test="toDate != null and toDate != ''">
 
-    <!-- ==========================================
-         PRODUCT
-         ========================================== -->
+            AND o.order_date &lt;= STR_TO_DATE(
+                #{toDate},
+                '%Y-%m-%dT%H:%i'
+            )
 
-    <if test="productId != null
-              and productId != ''">
+        </if>
 
-        AND p.product_id = #{productId}
+    </select>
 
-    </if>
 
+    <!-- ==========================================================
+         PRODUCT SALES REPORT
+         ========================================================== -->
 
-    <!-- ==========================================
-         MIN PRICE
-         ========================================== -->
+    <select id="getProductSalesReport"
+            resultType="com.crimsonlogic.ecommerce.model.report.ProductSalesReport">
 
-    <if test="minPrice != null">
+        SELECT
 
-        AND p.product_price >= #{minPrice}
+            p.product_id AS productId,
 
-    </if>
+            p.product_name AS productName,
 
+            c.category_name AS categoryName,
 
-    <!-- ==========================================
-         MAX PRICE
-         ========================================== -->
+            s.user_id AS sellerId,
 
-    <if test="maxPrice != null">
+            s.user_name AS sellerName,
 
-        AND p.product_price &lt;= #{maxPrice}
+            p.product_price AS productPrice,
 
-    </if>
+            COALESCE(
+                SUM(o.quantity),
+                0
+            ) AS quantitySold,
 
+            COALESCE(
+                SUM(o.total_price),
+                0
+            ) AS revenue,
 
-    GROUP BY
+            COALESCE(
+                AVG(r.rating),
+                0
+            ) AS averageRating,
 
-        s.user_id,
+            COUNT(DISTINCT r.review_id) AS reviewCount
 
-        s.user_name,
+        FROM products p
 
-        s.shop_name
+        INNER JOIN categories c
+            ON p.category_id = c.category_id
 
+        INNER JOIN sellers s
+            ON p.user_id = s.user_id
 
-    ORDER BY
-        revenue DESC
+        LEFT JOIN orders o
+            ON p.product_id = o.product_id
 
-</select>
+        LEFT JOIN review r
+            ON p.product_id = r.product_id
 
+        <if test="paymentStatus != null and paymentStatus != ''">
 
-	<!-- ===================================================== CUSTOMER SUMMARY 
-		===================================================== -->
+            LEFT JOIN payments pay
+                ON o.order_id = pay.order_id
 
-	<select id="getCustomerReport"
-		resultType="com.crimsonlogic.ecommerce.model.report.CustomerReport">
+        </if>
 
-		SELECT
+        WHERE 1 = 1
 
-		c.user_id AS customerId,
 
-		c.user_name AS customerName,
+        <!-- SELLER -->
 
-		COUNT(DISTINCT o.order_id) AS orderCount,
+        <if test="sellerId != null and sellerId != ''">
 
-		COALESCE(
-		SUM(o.quantity),
-		0
-		) AS quantityPurchased,
+            AND p.user_id = #{sellerId}
 
-		COALESCE(
-		SUM(o.total_price),
-		0
-		) AS totalSpent,
+        </if>
 
-		COALESCE(
-		AVG(o.total_price),
-		0
-		) AS averageOrderValue
 
-		FROM customers c
+        <!-- CUSTOMER -->
 
-		LEFT JOIN orders o
-		ON c.user_id = o.customer_id
+        <if test="customerId != null and customerId != ''">
 
-		LEFT JOIN products p
-		ON o.product_id = p.product_id
+            AND o.customer_id = #{customerId}
 
-		WHERE 1 = 1
+        </if>
 
 
-		<!-- VERY IMPORTANT: Customer report is restricted to customer -->
+        <!-- CATEGORY -->
 
-		<if test="customerId != null and customerId != ''">
+        <if test="categoryId != null and categoryId != ''">
 
-			AND c.user_id = #{customerId}
+            AND p.category_id = #{categoryId}
 
-		</if>
+        </if>
 
 
-		<if test="categoryId != null and categoryId != ''">
+        <!-- PRODUCT -->
 
-			AND p.category_id = #{categoryId}
+        <if test="productId != null and productId != ''">
 
-		</if>
+            AND p.product_id = #{productId}
 
+        </if>
 
-		<if test="productId != null and productId != ''">
 
-			AND p.product_id = #{productId}
+        <!-- PRODUCT NAME -->
 
-		</if>
+        <if test="productName != null and productName != ''">
 
+            AND LOWER(p.product_name)
+                LIKE CONCAT(
+                    '%',
+                    LOWER(#{productName}),
+                    '%'
+                )
 
-		<if test="productName != null and productName != ''">
+        </if>
 
-			AND LOWER(p.product_name)
-			LIKE CONCAT(
-			'%',
-			LOWER(#{productName}),
-			'%'
-			)
 
-		</if>
+        <!-- MIN PRICE -->
 
+        <if test="minPrice != null">
 
-		<if test="minPrice != null">
+            AND p.product_price >= #{minPrice}
 
-			AND p.product_price >= #{minPrice}
+        </if>
 
-		</if>
 
+        <!-- MAX PRICE -->
 
-		<if test="maxPrice != null">
+        <if test="maxPrice != null">
 
-			AND p.product_price &lt;= #{maxPrice}
+            AND p.product_price &lt;= #{maxPrice}
 
-		</if>
+        </if>
 
 
-		<if test="orderStatus != null and orderStatus != ''">
+        <!-- MIN QUANTITY -->
 
-			AND o.order_status = #{orderStatus}
+        <if test="minQuantity != null">
 
-		</if>
+            AND o.quantity >= #{minQuantity}
 
+        </if>
 
-		<if test="fromDate != null">
 
-			AND o.order_date >= #{fromDate}
+        <!-- MAX QUANTITY -->
 
-		</if>
+        <if test="maxQuantity != null">
 
+            AND o.quantity &lt;= #{maxQuantity}
 
-		<if test="toDate != null">
+        </if>
 
-			AND o.order_date &lt;= #{toDate}
 
-		</if>
+        <!-- ORDER STATUS -->
 
+        <if test="orderStatus != null and orderStatus != ''">
 
-		GROUP BY
+            AND o.order_status = #{orderStatus}
 
-		c.user_id,
-		c.user_name
+        </if>
 
-	</select>
 
+        <!-- PAYMENT STATUS -->
 
-	<!-- ===================================================== CUSTOMER PRODUCT 
-		REPORT ===================================================== -->
+        <if test="paymentStatus != null and paymentStatus != ''">
 
-	<select id="getCustomerProductReport"
-		resultType="com.crimsonlogic.ecommerce.model.report.ProductSalesReport">
+            AND pay.payment_status = #{paymentStatus}
 
-		SELECT
+        </if>
 
-		p.product_id AS productId,
 
-		p.product_name AS productName,
+        <!-- FROM DATE -->
 
-		c.category_name AS categoryName,
+        <if test="fromDate != null and fromDate != ''">
 
-		s.user_id AS sellerId,
+            AND o.order_date >= STR_TO_DATE(
+                #{fromDate},
+                '%Y-%m-%dT%H:%i'
+            )
 
-		s.user_name AS sellerName,
+        </if>
 
-		p.product_price AS productPrice,
 
-		SUM(o.quantity) AS quantitySold,
+        <!-- TO DATE -->
 
-		SUM(o.total_price) AS revenue,
+        <if test="toDate != null and toDate != ''">
 
-		0 AS averageRating,
+            AND o.order_date &lt;= STR_TO_DATE(
+                #{toDate},
+                '%Y-%m-%dT%H:%i'
+            )
 
-		0 AS reviewCount
+        </if>
 
-		FROM orders o
 
-		INNER JOIN products p
-		ON o.product_id = p.product_id
+        GROUP BY
 
-		INNER JOIN categories c
-		ON p.category_id = c.category_id
+            p.product_id,
+            p.product_name,
+            c.category_name,
+            s.user_id,
+            s.user_name,
+            p.product_price
 
-		INNER JOIN sellers s
-		ON p.user_id = s.user_id
+        ORDER BY quantitySold DESC
 
-		WHERE o.customer_id = #{customerId}
+    </select>
 
 
-		<if test="categoryId != null and categoryId != ''">
+    <!-- ==========================================================
+         CATEGORY SALES REPORT
+         ========================================================== -->
 
-			AND p.category_id = #{categoryId}
+    <select id="getCategorySalesReport"
+            resultType="com.crimsonlogic.ecommerce.model.report.CategorySalesReport">
 
-		</if>
+        SELECT
 
+            c.category_id AS categoryId,
 
-		<if test="productId != null and productId != ''">
+            c.category_name AS categoryName,
 
-			AND p.product_id = #{productId}
+            COUNT(DISTINCT p.product_id) AS productCount,
 
-		</if>
+            COALESCE(
+                SUM(o.quantity),
+                0
+            ) AS quantitySold,
 
+            COALESCE(
+                SUM(o.total_price),
+                0
+            ) AS revenue
 
-		<if test="productName != null and productName != ''">
+        FROM categories c
 
-			AND LOWER(p.product_name)
-			LIKE CONCAT(
-			'%',
-			LOWER(#{productName}),
-			'%'
-			)
+        INNER JOIN products p
+            ON c.category_id = p.category_id
 
-		</if>
+        LEFT JOIN orders o
+            ON p.product_id = o.product_id
 
+        WHERE 1 = 1
 
-		<if test="minPrice != null">
 
-			AND p.product_price >= #{minPrice}
+        <!-- SELLER -->
 
-		</if>
+        <if test="sellerId != null and sellerId != ''">
 
+            AND p.user_id = #{sellerId}
 
-		<if test="maxPrice != null">
+        </if>
 
-			AND p.product_price &lt;= #{maxPrice}
 
-		</if>
+        <!-- CUSTOMER -->
 
+        <if test="customerId != null and customerId != ''">
 
-		<if test="minQuantity != null">
+            AND o.customer_id = #{customerId}
 
-			AND o.quantity >= #{minQuantity}
+        </if>
 
-		</if>
 
+        <!-- CATEGORY -->
 
-		<if test="maxQuantity != null">
+        <if test="categoryId != null and categoryId != ''">
 
-			AND o.quantity &lt;= #{maxQuantity}
+            AND c.category_id = #{categoryId}
 
-		</if>
+        </if>
 
 
-		<if test="orderStatus != null and orderStatus != ''">
+        <!-- MIN PRICE -->
 
-			AND o.order_status = #{orderStatus}
+        <if test="minPrice != null">
 
-		</if>
+            AND p.product_price >= #{minPrice}
 
+        </if>
 
-		<if test="fromDate != null">
 
-			AND o.order_date >= #{fromDate}
+        <!-- MAX PRICE -->
 
-		</if>
+        <if test="maxPrice != null">
 
+            AND p.product_price &lt;= #{maxPrice}
 
-		<if test="toDate != null">
+        </if>
 
-			AND o.order_date &lt;= #{toDate}
 
-		</if>
+        <!-- MIN QUANTITY -->
 
+        <if test="minQuantity != null">
 
-		GROUP BY
+            AND o.quantity >= #{minQuantity}
 
-		p.product_id,
-		p.product_name,
-		c.category_name,
-		s.user_id,
-		s.user_name,
-		p.product_price
+        </if>
 
-		ORDER BY quantitySold DESC
 
-	</select>
+        <!-- MAX QUANTITY -->
+
+        <if test="maxQuantity != null">
+
+            AND o.quantity &lt;= #{maxQuantity}
+
+        </if>
+
+
+        <!-- ORDER STATUS -->
+
+        <if test="orderStatus != null and orderStatus != ''">
+
+            AND o.order_status = #{orderStatus}
+
+        </if>
+
+
+        <!-- FROM DATE -->
+
+        <if test="fromDate != null and fromDate != ''">
+
+            AND o.order_date >= STR_TO_DATE(
+                #{fromDate},
+                '%Y-%m-%dT%H:%i'
+            )
+
+        </if>
+
+
+        <!-- TO DATE -->
+
+        <if test="toDate != null and toDate != ''">
+
+            AND o.order_date &lt;= STR_TO_DATE(
+                #{toDate},
+                '%Y-%m-%dT%H:%i'
+            )
+
+        </if>
+
+
+        GROUP BY
+
+            c.category_id,
+            c.category_name
+
+        ORDER BY revenue DESC
+
+    </select>
+
+
+    <!-- ==========================================================
+         SELLER SALES REPORT
+         ========================================================== -->
+
+    <select id="getSellerSalesReport"
+            resultType="com.crimsonlogic.ecommerce.model.report.SellerSalesReport">
+
+        SELECT
+
+            s.user_id AS sellerId,
+
+            s.user_name AS sellerName,
+
+            s.shop_name AS shopName,
+
+            COUNT(DISTINCT o.order_id) AS orderCount,
+
+            COALESCE(
+                SUM(o.quantity),
+                0
+            ) AS quantitySold,
+
+            COALESCE(
+                SUM(o.total_price),
+                0
+            ) AS revenue
+
+        FROM sellers s
+
+        INNER JOIN products p
+            ON s.user_id = p.user_id
+
+        LEFT JOIN orders o
+            ON p.product_id = o.product_id
+
+        WHERE 1 = 1
+
+
+        <!-- SELLER -->
+
+        <if test="sellerId != null and sellerId != ''">
+
+            AND s.user_id = #{sellerId}
+
+        </if>
+
+
+        <!-- CATEGORY -->
+
+        <if test="categoryId != null and categoryId != ''">
+
+            AND p.category_id = #{categoryId}
+
+        </if>
+
+
+        <!-- PRODUCT -->
+
+        <if test="productId != null and productId != ''">
+
+            AND p.product_id = #{productId}
+
+        </if>
+
+
+        <!-- MIN PRICE -->
+
+        <if test="minPrice != null">
+
+            AND p.product_price >= #{minPrice}
+
+        </if>
+
+
+        <!-- MAX PRICE -->
+
+        <if test="maxPrice != null">
+
+            AND p.product_price &lt;= #{maxPrice}
+
+        </if>
+
+
+        <!-- ORDER STATUS -->
+
+        <if test="orderStatus != null and orderStatus != ''">
+
+            AND o.order_status = #{orderStatus}
+
+        </if>
+
+
+        <!-- FROM DATE -->
+
+        <if test="fromDate != null and fromDate != ''">
+
+            AND o.order_date >= STR_TO_DATE(
+                #{fromDate},
+                '%Y-%m-%dT%H:%i'
+            )
+
+        </if>
+
+
+        <!-- TO DATE -->
+
+        <if test="toDate != null and toDate != ''">
+
+            AND o.order_date &lt;= STR_TO_DATE(
+                #{toDate},
+                '%Y-%m-%dT%H:%i'
+            )
+
+        </if>
+
+
+        GROUP BY
+
+            s.user_id,
+            s.user_name,
+            s.shop_name
+
+        ORDER BY revenue DESC
+
+    </select>
+
+
+    <!-- ==========================================================
+         CUSTOMER REPORT
+         ========================================================== -->
+
+    <select id="getCustomerReport"
+            resultType="com.crimsonlogic.ecommerce.model.report.CustomerReport">
+
+        SELECT
+
+            c.user_id AS customerId,
+
+            c.user_name AS customerName,
+
+            COUNT(DISTINCT o.order_id) AS orderCount,
+
+            COALESCE(
+                SUM(o.quantity),
+                0
+            ) AS quantityPurchased,
+
+            COALESCE(
+                SUM(o.total_price),
+                0
+            ) AS totalSpent,
+
+            COALESCE(
+                AVG(o.total_price),
+                0
+            ) AS averageOrderValue
+
+        FROM customers c
+
+        LEFT JOIN orders o
+            ON c.user_id = o.customer_id
+
+        LEFT JOIN products p
+            ON o.product_id = p.product_id
+
+        WHERE 1 = 1
+
+
+        <!-- CUSTOMER -->
+
+        <if test="customerId != null and customerId != ''">
+
+            AND c.user_id = #{customerId}
+
+        </if>
+
+
+        <!-- CATEGORY -->
+
+        <if test="categoryId != null and categoryId != ''">
+
+            AND p.category_id = #{categoryId}
+
+        </if>
+
+
+        <!-- PRODUCT -->
+
+        <if test="productId != null and productId != ''">
+
+            AND p.product_id = #{productId}
+
+        </if>
+
+
+        <!-- PRODUCT NAME -->
+
+        <if test="productName != null and productName != ''">
+
+            AND LOWER(p.product_name)
+                LIKE CONCAT(
+                    '%',
+                    LOWER(#{productName}),
+                    '%'
+                )
+
+        </if>
+
+
+        <!-- MIN PRICE -->
+
+        <if test="minPrice != null">
+
+            AND p.product_price >= #{minPrice}
+
+        </if>
+
+
+        <!-- MAX PRICE -->
+
+        <if test="maxPrice != null">
+
+            AND p.product_price &lt;= #{maxPrice}
+
+        </if>
+
+
+        <!-- ORDER STATUS -->
+
+        <if test="orderStatus != null and orderStatus != ''">
+
+            AND o.order_status = #{orderStatus}
+
+        </if>
+
+
+        <!-- FROM DATE -->
+
+        <if test="fromDate != null and fromDate != ''">
+
+            AND o.order_date >= STR_TO_DATE(
+                #{fromDate},
+                '%Y-%m-%dT%H:%i'
+            )
+
+        </if>
+
+
+        <!-- TO DATE -->
+
+        <if test="toDate != null and toDate != ''">
+
+            AND o.order_date &lt;= STR_TO_DATE(
+                #{toDate},
+                '%Y-%m-%dT%H:%i'
+            )
+
+        </if>
+
+
+        GROUP BY
+
+            c.user_id,
+            c.user_name
+
+    </select>
+
+
+    <!-- ==========================================================
+         CUSTOMER PRODUCT REPORT
+         ========================================================== -->
+
+    <select id="getCustomerProductReport"
+            resultType="com.crimsonlogic.ecommerce.model.report.ProductSalesReport">
+
+        SELECT
+
+            p.product_id AS productId,
+
+            p.product_name AS productName,
+
+            c.category_name AS categoryName,
+
+            s.user_id AS sellerId,
+
+            s.user_name AS sellerName,
+
+            p.product_price AS productPrice,
+
+            SUM(o.quantity) AS quantitySold,
+
+            SUM(o.total_price) AS revenue,
+
+            0 AS averageRating,
+
+            0 AS reviewCount
+
+        FROM orders o
+
+        INNER JOIN products p
+            ON o.product_id = p.product_id
+
+        INNER JOIN categories c
+            ON p.category_id = c.category_id
+
+        INNER JOIN sellers s
+            ON p.user_id = s.user_id
+
+        WHERE 1 = 1
+
+
+        <!-- CUSTOMER -->
+
+        <if test="customerId != null and customerId != ''">
+
+            AND o.customer_id = #{customerId}
+
+        </if>
+
+
+        <!-- CATEGORY -->
+
+        <if test="categoryId != null and categoryId != ''">
+
+            AND p.category_id = #{categoryId}
+
+        </if>
+
+
+        <!-- PRODUCT -->
+
+        <if test="productId != null and productId != ''">
+
+            AND p.product_id = #{productId}
+
+        </if>
+
+
+        <!-- PRODUCT NAME -->
+
+        <if test="productName != null and productName != ''">
+
+            AND LOWER(p.product_name)
+                LIKE CONCAT(
+                    '%',
+                    LOWER(#{productName}),
+                    '%'
+                )
+
+        </if>
+
+
+        <!-- MIN PRICE -->
+
+        <if test="minPrice != null">
+
+            AND p.product_price >= #{minPrice}
+
+        </if>
+
+
+        <!-- MAX PRICE -->
+
+        <if test="maxPrice != null">
+
+            AND p.product_price &lt;= #{maxPrice}
+
+        </if>
+
+
+        <!-- MIN QUANTITY -->
+
+        <if test="minQuantity != null">
+
+            AND o.quantity >= #{minQuantity}
+
+        </if>
+
+
+        <!-- MAX QUANTITY -->
+
+        <if test="maxQuantity != null">
+
+            AND o.quantity &lt;= #{maxQuantity}
+
+        </if>
+
+
+        <!-- ORDER STATUS -->
+
+        <if test="orderStatus != null and orderStatus != ''">
+
+            AND o.order_status = #{orderStatus}
+
+        </if>
+
+
+        <!-- FROM DATE -->
+
+        <if test="fromDate != null and fromDate != ''">
+
+            AND o.order_date >= STR_TO_DATE(
+                #{fromDate},
+                '%Y-%m-%dT%H:%i'
+            )
+
+        </if>
+
+
+        <!-- TO DATE -->
+
+        <if test="toDate != null and toDate != ''">
+
+            AND o.order_date &lt;= STR_TO_DATE(
+                #{toDate},
+                '%Y-%m-%dT%H:%i'
+            )
+
+        </if>
+
+
+        GROUP BY
+
+            p.product_id,
+            p.product_name,
+            c.category_name,
+            s.user_id,
+            s.user_name,
+            p.product_price
+
+        ORDER BY quantitySold DESC
+
+    </select>
 
 </mapper>

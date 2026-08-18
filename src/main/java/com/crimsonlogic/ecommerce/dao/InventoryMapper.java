@@ -36,6 +36,17 @@ public interface InventoryMapper {
 
 
     /**
+     * Finds Inventory by ID belonging to a Seller.
+     */
+    Inventory findInventoryByIdAndSeller(
+            @Param("inventoryId")
+            String inventoryId,
+
+            @Param("sellerId")
+            String sellerId);
+
+
+    /**
      * Finds Inventory by Product ID.
      */
     Inventory findInventoryByProduct(

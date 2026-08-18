@@ -21,40 +21,30 @@ import java.util.List;
 @RequestMapping("/reports")
 public class ReportController {
 
-    private ReportService reportService;
-
-    private CategoryService categoryService;
-
-    private SellerService sellerService;
+    private final ReportService reportService;
+    private final CategoryService categoryService;
+    private final SellerService sellerService;
 
 
     // ==========================================================
-    // SETTERS
+    // CONSTRUCTOR
     // ==========================================================
 
-    public void setReportService(
-            ReportService reportService) {
-
-        this.reportService = reportService;
-    }
-
-
-    public void setCategoryService(
-            CategoryService categoryService) {
-
-        this.categoryService = categoryService;
-    }
-
-
-    public void setSellerService(
+    public ReportController(
+            ReportService reportService,
+            CategoryService categoryService,
             SellerService sellerService) {
 
+        this.reportService = reportService;
+        this.categoryService = categoryService;
         this.sellerService = sellerService;
     }
 
 
     // ==========================================================
     // ADMIN REPORT PAGE
+    // URL: /reports/admin
+    // JSP: /WEB-INF/views/admin/reports.jsp
     // ==========================================================
 
     @GetMapping("/admin")
@@ -62,7 +52,10 @@ public class ReportController {
             @ModelAttribute ReportFilter filter,
             Model model) {
 
-        loadAdminReportPage(filter, model);
+        loadAdminReportPage(
+                filter,
+                model
+        );
 
         return "admin/reports";
     }
@@ -70,6 +63,8 @@ public class ReportController {
 
     // ==========================================================
     // ADMIN GENERATE REPORT
+    // URL: /reports/admin
+    // JSP: /WEB-INF/views/admin/reports.jsp
     // ==========================================================
 
     @PostMapping("/admin")
@@ -77,7 +72,10 @@ public class ReportController {
             @ModelAttribute ReportFilter filter,
             Model model) {
 
-        loadAdminReportPage(filter, model);
+        loadAdminReportPage(
+                filter,
+                model
+        );
 
         return "admin/reports";
     }
@@ -90,6 +88,7 @@ public class ReportController {
     private void loadAdminReportPage(
             ReportFilter filter,
             Model model) {
+
 
         // ------------------------------------------------------
         // Categories for dropdown
@@ -128,11 +127,15 @@ public class ReportController {
         // SELLER SALES REPORT
         // ------------------------------------------------------
 
-        if (filter.getSellerId() != null
-                && !filter.getSellerId().trim().isEmpty()) {
+        if ("seller".equals(filter.getReportType())
+                && filter.getSellerId() != null
+                && !filter.getSellerId().trim().isEmpty()){
+
 
             List<SellerSalesReport> sellerReports =
-                    reportService.getSellerSalesReport(filter);
+                    reportService.getSellerSalesReport(
+                            filter
+                    );
 
             model.addAttribute(
                     "sellerReports",
@@ -140,9 +143,14 @@ public class ReportController {
             );
 
 
+            // --------------------------------------------------
             // Seller's products
+            // --------------------------------------------------
+
             List<ProductSalesReport> productReports =
-                    reportService.getProductSalesReport(filter);
+                    reportService.getProductSalesReport(
+                            filter
+                    );
 
             model.addAttribute(
                     "sellerProductReports",
@@ -150,9 +158,14 @@ public class ReportController {
             );
 
 
+            // --------------------------------------------------
             // Seller summary
+            // --------------------------------------------------
+
             SalesReport salesReport =
-                    reportService.getSalesReport(filter);
+                    reportService.getSalesReport(
+                            filter
+                    );
 
             model.addAttribute(
                     "salesReport",
@@ -160,9 +173,14 @@ public class ReportController {
             );
 
 
+            // --------------------------------------------------
             // Seller category report
+            // --------------------------------------------------
+
             List<CategorySalesReport> categoryReports =
-                    reportService.getCategorySalesReport(filter);
+                    reportService.getCategorySalesReport(
+                            filter
+                    );
 
             model.addAttribute(
                     "categoryReports",
@@ -179,21 +197,29 @@ public class ReportController {
         }
 
 
-        // ------------------------------------------------------
+        // ======================================================
         // NORMAL ADMIN SALES REPORT
-        // ------------------------------------------------------
+        // ======================================================
 
         SalesReport salesReport =
-                reportService.getSalesReport(filter);
+                reportService.getSalesReport(
+                        filter
+                );
 
         model.addAttribute(
-                "salesReport",
-                salesReport
+                "reportType",
+                filter.getReportType()
         );
 
 
+        // ------------------------------------------------------
+        // Product reports
+        // ------------------------------------------------------
+
         List<ProductSalesReport> productReports =
-                reportService.getProductSalesReport(filter);
+                reportService.getProductSalesReport(
+                        filter
+                );
 
         model.addAttribute(
                 "productReports",
@@ -201,8 +227,14 @@ public class ReportController {
         );
 
 
+        // ------------------------------------------------------
+        // Category reports
+        // ------------------------------------------------------
+
         List<CategorySalesReport> categoryReports =
-                reportService.getCategorySalesReport(filter);
+                reportService.getCategorySalesReport(
+                        filter
+                );
 
         model.addAttribute(
                 "categoryReports",
@@ -210,24 +242,25 @@ public class ReportController {
         );
 
 
+        // ------------------------------------------------------
+        // Seller reports
+        // ------------------------------------------------------
+
         List<SellerSalesReport> sellerReports =
-                reportService.getSellerSalesReport(filter);
+                reportService.getSellerSalesReport(
+                        filter
+                );
 
         model.addAttribute(
                 "sellerReports",
                 sellerReports
-        );
-
-
-        model.addAttribute(
-                "reportType",
-                "general"
         );
     }
 
 
     // ==========================================================
     // SELLER REPORT
+    // URL: /reports/seller/{sellerId}
     // ==========================================================
 
     @GetMapping("/seller/{sellerId}")
@@ -239,7 +272,10 @@ public class ReportController {
 
             Model model) {
 
-        filter.setSellerId(sellerId);
+
+        filter.setSellerId(
+                sellerId
+        );
 
 
         // ------------------------------------------------------
@@ -248,7 +284,9 @@ public class ReportController {
 
         model.addAttribute(
                 "salesReport",
-                reportService.getSalesReport(filter)
+                reportService.getSalesReport(
+                        filter
+                )
         );
 
 
@@ -258,7 +296,9 @@ public class ReportController {
 
         model.addAttribute(
                 "productReports",
-                reportService.getProductSalesReport(filter)
+                reportService.getProductSalesReport(
+                        filter
+                )
         );
 
 
@@ -268,7 +308,9 @@ public class ReportController {
 
         model.addAttribute(
                 "categoryReports",
-                reportService.getCategorySalesReport(filter)
+                reportService.getCategorySalesReport(
+                        filter
+                )
         );
 
 
@@ -300,6 +342,7 @@ public class ReportController {
 
     // ==========================================================
     // CUSTOMER REPORT
+    // URL: /reports/customer/{customerId}
     // ==========================================================
 
     @GetMapping("/customer/{customerId}")
@@ -311,7 +354,10 @@ public class ReportController {
 
             Model model) {
 
-        filter.setCustomerId(customerId);
+
+        filter.setCustomerId(
+                customerId
+        );
 
 
         // ------------------------------------------------------
@@ -320,7 +366,9 @@ public class ReportController {
 
         model.addAttribute(
                 "customerReport",
-                reportService.getCustomerReport(filter)
+                reportService.getCustomerReport(
+                        filter
+                )
         );
 
 
@@ -330,7 +378,9 @@ public class ReportController {
 
         model.addAttribute(
                 "productReports",
-                reportService.getCustomerProductReport(filter)
+                reportService.getCustomerProductReport(
+                        filter
+                )
         );
 
 

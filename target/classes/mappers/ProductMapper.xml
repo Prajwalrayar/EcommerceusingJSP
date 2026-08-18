@@ -39,6 +39,9 @@
 
         <result property="productStatus"
                 column="product_status"/>
+                
+                <result property="createdBy"
+        column="created_by"/>
 
 
         <!-- ================================================= -->
@@ -118,10 +121,10 @@
     <!-- Insert -->
     <!-- ===================================================== -->
 
-    <insert id="insertProduct">
+<insert id="insertProduct">
 
-        INSERT INTO products
-        (
+    INSERT INTO products
+    (
         product_id,
         product_name,
         brand,
@@ -129,11 +132,12 @@
         product_price,
         category_id,
         user_id,
-        product_status
-        )
+        product_status,
+        created_by
+    )
 
-        VALUES
-        (
+    VALUES
+    (
         #{productId},
         #{productName},
         #{brand},
@@ -141,21 +145,21 @@
         #{productPrice},
         #{category.categoryId},
         #{seller.userId},
-        #{productStatus}
-        )
+        #{productStatus},
+        #{createdBy}
+    )
 
-    </insert>
-
+</insert>
 
     <!-- ===================================================== -->
     <!-- Update -->
     <!-- ===================================================== -->
 
-    <update id="updateProduct">
+   <update id="updateProduct">
 
-        UPDATE products
+    UPDATE products
 
-        SET
+    SET
         product_name = #{productName},
         brand = #{brand},
         product_description = #{productDescription},
@@ -164,9 +168,9 @@
         user_id = #{seller.userId},
         product_status = #{productStatus}
 
-        WHERE product_id = #{productId}
+    WHERE product_id = #{productId}
 
-    </update>
+</update>
 
 
     <!-- ===================================================== -->
@@ -210,7 +214,7 @@
         INNER JOIN categories c
         ON p.category_id = c.category_id
 
-        INNER JOIN sellers s
+        LEFT JOIN sellers s
         ON p.user_id = s.user_id
 
         WHERE p.product_id = #{productId}
@@ -246,7 +250,7 @@
         INNER JOIN categories c
         ON p.category_id = c.category_id
 
-        INNER JOIN sellers s
+        LEFT JOIN sellers s
         ON p.user_id = s.user_id
 
         WHERE p.product_name = #{productName}
@@ -282,7 +286,7 @@
         INNER JOIN categories c
         ON p.category_id = c.category_id
 
-        INNER JOIN sellers s
+        LEFT JOIN sellers s
         ON p.user_id = s.user_id
 
         ORDER BY p.product_name
@@ -318,7 +322,7 @@
         INNER JOIN categories c
         ON p.category_id = c.category_id
 
-        INNER JOIN sellers s
+        LEFT JOIN sellers s
         ON p.user_id = s.user_id
 
         WHERE p.user_id = #{sellerId}
@@ -356,7 +360,7 @@
         INNER JOIN categories c
         ON p.category_id = c.category_id
 
-        INNER JOIN sellers s
+        LEFT JOIN sellers s
         ON p.user_id = s.user_id
 
         WHERE p.category_id = #{categoryId}
@@ -366,6 +370,39 @@
     </select>
 
 
+
+<select id="findProductsByCreator"
+        resultMap="ProductResultMap">
+
+    SELECT
+
+        p.*,
+
+        <include refid="ProductRatingColumns"/>,
+
+        c.category_name,
+        c.category_description,
+
+        s.user_id AS seller_id,
+        s.user_name AS seller_name,
+        s.user_email AS seller_email,
+        s.user_phone AS seller_phone,
+        s.shop_name,
+        s.shop_address
+
+    FROM products p
+
+    INNER JOIN categories c
+        ON p.category_id = c.category_id
+
+    LEFT JOIN sellers s
+        ON p.user_id = s.user_id
+
+    WHERE p.created_by = #{createdBy}
+
+    ORDER BY p.product_name
+
+</select>
     <!-- ===================================================== -->
     <!-- Find Products By Status -->
     <!-- ===================================================== -->
@@ -394,7 +431,7 @@
         INNER JOIN categories c
         ON p.category_id = c.category_id
 
-        INNER JOIN sellers s
+        LEFT JOIN sellers s
         ON p.user_id = s.user_id
 
         WHERE p.product_status = #{productStatus}
@@ -432,7 +469,7 @@
         INNER JOIN categories c
         ON p.category_id = c.category_id
 
-        INNER JOIN sellers s
+        LEFT JOIN sellers s
         ON p.user_id = s.user_id
 
         WHERE p.product_status = 'AVAILABLE'
@@ -447,10 +484,9 @@
     <!-- ===================================================== -->
 
     <select id="findProductByIdAndSeller"
-            resultMap="ProductResultMap">
+        resultMap="ProductResultMap">
 
-        SELECT
-
+    SELECT
         p.*,
 
         <include refid="ProductRatingColumns"/>,
@@ -465,19 +501,18 @@
         s.shop_name,
         s.shop_address
 
-        FROM products p
+    FROM products p
 
-        INNER JOIN categories c
+    INNER JOIN categories c
         ON p.category_id = c.category_id
 
-        INNER JOIN sellers s
+    LEFT JOIN sellers s
         ON p.user_id = s.user_id
 
-        WHERE p.product_id = #{productId}
+    WHERE p.product_id = #{productId}
+      AND p.user_id = #{sellerId}
 
-        AND p.user_id = #{sellerId}
-
-    </select>
+</select>
 
 
     <!-- ===================================================== -->

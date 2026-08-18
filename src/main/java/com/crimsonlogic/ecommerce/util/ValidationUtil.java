@@ -336,18 +336,20 @@ public class ValidationUtil {
         }
     }
 
-    // Validates Quantity.
-    public static void validateQuantity(int quantity)
-            throws ValidationException {
+ // ==========================================================
+ // QUANTITY VALIDATION
+ // ==========================================================
 
-        if (quantity < 0) {
+ public static void validateQuantity(int quantity)
+         throws ValidationException {
 
-            throw new ValidationException(
-                    "Quantity cannot be negative.");
+     if (quantity <= 0) {
 
-        }
-
-    }
+         throw new ValidationException(
+                 "Quantity should be greater than 0."
+         );
+     }
+ }
 
     /**
      * Checks if a string contains more than
@@ -502,4 +504,42 @@ public class ValidationUtil {
                         second.replaceAll("\\s+", "")
                 );
     }
+    
+ // ==========================================================
+ // COMPLETE PRODUCT VALIDATION
+ // ==========================================================
+
+ public static void validateProduct(
+         String productName,
+         String brand,
+         String description,
+         double price,
+         Object category,
+         Integer quantity)
+         throws ValidationException {
+
+     validateProductName(productName);
+
+     validateField(brand, "Brand");
+
+     validateProductDescription(description);
+
+     validateProductPrice(price);
+
+     if (category == null) {
+
+         throw new ValidationException(
+                 "Category must be selected."
+         );
+     }
+
+     if (quantity == null) {
+
+         throw new ValidationException(
+                 "Quantity cannot be empty."
+         );
+     }
+
+     validateQuantity(quantity);
+ }
 }

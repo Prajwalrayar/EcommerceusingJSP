@@ -1,732 +1,1696 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<%@ page contentType="text/html;charset=UTF-8" language="java"%>
 
-<!DOCTYPE mapper
-PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
-<mapper namespace="com.crimsonlogic.ecommerce.dao.ReportMapper">
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
-	<!-- ===================================================== SALES REPORT
-		===================================================== -->
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 
-	<select id="getSalesReport"
-		resultType="com.crimsonlogic.ecommerce.model.report.SalesReport">
 
-		SELECT
+<c:set var="pageTitle" value="Reports & Analytics" />
 
-		COUNT(DISTINCT o.order_id) AS totalOrders,
 
-		COALESCE(SUM(o.quantity), 0) AS totalQuantity,
+<%@ include file="../common/header.jsp"%>
 
-		COALESCE(SUM(o.total_price), 0) AS totalSales,
 
-		COALESCE(
-		AVG(o.total_price),
-		0
-		) AS averageOrderValue
+<div class="reports-container">
 
-		FROM orders o
 
-		INNER JOIN products p
-		ON o.product_id = p.product_id
+	<!-- =====================================================
+         PAGE HEADER
+         ===================================================== -->
 
-		INNER JOIN categories c
-		ON p.category_id = c.category_id
+	<div class="reports-header">
 
-		INNER JOIN sellers s
-		ON p.user_id = s.user_id
+		<div>
 
-		<if test="paymentStatus != null and paymentStatus != ''">
+			<h1>Reports & Analytics</h1>
 
-			INNER JOIN payments pay
-			ON o.order_id = pay.order_id
+			<p>Analyse marketplace sales, products, categories, sellers and
+				customers.</p>
 
-		</if>
+		</div>
 
-		WHERE 1 = 1
 
-		<!-- Customer restriction -->
+		<a href="${pageContext.request.contextPath}/admin/dashboard"
+			class="back-btn"> ← Dashboard </a>
 
-		<if test="customerId != null and customerId != ''">
+	</div>
 
-			AND o.customer_id = #{customerId}
 
-		</if>
 
-		<!-- Seller restriction -->
+	<!-- =====================================================
+         ERROR MESSAGE
+         ===================================================== -->
 
-		<if test="sellerId != null and sellerId != ''">
+	<c:if test="${not empty error}">
 
-			AND p.user_id = #{sellerId}
+		<div class="alert alert-danger">${error}</div>
 
-		</if>
+	</c:if>
 
-		<!-- Category -->
 
-		<if test="categoryId != null and categoryId != ''">
 
-			AND p.category_id = #{categoryId}
+	<!-- =====================================================
+         REPORT SELECTION
+         ===================================================== -->
 
-		</if>
+	<div class="report-selector card">
 
-		<!-- Product -->
+		<h2>Select Report</h2>
 
-		<if test="productId != null and productId != ''">
 
-			AND p.product_id = #{productId}
+		<!-- IMPORTANT:
+             Controller uses @GetMapping("/admin")
+             Therefore this form must use GET
+             and /reports/admin
+        -->
 
-		</if>
+		<form method="get"
+			action="${pageContext.request.contextPath}/reports/admin"
+			id="reportForm">
 
-		<!-- Product Name -->
 
-		<if test="productName != null and productName != ''">
+			<!-- =================================================
+                 REPORT TYPE
+                 ================================================= -->
 
-			AND LOWER(p.product_name)
-			LIKE CONCAT(
-			'%',
-			LOWER(#{productName}),
-			'%'
-			)
+			<div class="form-group">
 
-		</if>
+				<label for="reportType"> Report Type </label> <select
+					id="reportType" name="reportType" required>
 
-		<!-- Product Price -->
+					<option value="">-- Select Report --</option>
 
-		<if test="minPrice != null">
 
-			AND p.product_price >= #{minPrice}
+					<option value="sales" ${reportType == 'sales' ? 'selected' : ''}>
 
-		</if>
+						Sales Summary</option>
 
-		<if test="maxPrice != null">
 
-			AND p.product_price <= #{maxPrice}
+					<option value="product"
+						${reportType == 'product' ? 'selected' : ''}>Product
+						Sales</option>
 
-		</if>
 
-		<!-- Quantity -->
+					<option value="category"
+						${reportType == 'category' ? 'selected' : ''}>Category
+						Sales</option>
 
-		<if test="minQuantity != null">
 
-			AND o.quantity >= #{minQuantity}
+					<option value="seller" ${reportType == 'seller' ? 'selected' : ''}>
 
-		</if>
+						Seller Sales</option>
 
-		<if test="maxQuantity != null">
 
-			AND o.quantity <= #{maxQuantity}
+					<option value="customer"
+						${reportType == 'customer' ? 'selected' : ''}>Customer
+						Report</option>
 
-		</if>
 
-		<!-- Order Status -->
+					<option value="customerProduct"
+						${reportType == 'customerProduct' ? 'selected' : ''}>
 
-		<if test="orderStatus != null and orderStatus != ''">
+						Customer Product Sales</option>
 
-			AND o.order_status = #{orderStatus}
+				</select>
 
-		</if>
+			</div>
 
-		<!-- Payment Status -->
 
-		<if test="paymentStatus != null and paymentStatus != ''">
 
-			AND pay.payment_status = #{paymentStatus}
+			<!-- =================================================
+                 FILTERS
+                 ================================================= -->
 
-		</if>
+			<c:if test="${reportType == 'seller'}">
 
-		<!-- Date -->
+				<div class="filter-grid">
 
-		<if test="fromDate != null">
+					<!-- SELLER -->
 
-			AND o.order_date >= #{fromDate}
+					<div class="form-group">
 
-		</if>
+						<label for="sellerId"> Seller </label> <select id="sellerId"
+							name="sellerId" required>
 
-		<if test="toDate != null">
+							<option value="">-- Select Seller --</option>
 
-			AND o.order_date <= #{toDate}
+							<c:forEach var="seller" items="${sellers}">
 
-		</if>
+								<option value="${seller.userId}"
+									${filter.sellerId == seller.userId
+                              ? 'selected'
+                              : ''}>
 
-	</select>
+									${seller.userName} (${seller.userId})</option>
 
-	<!-- ===================================================== PRODUCT SALES
-		REPORT ===================================================== -->
+							</c:forEach>
 
-	<select id="getProductSalesReport"
-		resultType="com.crimsonlogic.ecommerce.model.report.ProductSalesReport">
+						</select>
 
-		SELECT
+					</div>
+			</c:if>
 
-		p.product_id AS productId,
 
-		p.product_name AS productName,
 
-		c.category_name AS categoryName,
+			<!-- =================================================
+                         CUSTOMER FILTER
+                         ================================================= -->
 
-		s.user_id AS sellerId,
+			<c:if
+				test="${reportType == 'customer' ||
+                                 reportType == 'customerProduct'}">
 
-		s.user_name AS sellerName,
+				<div class="form-group">
 
-		p.product_price AS productPrice,
+					<label for="customerId"> Customer </label> <select id="customerId"
+						name="customerId">
 
-		COALESCE(
-		SUM(o.quantity),
-		0
-		) AS quantitySold,
+						<option value="">-- All Customers --</option>
 
-		COALESCE(
-		SUM(o.total_price),
-		0
-		) AS revenue,
 
-		COALESCE(
-		AVG(r.rating),
-		0
-		) AS averageRating,
+						<c:forEach var="customer" items="${customers}">
 
-		COUNT(DISTINCT r.review_id) AS reviewCount
+							<option value="${customer.customerId}"
+								${filter.customerId == customer.customerId ? 'selected' : ''}>
 
-		FROM products p
+								${customer.customerName} (${customer.customerId})</option>
 
-		INNER JOIN categories c
-		ON p.category_id = c.category_id
+						</c:forEach>
 
-		INNER JOIN sellers s
-		ON p.user_id = s.user_id
+					</select>
 
-		LEFT JOIN orders o
-		ON p.product_id = o.product_id
+				</div>
 
-		LEFT JOIN review r
-		ON p.product_id = r.product_id
+			</c:if>
 
-		<if test="paymentStatus != null and paymentStatus != ''">
 
-			LEFT JOIN payments pay
-			ON o.order_id = pay.order_id
 
-		</if>
+			<!-- =================================================
+                         CATEGORY FILTER
+                         ================================================= -->
 
-		WHERE 1 = 1
+			<c:if
+				test="${reportType == 'product' ||
+                                 reportType == 'category' ||
+                                 reportType == 'customerProduct'}">
 
-		<if test="sellerId != null and sellerId != ''">
+				<div class="form-group">
 
-			AND p.user_id = #{sellerId}
+					<label for="categoryId"> Category </label> <select id="categoryId"
+						name="categoryId">
 
-		</if>
+						<option value="">-- All Categories --</option>
 
-		<if test="customerId != null and customerId != ''">
 
-			AND o.customer_id = #{customerId}
+						<c:forEach var="category" items="${categories}">
 
-		</if>
+							<option value="${category.categoryId}"
+								${filter.categoryId == category.categoryId ? 'selected' : ''}>
 
-		<if test="categoryId != null and categoryId != ''">
+								${category.categoryName}</option>
 
-			AND p.category_id = #{categoryId}
+						</c:forEach>
 
-		</if>
+					</select>
 
-		<if test="productId != null and productId != ''">
+				</div>
 
-			AND p.product_id = #{productId}
+			</c:if>
 
-		</if>
 
-		<if test="productName != null and productName != ''">
 
-			AND LOWER(p.product_name)
-			LIKE CONCAT(
-			'%',
-			LOWER(#{productName}),
-			'%'
-			)
+			<!-- =================================================
+                         PRODUCT ID
+                         ================================================= -->
 
-		</if>
+			<c:if
+				test="${reportType == 'product' ||
+                                 reportType == 'customerProduct'}">
 
-		<if test="minPrice != null">
+				<div class="form-group">
 
-			AND p.product_price >= #{minPrice}
+					<label for="productId"> Product ID </label> <input type="text"
+						id="productId" name="productId" value="${filter.productId}"
+						placeholder="Product ID" />
 
-		</if>
+				</div>
 
-		<if test="maxPrice != null">
+			</c:if>
 
-			AND p.product_price <= #{maxPrice}
 
-		</if>
 
-		<if test="minQuantity != null">
+			<!-- =================================================
+                         PRODUCT NAME
+                         ================================================= -->
 
-			AND o.quantity >= #{minQuantity}
+			<c:if
+				test="${reportType == 'product' ||
+                                 reportType == 'customerProduct'}">
 
-		</if>
+				<div class="form-group">
 
-		<if test="maxQuantity != null">
+					<label for="productName"> Product Name </label> <input type="text"
+						id="productName" name="productName" value="${filter.productName}"
+						placeholder="Product name" />
 
-			AND o.quantity <= #{maxQuantity}
+				</div>
 
-		</if>
+			</c:if>
 
-		<if test="orderStatus != null and orderStatus != ''">
 
-			AND o.order_status = #{orderStatus}
 
-		</if>
+			<!-- =================================================
+                         MINIMUM PRICE
+                         NOT FOR SELLER REPORT
+                         ================================================= -->
 
-		<if test="paymentStatus != null and paymentStatus != ''">
+			<c:if test="${reportType != 'seller'}">
 
-			AND pay.payment_status = #{paymentStatus}
+				<div class="form-group">
 
-		</if>
+					<label for="minPrice"> Minimum Price </label> <input type="number"
+						id="minPrice" name="minPrice" step="0.01"
+						value="${filter.minPrice}" placeholder="0.00" />
 
-		<if test="fromDate != null">
+				</div>
 
-			AND o.order_date >= #{fromDate}
+			</c:if>
 
-		</if>
 
-		<if test="toDate != null">
 
-			AND o.order_date <= #{toDate}
+			<!-- =================================================
+                         MAXIMUM PRICE
+                         NOT FOR SELLER REPORT
+                         ================================================= -->
 
-		</if>
+			<c:if test="${reportType != 'seller'}">
 
-		GROUP BY
+				<div class="form-group">
 
-		p.product_id,
-		p.product_name,
-		c.category_name,
-		s.user_id,
-		s.user_name,
-		p.product_price
+					<label for="maxPrice"> Maximum Price </label> <input type="number"
+						id="maxPrice" name="maxPrice" step="0.01"
+						value="${filter.maxPrice}" placeholder="0.00" />
 
-		ORDER BY quantitySold DESC
+				</div>
 
-	</select>
+			</c:if>
 
-	<!-- ===================================================== CATEGORY SALES
-		REPORT ===================================================== -->
 
-	<select id="getCategorySalesReport"
-		resultType="com.crimsonlogic.ecommerce.model.report.CategorySalesReport">
 
-		SELECT
+			<!-- =================================================
+                         MINIMUM QUANTITY
+                         ================================================= -->
 
-		c.category_id AS categoryId,
+			<c:if
+				test="${reportType == 'product' ||
+                                 reportType == 'category' ||
+                                 reportType == 'customerProduct'}">
 
-		c.category_name AS categoryName,
+				<div class="form-group">
 
-		COUNT(DISTINCT p.product_id) AS productCount,
+					<label for="minQuantity"> Minimum Quantity </label> <input
+						type="number" id="minQuantity" name="minQuantity"
+						value="${filter.minQuantity}" placeholder="0" />
 
-		COALESCE(
-		SUM(o.quantity),
-		0
-		) AS quantitySold,
+				</div>
 
-		COALESCE(
-		SUM(o.total_price),
-		0
-		) AS revenue
+			</c:if>
 
-		FROM categories c
 
-		INNER JOIN products p
-		ON c.category_id = p.category_id
 
-		LEFT JOIN orders o
-		ON p.product_id = o.product_id
+			<!-- =================================================
+                         MAXIMUM QUANTITY
+                         ================================================= -->
 
-		WHERE 1 = 1
+			<c:if
+				test="${reportType == 'product' ||
+                                 reportType == 'category' ||
+                                 reportType == 'customerProduct'}">
 
-		<if test="sellerId != null and sellerId != ''">
+				<div class="form-group">
 
-			AND p.user_id = #{sellerId}
+					<label for="maxQuantity"> Maximum Quantity </label> <input
+						type="number" id="maxQuantity" name="maxQuantity"
+						value="${filter.maxQuantity}" placeholder="0" />
 
-		</if>
+				</div>
 
-		<if test="customerId != null and customerId != ''">
+			</c:if>
 
-			AND o.customer_id = #{customerId}
 
-		</if>
 
-		<if test="categoryId != null and categoryId != ''">
+			<!-- =================================================
+                         ORDER STATUS
+                         ================================================= -->
 
-			AND c.category_id = #{categoryId}
+			<c:if
+				test="${reportType == 'sales' ||
+                                 reportType == 'customer'}">
 
-		</if>
+				<div class="form-group">
 
-		<if test="minPrice != null">
+					<label for="orderStatus"> Order Status </label> <input type="text"
+						id="orderStatus" name="orderStatus" value="${filter.orderStatus}"
+						placeholder="Example: COMPLETED" />
 
-			AND p.product_price >= #{minPrice}
+				</div>
 
-		</if>
+			</c:if>
 
-		<if test="maxPrice != null">
 
-			AND p.product_price <= #{maxPrice}
 
-		</if>
+			<!-- =================================================
+                         PAYMENT STATUS
+                         ================================================= -->
 
-		<if test="minQuantity != null">
+			<c:if
+				test="${reportType == 'sales' ||
+                                 reportType == 'customer'}">
 
-			AND o.quantity >= #{minQuantity}
+				<div class="form-group">
 
-		</if>
+					<label for="paymentStatus"> Payment Status </label> <input
+						type="text" id="paymentStatus" name="paymentStatus"
+						value="${filter.paymentStatus}" placeholder="Example: SUCCESS" />
 
-		<if test="maxQuantity != null">
+				</div>
 
-			AND o.quantity <= #{maxQuantity}
+			</c:if>
 
-		</if>
 
-		<if test="orderStatus != null and orderStatus != ''">
 
-			AND o.order_status = #{orderStatus}
+			<!-- =================================================
+                         FROM DATE
+                         ================================================= -->
 
-		</if>
+			<div class="form-group">
 
-		<if test="fromDate != null">
+				<label for="fromDate"> From Date </label> <input
+					type="datetime-local" id="fromDate" name="fromDate"
+					value="${filter.fromDate}" />
 
-			AND o.order_date >= #{fromDate}
 
-		</if>
+				<c:if test="${reportType == 'seller'}">
 
-		<if test="toDate != null">
+					<small class="date-help"> Optional </small>
 
-			AND o.order_date <= #{toDate}
+				</c:if>
 
-		</if>
+			</div>
 
-		GROUP BY
 
-		c.category_id,
-		c.category_name
 
-		ORDER BY revenue DESC
+			<!-- =================================================
+                         TO DATE
+                         ================================================= -->
 
-	</select>
+			<div class="form-group">
 
-	<!-- ===================================================== SELLER SALES
-		REPORT ===================================================== -->
+				<label for="toDate"> To Date </label> <input type="datetime-local"
+					id="toDate" name="toDate" value="${filter.toDate}" />
 
-	<select id="getSellerSalesReport"
-		resultType="com.crimsonlogic.ecommerce.model.report.SellerSalesReport">
 
-		SELECT
+				<c:if test="${reportType == 'seller'}">
 
-		s.user_id AS sellerId,
+					<small class="date-help"> Optional — defaults to today </small>
 
-		s.user_name AS sellerName,
+				</c:if>
 
-		s.shop_name AS shopName,
+			</div>
+	</div>
 
-		COUNT(DISTINCT o.order_id) AS orderCount,
 
-		COALESCE(
-		SUM(o.quantity),
-		0
-		) AS quantitySold,
 
-		COALESCE(
-		SUM(o.total_price),
-		0
-		) AS revenue
+	<!-- =================================================
+                     BUTTONS
+                     ================================================= -->
 
-		FROM sellers s
+	<div class="report-actions">
 
-		INNER JOIN products p
-		ON s.user_id = p.user_id
 
-		LEFT JOIN orders o
-		ON p.product_id = o.product_id
+		<button type="submit" class="generate-btn">Generate Report</button>
 
-		WHERE 1 = 1
 
-		<if test="sellerId != null and sellerId != ''">
+		<a href="${pageContext.request.contextPath}/reports/admin"
+			class="clear-btn"> Clear </a>
 
-			AND s.user_id = #{sellerId}
 
-		</if>
+	</div>
 
-		<if test="categoryId != null and categoryId != ''">
 
-			AND p.category_id = #{categoryId}
+</div>
 
-		</if>
 
-		<if test="productId != null and productId != ''">
+</form>
 
-			AND p.product_id = #{productId}
+</div>
 
-		</if>
 
-		<if test="minPrice != null">
 
-			AND p.product_price >= #{minPrice}
+<!-- =====================================================
+         SALES REPORT
+         ===================================================== -->
 
-		</if>
+<c:if test="${reportType == 'sales'}">
 
-		<if test="maxPrice != null">
+	<div class="result-card">
 
-			AND p.product_price <= #{maxPrice}
+		<h2>Sales Summary</h2>
 
-		</if>
 
-		<if test="orderStatus != null and orderStatus != ''">
+		<c:choose>
 
-			AND o.order_status = #{orderStatus}
+			<c:when test="${not empty salesReport}">
 
-		</if>
+				<table class="report-table">
 
-		<if test="fromDate != null">
+					<tbody>
 
-			AND o.order_date >= #{fromDate}
+						<tr>
 
-		</if>
+							<th>Total Orders</th>
 
-		<if test="toDate != null">
+							<td>${salesReport.totalOrders}</td>
 
-			AND o.order_date <= #{toDate}
+						</tr>
 
-		</if>
 
-		GROUP BY
+						<tr>
 
-		s.user_id,
-		s.user_name,
-		s.shop_name
+							<th>Total Quantity</th>
 
-		ORDER BY revenue DESC
+							<td>${salesReport.totalQuantity}</td>
 
-	</select>
+						</tr>
 
-	<!-- ===================================================== CUSTOMER SUMMARY
-		===================================================== -->
 
-	<select id="getCustomerReport"
-		resultType="com.crimsonlogic.ecommerce.model.report.CustomerReport">
+						<tr>
 
-		SELECT
+							<th>Total Sales</th>
 
-		c.user_id AS customerId,
+							<td>₹${salesReport.totalSales}</td>
 
-		c.user_name AS customerName,
+						</tr>
 
-		COUNT(DISTINCT o.order_id) AS orderCount,
 
-		COALESCE(
-		SUM(o.quantity),
-		0
-		) AS quantityPurchased,
+						<tr>
 
-		COALESCE(
-		SUM(o.total_price),
-		0
-		) AS totalSpent,
+							<th>Average Order Value</th>
 
-		COALESCE(
-		AVG(o.total_price),
-		0
-		) AS averageOrderValue
+							<td>₹${salesReport.averageOrderValue}</td>
 
-		FROM customers c
+						</tr>
 
-		LEFT JOIN orders o
-		ON c.user_id = o.customer_id
+					</tbody>
 
-		LEFT JOIN products p
-		ON o.product_id = p.product_id
+				</table>
 
-		WHERE 1 = 1
+			</c:when>
 
-		<!-- VERY IMPORTANT: Customer report is restricted to customer -->
 
-		<if test="customerId != null and customerId != ''">
+			<c:otherwise>
 
-			AND c.user_id = #{customerId}
+				<div class="no-results">No sales data found.</div>
 
-		</if>
+			</c:otherwise>
 
-		<if test="categoryId != null and categoryId != ''">
+		</c:choose>
 
-			AND p.category_id = #{categoryId}
+	</div>
 
-		</if>
+</c:if>
 
-		<if test="productId != null and productId != ''">
 
-			AND p.product_id = #{productId}
 
-		</if>
+<!-- =====================================================
+         PRODUCT SALES REPORT
+         ===================================================== -->
 
-		<if test="productName != null and productName != ''">
+<c:if test="${reportType == 'product'}">
 
-			AND LOWER(p.product_name)
-			LIKE CONCAT(
-			'%',
-			LOWER(#{productName}),
-			'%'
-			)
+	<div class="result-card">
 
-		</if>
+		<h2>Product Sales Report</h2>
 
-		<if test="minPrice != null">
 
-			AND p.product_price >= #{minPrice}
+		<c:choose>
 
-		</if>
+			<c:when test="${not empty productSalesReport}">
 
-		<if test="maxPrice != null">
+				<div class="table-wrapper">
 
-			AND p.product_price <= #{maxPrice}
+					<table class="report-table">
 
-		</if>
+						<thead>
 
-		<if test="orderStatus != null and orderStatus != ''">
+							<tr>
 
-			AND o.order_status = #{orderStatus}
+								<th>Product</th>
+								<th>Category</th>
+								<th>Seller</th>
+								<th>Price</th>
+								<th>Quantity Sold</th>
+								<th>Revenue</th>
+								<th>Average Rating</th>
 
-		</if>
+							</tr>
 
-		<if test="fromDate != null">
+						</thead>
 
-			AND o.order_date >= #{fromDate}
 
-		</if>
+						<tbody>
 
-		<if test="toDate != null">
+							<c:forEach var="report" items="${productSalesReport}">
 
-			AND o.order_date <= #{toDate}
+								<tr>
 
-		</if>
+									<td>${report.productName}</td>
 
-		GROUP BY
+									<td>${report.categoryName}</td>
 
-		c.user_id,
-		c.user_name
+									<td>${report.sellerName}</td>
 
-	</select>
+									<td>₹<fmt:formatNumber value="${report.productPrice}"
+											minFractionDigits="2" maxFractionDigits="2" />
+									</td>
 
-	<!-- ===================================================== CUSTOMER PRODUCT
-		REPORT ===================================================== -->
+									<td>${report.quantitySold}</td>
 
-	<select id="getCustomerProductReport"
-		resultType="com.crimsonlogic.ecommerce.model.report.ProductSalesReport">
+									<td>₹<fmt:formatNumber value="${report.revenue}"
+											minFractionDigits="2" maxFractionDigits="2" />
+									</td>
 
-		SELECT
+									<td>${report.averageRating}</td>
 
-		p.product_id AS productId,
+								</tr>
 
-		p.product_name AS productName,
+							</c:forEach>
 
-		c.category_name AS categoryName,
+						</tbody>
 
-		s.user_id AS sellerId,
+					</table>
 
-		s.user_name AS sellerName,
+				</div>
 
-		p.product_price AS productPrice,
+			</c:when>
 
-		SUM(o.quantity) AS quantitySold,
 
-		SUM(o.total_price) AS revenue,
+			<c:otherwise>
 
-		0 AS averageRating,
+				<div class="no-results">No product sales data found.</div>
 
-		0 AS reviewCount
+			</c:otherwise>
 
-		FROM orders o
+		</c:choose>
 
-		INNER JOIN products p
-		ON o.product_id = p.product_id
+	</div>
 
-		INNER JOIN categories c
-		ON p.category_id = c.category_id
+</c:if>
 
-		INNER JOIN sellers s
-		ON p.user_id = s.user_id
 
-		WHERE o.customer_id = #{customerId}
 
-		<if test="categoryId != null and categoryId != ''">
+<!-- =====================================================
+         CATEGORY SALES REPORT
+         ===================================================== -->
 
-			AND p.category_id = #{categoryId}
+<c:if test="${reportType == 'category'}">
 
-		</if>
+	<div class="result-card">
 
-		<if test="productId != null and productId != ''">
+		<h2>Category Sales Report</h2>
 
-			AND p.product_id = #{productId}
 
-		</if>
+		<c:choose>
 
-		<if test="productName != null and productName != ''">
+			<c:when test="${not empty categorySalesReport}">
 
-			AND LOWER(p.product_name)
-			LIKE CONCAT(
-			'%',
-			LOWER(#{productName}),
-			'%'
-			)
+				<div class="table-wrapper">
 
-		</if>
+					<table class="report-table">
 
-		<if test="minPrice != null">
+						<thead>
 
-			AND p.product_price >= #{minPrice}
+							<tr>
 
-		</if>
+								<th>Category</th>
+								<th>Quantity Sold</th>
+								<th>Revenue</th>
 
-		<if test="maxPrice != null">
+							</tr>
 
-			AND p.product_price <= #{maxPrice}
+						</thead>
 
-		</if>
 
-		<if test="minQuantity != null">
+						<tbody>
 
-			AND o.quantity >= #{minQuantity}
+							<c:forEach var="report" items="${categorySalesReport}">
 
-		</if>
+								<tr>
 
-		<if test="maxQuantity != null">
+									<td>${report.categoryName}</td>
 
-			AND o.quantity <= #{maxQuantity}
+									<td>${report.quantitySold}</td>
 
-		</if>
+									<td>₹<fmt:formatNumber value="${report.revenue}"
+											minFractionDigits="2" maxFractionDigits="2" />
+									</td>
 
-		<if test="orderStatus != null and orderStatus != ''">
+								</tr>
 
-			AND o.order_status = #{orderStatus}
+							</c:forEach>
 
-		</if>
+						</tbody>
 
-		<if test="fromDate != null">
+					</table>
 
-			AND o.order_date >= #{fromDate}
+				</div>
 
-		</if>
+			</c:when>
 
-		<if test="toDate != null">
 
-			AND o.order_date <= #{toDate}
+			<c:otherwise>
 
-		</if>
+				<div class="no-results">No category sales data found.</div>
 
-		GROUP BY
+			</c:otherwise>
 
-		p.product_id,
-		p.product_name,
-		c.category_name,
-		s.user_id,
-		s.user_name,
-		p.product_price
+		</c:choose>
 
-		ORDER BY quantitySold DESC
+	</div>
 
-	</select>
+</c:if>
 
-</mapper>
+
+
+<!-- =====================================================
+         SELLER SALES REPORT
+         SELLER FOCUSED
+         ===================================================== -->
+
+<c:if test="${reportType == 'seller'}">
+
+	<div class="result-card">
+
+		<h2>Seller Sales Report</h2>
+
+
+		<c:choose>
+
+			<c:when test="${not empty sellerSalesReport}">
+
+				<!-- =========================================
+                     SELLER SUMMARY
+                     ========================================= -->
+
+				<c:forEach var="seller" items="${sellerSalesReport}">
+
+					<div class="seller-summary">
+
+						<div class="seller-summary-box">
+
+							<span> Seller </span> <strong> ${seller.sellerName} </strong> <small>
+								${seller.sellerId} </small>
+
+						</div>
+
+
+						<div class="seller-summary-box">
+
+							<span> Total Orders </span> <strong>
+								${seller.orderCount} </strong>
+
+						</div>
+
+
+						<div class="seller-summary-box">
+
+							<span> Total Quantity Sold </span> <strong>
+								${seller.quantitySold} </strong>
+
+						</div>
+
+
+						<div class="seller-summary-box">
+
+							<span> Total Sales </span> <strong> ₹${seller.revenue} </strong>
+
+						</div>
+
+
+						<div class="seller-summary-box">
+
+							<span> Average Selling Price </span> <strong> <c:choose>
+
+									<c:when test="${seller.quantitySold > 0}">
+
+                                        ₹${seller.revenue /
+                                           seller.quantitySold}
+
+                                    </c:when>
+
+									<c:otherwise>
+
+                                        ₹0.00
+
+                                    </c:otherwise>
+
+								</c:choose>
+
+							</strong>
+
+						</div>
+
+					</div>
+
+				</c:forEach>
+
+
+				<!-- =========================================
+                     PRODUCTS SOLD
+                     ========================================= -->
+
+				<h3>Products Sold</h3>
+
+
+				<c:choose>
+
+					<c:when test="${not empty productSalesReport}">
+
+						<div class="table-wrapper">
+
+							<table class="report-table">
+
+								<thead>
+
+									<tr>
+
+										<th>Product</th>
+
+										<th>Category</th>
+
+										<th>Price</th>
+
+										<th>Quantity Sold</th>
+
+										<th>Total Revenue</th>
+
+										<th>Average Rating</th>
+
+									</tr>
+
+								</thead>
+
+
+								<tbody>
+
+									<c:forEach var="product" items="${productSalesReport}">
+
+										<tr>
+
+											<td>${product.productName}</td>
+
+											<td>${product.categoryName}</td>
+
+											<td>₹${product.productPrice}</td>
+
+											<td>${product.quantitySold}</td>
+
+											<td>₹${product.revenue}</td>
+
+											<td>${product.averageRating}</td>
+
+										</tr>
+
+									</c:forEach>
+
+								</tbody>
+
+							</table>
+
+						</div>
+
+					</c:when>
+
+
+					<c:otherwise>
+
+						<div class="no-results">No products were sold by this seller
+							for the selected date range.</div>
+
+					</c:otherwise>
+
+				</c:choose>
+
+			</c:when>
+
+
+			<c:otherwise>
+
+				<div class="no-results">No seller sales found for the selected
+					seller and date range.</div>
+
+			</c:otherwise>
+
+		</c:choose>
+
+	</div>
+
+</c:if>
+
+
+
+<!-- =====================================================
+         CUSTOMER REPORT
+         ===================================================== -->
+
+<c:if test="${reportType == 'customer'}">
+
+	<div class="result-card">
+
+		<h2>Customer Report</h2>
+
+
+		<c:choose>
+
+			<c:when test="${not empty customerReport}">
+
+				<table class="report-table">
+
+					<tbody>
+
+						<tr>
+
+							<th>Total Customers</th>
+
+							<td>${customerReport.totalCustomers}</td>
+
+						</tr>
+
+
+						<tr>
+
+							<th>Total Orders</th>
+
+							<td>${customerReport.totalOrders}</td>
+
+						</tr>
+
+
+						<tr>
+
+							<th>Total Quantity</th>
+
+							<td>${customerReport.totalQuantity}</td>
+
+						</tr>
+
+
+						<tr>
+
+							<th>Total Spent</th>
+
+							<td>₹${customerReport.totalSpent}</td>
+
+						</tr>
+
+					</tbody>
+
+				</table>
+
+			</c:when>
+
+
+			<c:otherwise>
+
+				<div class="no-results">No customer data found.</div>
+
+			</c:otherwise>
+
+		</c:choose>
+
+	</div>
+
+</c:if>
+
+
+
+<!-- =====================================================
+         CUSTOMER PRODUCT REPORT
+         ===================================================== -->
+
+<c:if test="${reportType == 'customerProduct'}">
+
+	<div class="result-card">
+
+		<h2>Customer Product Report</h2>
+
+
+		<c:choose>
+
+			<c:when test="${not empty customerProductReport}">
+
+				<div class="table-wrapper">
+
+					<table class="report-table">
+
+						<thead>
+
+							<tr>
+
+								<th>Product</th>
+
+								<th>Category</th>
+
+								<th>Quantity Sold</th>
+
+								<th>Revenue</th>
+
+							</tr>
+
+						</thead>
+
+
+						<tbody>
+
+							<c:forEach var="report" items="${customerProductReport}">
+
+								<tr>
+
+									<td>${report.productName}</td>
+
+									<td>${report.categoryName}</td>
+
+									<td>${report.quantitySold}</td>
+
+									<td>₹<fmt:formatNumber value="${report.revenue}"
+											minFractionDigits="2" maxFractionDigits="2" />
+									</td>
+
+								</tr>
+
+							</c:forEach>
+
+						</tbody>
+
+					</table>
+
+				</div>
+
+			</c:when>
+
+
+			<c:otherwise>
+
+				<div class="no-results">No customer product data found.</div>
+
+			</c:otherwise>
+
+		</c:choose>
+
+	</div>
+
+</c:if>
+
+
+</div>
+
+
+
+<!-- =========================================================
+     PAGE CSS
+     ========================================================= -->
+
+<style>
+
+/* =========================================================
+   CONTAINER
+   ========================================================= */
+.reports-container {
+	max-width: 1250px;
+	margin: 35px auto;
+	padding: 0 30px;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.reports-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 30px;
+	padding-bottom: 20px;
+	border-bottom: 1px solid #dee2e6;
+}
+
+.reports-header h1 {
+	margin: 0;
+	font-size: 34px;
+	color: #212529;
+}
+
+.reports-header p {
+	margin-top: 8px;
+	color: #6c757d;
+}
+
+.back-btn {
+	padding: 10px 18px;
+	background-color: #6c757d;
+	color: white;
+	text-decoration: none;
+	border-radius: 6px;
+	font-weight: 600;
+}
+
+.back-btn:hover {
+	background-color: #5c636a;
+}
+
+/* =========================================================
+   CARD
+   ========================================================= */
+.card, .result-card {
+	background: white;
+	border: 1px solid #e1e5e9;
+	border-radius: 10px;
+	padding: 30px;
+	margin-bottom: 30px;
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.card h2, .result-card h2 {
+	margin-top: 0;
+}
+
+/* =========================================================
+   FORM
+   ========================================================= */
+.form-group {
+	margin-bottom: 20px;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 7px;
+	font-weight: 600;
+}
+
+.form-group input, .form-group select {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 12px 13px;
+	border: 1px solid #ced4da;
+	border-radius: 6px;
+	font-size: 15px;
+	background: white;
+}
+
+.form-group input:focus, .form-group select:focus {
+	outline: none;
+	border-color: #0d6efd;
+	box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+}
+
+.date-help {
+	display: block;
+	margin-top: 5px;
+	color: #6c757d;
+	font-size: 12px;
+}
+
+/* =========================================================
+   FILTERS
+   ========================================================= */
+.filters-section {
+	margin-top: 30px;
+	padding-top: 25px;
+	border-top: 1px solid #dee2e6;
+}
+
+.filter-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	column-gap: 25px;
+	row-gap: 5px;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+.report-actions {
+	display: flex;
+	gap: 12px;
+	margin-top: 15px;
+}
+
+.generate-btn {
+	border: none;
+	padding: 12px 22px;
+	background-color: #0d6efd;
+	color: white;
+	border-radius: 6px;
+	font-size: 15px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.generate-btn:hover {
+	background-color: #0b5ed7;
+}
+
+.clear-btn {
+	padding: 12px 22px;
+	background-color: #6c757d;
+	color: white;
+	border-radius: 6px;
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.clear-btn:hover {
+	background-color: #5c636a;
+}
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+.table-wrapper {
+	width: 100%;
+	overflow-x: auto;
+}
+
+.report-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 20px;
+}
+
+.report-table th {
+	background-color: #343a40;
+	color: white;
+	padding: 13px;
+	text-align: left;
+	white-space: nowrap;
+}
+
+.report-table td {
+	padding: 13px;
+	border-bottom: 1px solid #dee2e6;
+}
+
+.report-table tbody tr:hover {
+	background-color: #f8f9fa;
+}
+
+/* =========================================================
+   SELLER SUMMARY
+   ========================================================= */
+.seller-report-card {
+	margin-top: 30px;
+}
+
+.seller-summary {
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	gap: 18px;
+	margin-bottom: 30px;
+}
+
+.seller-summary-box {
+	border: 1px solid #dee2e6;
+	border-radius: 8px;
+	padding: 20px;
+	text-align: center;
+	background-color: #f8f9fa;
+}
+
+.summary-title {
+	display: block;
+	color: #6c757d;
+	font-size: 14px;
+	margin-bottom: 10px;
+	font-weight: 600;
+}
+
+.seller-summary-box strong {
+	display: block;
+	font-size: 22px;
+	color: #212529;
+}
+
+/* =========================================================
+   SELLER PRODUCTS
+   ========================================================= */
+.seller-products-section {
+	margin-top: 30px;
+}
+
+.seller-products-section h3 {
+	margin-bottom: 15px;
+}
+
+.seller-products-table {
+	margin-top: 0;
+}
+
+/* =========================================================
+   NO RESULTS
+   ========================================================= */
+.no-results {
+	padding: 25px;
+	text-align: center;
+	background-color: #f8f9fa;
+	color: #6c757d;
+	border-radius: 6px;
+	margin-top: 20px;
+}
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+.alert-danger {
+	padding: 14px 18px;
+	margin-bottom: 25px;
+	background-color: #f8d7da;
+	color: #842029;
+	border: 1px solid #f5c2c7;
+	border-radius: 6px;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media ( max-width : 1000px) {
+	.seller-summary {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media ( max-width : 900px) {
+	.filter-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media ( max-width : 600px) {
+	.reports-container {
+		padding: 0 15px;
+	}
+	.reports-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 15px;
+	}
+	.filter-grid {
+		grid-template-columns: 1fr;
+	}
+	.seller-summary {
+		grid-template-columns: 1fr;
+	}
+	.report-actions {
+		flex-direction: column;
+	}
+	.generate-btn, .clear-btn {
+		text-align: center;
+	}
+}
+</style>
+
+
+
+<!-- =========================================================
+     SELLER DATE DEFAULT
+     ========================================================= -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    var reportType = document.getElementById("reportType");
+
+    var sellerId = document.getElementById("sellerId");
+
+    var customerId = document.getElementById("customerId");
+
+    var categoryId = document.getElementById("categoryId");
+
+    var productId = document.getElementById("productId");
+
+    var productName = document.getElementById("productName");
+
+    var minPrice = document.getElementById("minPrice");
+
+    var maxPrice = document.getElementById("maxPrice");
+
+    var minQuantity = document.getElementById("minQuantity");
+
+    var maxQuantity = document.getElementById("maxQuantity");
+
+    var orderStatus = document.getElementById("orderStatus");
+
+    var paymentStatus = document.getElementById("paymentStatus");
+
+    var fromDate = document.getElementById("fromDate");
+
+    var toDate = document.getElementById("toDate");
+
+
+    // ==========================================================
+    // GET PARENT FORM GROUP
+    // ==========================================================
+
+    function getFormGroup(element) {
+
+        if (!element) {
+            return null;
+        }
+
+        return element.closest(".form-group");
+    }
+
+
+    // ==========================================================
+    // SHOW / HIDE FIELD
+    // ==========================================================
+
+    function showField(element, required) {
+
+        if (!element) {
+            return;
+        }
+
+        var group = getFormGroup(element);
+
+        if (group) {
+            group.style.display = "";
+        }
+
+        element.disabled = false;
+
+        if (required) {
+            element.setAttribute("required", "required");
+        } else {
+            element.removeAttribute("required");
+        }
+    }
+
+
+    function hideField(element) {
+
+        if (!element) {
+            return;
+        }
+
+        var group = getFormGroup(element);
+
+        if (group) {
+            group.style.display = "none";
+        }
+
+        element.removeAttribute("required");
+
+        element.disabled = true;
+    }
+
+
+    // ==========================================================
+    // UPDATE FILTERS WHEN REPORT TYPE CHANGES
+    // ==========================================================
+
+    function updateReportFields() {
+
+        var type = reportType ? reportType.value : "";
+
+
+        // ------------------------------------------------------
+        // SELLER
+        // Seller Sales / Product Sales
+        // ------------------------------------------------------
+
+        if (type === "seller") {
+
+            showField(sellerId, true);
+
+        } else if (type === "product") {
+
+            showField(sellerId, false);
+
+        } else {
+
+            hideField(sellerId);
+
+        }
+
+
+        // ------------------------------------------------------
+        // CUSTOMER
+        // Customer Report / Customer Product Sales
+        // ------------------------------------------------------
+
+        if (type === "customer"
+                || type === "customerProduct") {
+
+            showField(customerId, false);
+
+        } else {
+
+            hideField(customerId);
+
+        }
+
+
+        // ------------------------------------------------------
+        // CATEGORY
+        // Product / Category / Customer Product
+        // ------------------------------------------------------
+
+        if (type === "product"
+                || type === "category"
+                || type === "customerProduct") {
+
+            showField(categoryId, false);
+
+        } else {
+
+            hideField(categoryId);
+
+        }
+
+
+        // ------------------------------------------------------
+        // PRODUCT ID
+        // Product / Customer Product
+        // ------------------------------------------------------
+
+        if (type === "product"
+                || type === "customerProduct") {
+
+            showField(productId, false);
+
+        } else {
+
+            hideField(productId);
+
+        }
+
+
+        // ------------------------------------------------------
+        // PRODUCT NAME
+        // Product / Customer Product
+        // ------------------------------------------------------
+
+        if (type === "product"
+                || type === "customerProduct") {
+
+            showField(productName, false);
+
+        } else {
+
+            hideField(productName);
+
+        }
+
+
+        // ------------------------------------------------------
+        // MIN PRICE
+        // Everything except Seller Sales
+        // ------------------------------------------------------
+
+        if (type !== ""
+                && type !== "seller") {
+
+            showField(minPrice, false);
+
+        } else {
+
+            hideField(minPrice);
+
+        }
+
+
+        // ------------------------------------------------------
+        // MAX PRICE
+        // Everything except Seller Sales
+        // ------------------------------------------------------
+
+        if (type !== ""
+                && type !== "seller") {
+
+            showField(maxPrice, false);
+
+        } else {
+
+            hideField(maxPrice);
+
+        }
+
+
+        // ------------------------------------------------------
+        // MIN QUANTITY
+        // Product / Category / Customer Product
+        // ------------------------------------------------------
+
+        if (type === "product"
+                || type === "category"
+                || type === "customerProduct") {
+
+            showField(minQuantity, false);
+
+        } else {
+
+            hideField(minQuantity);
+
+        }
+
+
+        // ------------------------------------------------------
+        // MAX QUANTITY
+        // Product / Category / Customer Product
+        // ------------------------------------------------------
+
+        if (type === "product"
+                || type === "category"
+                || type === "customerProduct") {
+
+            showField(maxQuantity, false);
+
+        } else {
+
+            hideField(maxQuantity);
+
+        }
+
+
+        // ------------------------------------------------------
+        // ORDER STATUS
+        // Sales / Customer
+        // ------------------------------------------------------
+
+        if (type === "sales"
+                || type === "customer") {
+
+            showField(orderStatus, false);
+
+        } else {
+
+            hideField(orderStatus);
+
+        }
+
+
+        // ------------------------------------------------------
+        // PAYMENT STATUS
+        // Sales / Customer
+        // ------------------------------------------------------
+
+        if (type === "sales"
+                || type === "customer") {
+
+            showField(paymentStatus, false);
+
+        } else {
+
+            hideField(paymentStatus);
+
+        }
+
+
+        // ------------------------------------------------------
+        // DATE FIELDS
+        // ------------------------------------------------------
+
+        if (fromDate) {
+            fromDate.disabled = false;
+        }
+
+        if (toDate) {
+            toDate.disabled = false;
+        }
+
+
+        // ------------------------------------------------------
+        // SELLER SALES DATE DEFAULT
+        // ------------------------------------------------------
+
+        if (type === "seller"
+                && toDate
+                && !toDate.value) {
+
+            var now = new Date();
+
+            var year = now.getFullYear();
+
+            var month = String(
+                now.getMonth() + 1
+            ).padStart(2, "0");
+
+            var day = String(
+                now.getDate()
+            ).padStart(2, "0");
+
+            toDate.value =
+                    year
+                    + "-"
+                    + month
+                    + "-"
+                    + day
+                    + "T23:59";
+
+        }
+
+    }
+
+
+    // ==========================================================
+    // REPORT TYPE CHANGE
+    // ==========================================================
+
+    if (reportType) {
+
+        reportType.addEventListener(
+                "change",
+                function () {
+
+                    updateReportFields();
+
+                }
+        );
+
+    }
+
+
+    // ==========================================================
+    // INITIAL LOAD
+    // ==========================================================
+
+    updateReportFields();
+
+});
+
+</script>
+
+
+<%@ include file="../common/footer.jsp"%>

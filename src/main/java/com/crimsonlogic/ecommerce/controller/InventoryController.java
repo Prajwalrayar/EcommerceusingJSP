@@ -1,17 +1,17 @@
 package com.crimsonlogic.ecommerce.controller;
 
+import com.crimsonlogic.ecommerce.model.Admin;
 import com.crimsonlogic.ecommerce.model.Inventory;
 import com.crimsonlogic.ecommerce.model.Product;
+import com.crimsonlogic.ecommerce.model.Seller;
 import com.crimsonlogic.ecommerce.service.InventoryService;
 import com.crimsonlogic.ecommerce.service.ProductService;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,93 +23,196 @@ public class InventoryController {
     private final ProductService productService;
 
 
-    // ==========================================================
-    // CONSTRUCTOR
-    // ==========================================================
-
     public InventoryController(
             InventoryService inventoryService,
             ProductService productService) {
 
-        this.inventoryService = inventoryService;
-        this.productService = productService;
+        this.inventoryService =
+                inventoryService;
+
+        this.productService =
+                productService;
     }
 
 
     // ==========================================================
-    // LIST ALL INVENTORY
-    // URL: /inventory/list
-    // JSP: /WEB-INF/views/inventory/inventories.jsp
+    // LIST INVENTORY
     // ==========================================================
 
     @GetMapping("/list")
-    public String listInventory(Model model) {
+    public String listInventory(
+            HttpSession session,
+            Model model) {
 
-        List<Inventory> inventoryList =
-                inventoryService.findAllInventory();
+        Object loggedInUser =
+                session.getAttribute("loggedInUser");
 
-        model.addAttribute(
-                "inventoryList",
-                inventoryList
-        );
 
-        return "inventory/inventories";
+        // ------------------------------------------------------
+        // SELLER
+        // ------------------------------------------------------
+
+        if (loggedInUser instanceof Seller) {
+
+            Seller seller =
+                    (Seller) loggedInUser;
+
+            List<Inventory> inventoryList =
+                    inventoryService.findInventoryBySeller(
+                            seller.getUserId()
+                    );
+
+            model.addAttribute(
+                    "inventoryList",
+                    inventoryList
+            );
+
+            return "inventory/inventories";
+        }
+
+
+        // ------------------------------------------------------
+        // ADMIN
+        // ------------------------------------------------------
+
+        if (loggedInUser instanceof Admin) {
+
+            List<Inventory> inventoryList =
+                    inventoryService.findAllInventory();
+
+            model.addAttribute(
+                    "inventoryList",
+                    inventoryList
+            );
+
+            return "inventory/inventories";
+        }
+
+
+        return "redirect:/";
     }
 
 
     // ==========================================================
     // VIEW INVENTORY
-    // URL: /inventory/view/{inventoryId}
-    // JSP: /WEB-INF/views/inventory/inventory-details.jsp
     // ==========================================================
 
     @GetMapping("/view/{inventoryId}")
     public String viewInventory(
             @PathVariable String inventoryId,
+            HttpSession session,
             Model model) {
+
+        Object loggedInUser =
+                session.getAttribute("loggedInUser");
+
 
         Inventory inventory =
                 inventoryService.findInventoryById(
                         inventoryId
                 );
 
+
         if (inventory == null) {
 
             return "redirect:/inventory/list";
         }
 
+
+        // ------------------------------------------------------
+        // SELLER
+        // ------------------------------------------------------
+
+        if (loggedInUser instanceof Seller) {
+
+            Seller seller =
+                    (Seller) loggedInUser;
+
+
+            Inventory ownedInventory =
+                    inventoryService
+                            .findInventoryByIdAndSeller(
+                                    inventoryId,
+                                    seller.getUserId()
+                            );
+
+
+            if (ownedInventory == null) {
+
+                return "redirect:/inventory/list";
+            }
+
+            inventory = ownedInventory;
+        }
+
+
         model.addAttribute(
                 "inventory",
                 inventory
         );
+
 
         return "inventory/inventory-details";
     }
 
 
     // ==========================================================
-    // SHOW ADD INVENTORY FORM
-    // URL: /inventory/add
-    // JSP: /WEB-INF/views/inventory/inventory-form.jsp
+    // ADD INVENTORY FORM
     // ==========================================================
 
     @GetMapping("/add")
     public String showAddInventoryForm(
+            HttpSession session,
             Model model) {
 
-        Inventory inventory =
-                new Inventory();
+        Object loggedInUser =
+                session.getAttribute("loggedInUser");
+
+
+        if (!(loggedInUser instanceof Seller)
+                && !(loggedInUser instanceof Admin)) {
+
+            return "redirect:/";
+        }
+
 
         model.addAttribute(
                 "inventory",
-                inventory
+                new Inventory()
         );
 
 
-        // Load products for dropdown
+        List<Product> products;
 
-        List<Product> products =
-                productService.findAllProducts();
+
+        // ------------------------------------------------------
+        // SELLER → ONLY HIS PRODUCTS
+        // ------------------------------------------------------
+
+        if (loggedInUser instanceof Seller) {
+
+            Seller seller =
+                    (Seller) loggedInUser;
+
+            products =
+                    productService.findProductsBySeller(
+                            seller.getUserId()
+                    );
+        }
+
+
+        // ------------------------------------------------------
+        // ADMIN → ONLY ADMIN PRODUCTS
+        // ------------------------------------------------------
+
+        else {
+
+            products =
+                    productService.findProductsBySeller(
+                            null
+                    );
+        }
+
 
         model.addAttribute(
                 "products",
@@ -123,40 +226,188 @@ public class InventoryController {
 
     // ==========================================================
     // INSERT INVENTORY
-    // URL: /inventory/add
     // ==========================================================
 
     @PostMapping("/add")
     public String addInventory(
-            @ModelAttribute Inventory inventory) {
+            @ModelAttribute Inventory inventory,
+            HttpSession session) {
 
-        inventoryService.insertInventory(
-                inventory
-        );
+        Object loggedInUser =
+                session.getAttribute("loggedInUser");
 
-        return "redirect:/inventory/list";
+
+        if (loggedInUser instanceof Seller) {
+
+            Seller seller =
+                    (Seller) loggedInUser;
+
+
+            Product product =
+                    productService.findProductByIdAndSeller(
+                            inventory.getProduct().getProductId(),
+                            seller.getUserId()
+                    );
+
+
+            if (product == null) {
+
+                return "redirect:/inventory/list";
+            }
+
+
+            inventory.setProduct(product);
+
+            inventoryService.insertInventory(
+                    inventory
+            );
+
+            return "redirect:/inventory/list";
+        }
+
+
+        if (loggedInUser instanceof Admin) {
+
+            Product product =
+                    productService.findProductById(
+                            inventory.getProduct().getProductId()
+                    );
+
+
+            if (product == null) {
+
+                return "redirect:/inventory/list";
+            }
+
+
+            /*
+             * Admin can create inventory only
+             * for admin-created products.
+             */
+
+            if (product.getSeller() != null) {
+
+                return "redirect:/inventory/list";
+            }
+
+
+            inventory.setProduct(product);
+
+            inventoryService.insertInventory(
+                    inventory
+            );
+
+            return "redirect:/inventory/list";
+        }
+
+
+        return "redirect:/";
     }
 
 
     // ==========================================================
-    // SHOW EDIT INVENTORY FORM
-    // URL: /inventory/edit/{inventoryId}
-    // JSP: /WEB-INF/views/inventory/inventory-form.jsp
+    // EDIT INVENTORY FORM
     // ==========================================================
 
     @GetMapping("/edit/{inventoryId}")
     public String showEditInventoryForm(
             @PathVariable String inventoryId,
+            HttpSession session,
             Model model) {
+
+        Object loggedInUser =
+                session.getAttribute("loggedInUser");
+
 
         Inventory inventory =
                 inventoryService.findInventoryById(
                         inventoryId
                 );
 
+
         if (inventory == null) {
 
             return "redirect:/inventory/list";
+        }
+
+
+        // ------------------------------------------------------
+        // SELLER
+        // ------------------------------------------------------
+
+        if (loggedInUser instanceof Seller) {
+
+            Seller seller =
+                    (Seller) loggedInUser;
+
+
+            inventory =
+                    inventoryService
+                            .findInventoryByIdAndSeller(
+                                    inventoryId,
+                                    seller.getUserId()
+                            );
+
+
+            if (inventory == null) {
+
+                return "redirect:/inventory/list";
+            }
+
+
+            List<Product> products =
+                    productService.findProductsBySeller(
+                            seller.getUserId()
+                    );
+
+
+            model.addAttribute(
+                    "products",
+                    products
+            );
+        }
+
+
+        // ------------------------------------------------------
+        // ADMIN
+        // ------------------------------------------------------
+
+        else if (loggedInUser instanceof Admin) {
+
+            /*
+             * Admin can edit only inventory
+             * belonging to admin-created products.
+             *
+             * Admin product = seller == null
+             */
+
+            if (inventory.getProduct().getSeller() != null) {
+
+                return "redirect:/inventory/list";
+            }
+
+
+            /*
+             * Admin should see only admin-created
+             * products in the product dropdown.
+             */
+
+            List<Product> products =
+                    productService.findProductsBySeller(
+                            null
+                    );
+
+
+            model.addAttribute(
+                    "products",
+                    products
+            );
+        }
+
+
+        else {
+
+            return "redirect:/";
         }
 
 
@@ -166,50 +417,198 @@ public class InventoryController {
         );
 
 
-        // Load products for dropdown
-
-        List<Product> products =
-                productService.findAllProducts();
-
-        model.addAttribute(
-                "products",
-                products
-        );
-
-
         return "inventory/inventory-form";
     }
 
 
     // ==========================================================
     // UPDATE INVENTORY
-    // URL: /inventory/edit
     // ==========================================================
 
     @PostMapping("/edit")
     public String updateInventory(
-            @ModelAttribute Inventory inventory) {
+            @ModelAttribute Inventory inventory,
+            HttpSession session) {
 
-        inventoryService.updateInventory(
-                inventory
-        );
+        Object loggedInUser =
+                session.getAttribute("loggedInUser");
 
-        return "redirect:/inventory/list";
+
+        // ------------------------------------------------------
+        // SELLER
+        // ------------------------------------------------------
+
+        if (loggedInUser instanceof Seller) {
+
+            Seller seller =
+                    (Seller) loggedInUser;
+
+
+            Inventory existing =
+                    inventoryService
+                            .findInventoryByIdAndSeller(
+                                    inventory.getInventoryId(),
+                                    seller.getUserId()
+                            );
+
+
+            if (existing == null) {
+
+                return "redirect:/inventory/list";
+            }
+
+
+            Product product =
+                    productService.findProductByIdAndSeller(
+                            inventory.getProduct().getProductId(),
+                            seller.getUserId()
+                    );
+
+
+            if (product == null) {
+
+                return "redirect:/inventory/list";
+            }
+
+
+            inventory.setProduct(product);
+
+
+            inventoryService.updateInventory(
+                    inventory
+            );
+
+
+            return "redirect:/inventory/list";
+        }
+
+
+        // ------------------------------------------------------
+        // ADMIN
+        // ------------------------------------------------------
+
+        if (loggedInUser instanceof Admin) {
+
+            Inventory existing =
+                    inventoryService.findInventoryById(
+                            inventory.getInventoryId()
+                    );
+
+
+            if (existing == null) {
+
+                return "redirect:/inventory/list";
+            }
+
+
+            /*
+             * Cannot edit seller inventory.
+             */
+
+            if (existing.getProduct().getSeller() != null) {
+
+                return "redirect:/inventory/list";
+            }
+
+
+            Product product =
+                    productService.findProductById(
+                            inventory.getProduct().getProductId()
+                    );
+
+
+            if (product == null) {
+
+                return "redirect:/inventory/list";
+            }
+
+
+            /*
+             * Cannot change admin inventory
+             * to a seller's product.
+             */
+
+            if (product.getSeller() != null) {
+
+                return "redirect:/inventory/list";
+            }
+
+
+            inventory.setProduct(product);
+
+
+            inventoryService.updateInventory(
+                    inventory
+            );
+
+
+            return "redirect:/inventory/list";
+        }
+
+
+        return "redirect:/";
     }
 
 
     // ==========================================================
-    // UPDATE INVENTORY QUANTITY
-    // URL: /inventory/quantity/update
+    // UPDATE QUANTITY
     // ==========================================================
 
     @PostMapping("/quantity/update")
     public String updateQuantity(
-            @ModelAttribute Inventory inventory) {
+            @ModelAttribute Inventory inventory,
+            HttpSession session) {
+
+        Object loggedInUser =
+                session.getAttribute("loggedInUser");
+
+
+        if (loggedInUser instanceof Seller) {
+
+            Seller seller =
+                    (Seller) loggedInUser;
+
+
+            Inventory existing =
+                    inventoryService
+                            .findInventoryByIdAndSeller(
+                                    inventory.getInventoryId(),
+                                    seller.getUserId()
+                            );
+
+
+            if (existing == null) {
+
+                return "redirect:/inventory/list";
+            }
+        }
+
+
+        if (loggedInUser instanceof Admin) {
+
+            Inventory existing =
+                    inventoryService.findInventoryById(
+                            inventory.getInventoryId()
+                    );
+
+
+            if (existing == null) {
+
+                return "redirect:/inventory/list";
+            }
+
+
+            if (existing.getProduct().getSeller() != null) {
+
+                return "redirect:/inventory/list";
+            }
+        }
+
 
         inventoryService.updateQuantity(
                 inventory
         );
+
 
         return "redirect:/inventory/list";
     }
@@ -217,41 +616,130 @@ public class InventoryController {
 
     // ==========================================================
     // DELETE INVENTORY
-    // URL: /inventory/delete/{inventoryId}
     // ==========================================================
 
     @PostMapping("/delete/{inventoryId}")
     public String deleteInventory(
-            @PathVariable String inventoryId) {
+            @PathVariable String inventoryId,
+            HttpSession session) {
 
-        inventoryService.deleteInventory(
-                inventoryId
-        );
+        Object loggedInUser =
+                session.getAttribute("loggedInUser");
 
-        return "redirect:/inventory/list";
+
+        Inventory inventory =
+                inventoryService.findInventoryById(
+                        inventoryId
+                );
+
+
+        if (inventory == null) {
+
+            return "redirect:/inventory/list";
+        }
+
+
+        // ------------------------------------------------------
+        // SELLER
+        // ------------------------------------------------------
+
+        if (loggedInUser instanceof Seller) {
+
+            Seller seller =
+                    (Seller) loggedInUser;
+
+
+            Inventory owned =
+                    inventoryService
+                            .findInventoryByIdAndSeller(
+                                    inventoryId,
+                                    seller.getUserId()
+                            );
+
+
+            if (owned == null) {
+
+                return "redirect:/inventory/list";
+            }
+
+
+            inventoryService.deleteInventory(
+                    inventoryId
+            );
+
+
+            return "redirect:/inventory/list";
+        }
+
+
+        // ------------------------------------------------------
+        // ADMIN
+        // ------------------------------------------------------
+
+        if (loggedInUser instanceof Admin) {
+
+            if (inventory.getProduct().getSeller() != null) {
+
+                return "redirect:/inventory/list";
+            }
+
+
+            inventoryService.deleteInventory(
+                    inventoryId
+            );
+
+
+            return "redirect:/inventory/list";
+        }
+
+
+        return "redirect:/";
     }
 
 
     // ==========================================================
     // INVENTORY BY SELLER
-    // URL: /inventory/seller/{sellerId}
-    // JSP: /WEB-INF/views/inventory/inventories.jsp
     // ==========================================================
 
     @GetMapping("/seller/{sellerId}")
     public String inventoryBySeller(
             @PathVariable String sellerId,
+            HttpSession session,
             Model model) {
+
+        Object loggedInUser =
+                session.getAttribute("loggedInUser");
+
+
+        if (loggedInUser instanceof Seller) {
+
+            Seller seller =
+                    (Seller) loggedInUser;
+
+
+            /*
+             * Seller cannot request another seller's
+             * inventory by changing URL.
+             */
+
+            if (!seller.getUserId().equals(sellerId)) {
+
+                return "redirect:/inventory/list";
+            }
+        }
+
 
         List<Inventory> inventoryList =
                 inventoryService.findInventoryBySeller(
                         sellerId
                 );
 
+
         model.addAttribute(
                 "inventoryList",
                 inventoryList
         );
+
 
         model.addAttribute(
                 "sellerId",

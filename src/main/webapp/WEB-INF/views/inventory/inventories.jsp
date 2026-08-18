@@ -12,41 +12,31 @@
 
     <h1>Inventory Management</h1>
 
-
-    <!-- ===================================================== -->
-    <!-- Navigation -->
-    <!-- ===================================================== -->
-
-    <div class="nav">
-
-        <a href="${pageContext.request.contextPath}/product/list">
-            Products
-        </a>
-
-        <a href="${pageContext.request.contextPath}/inventory/list">
-            All Inventory
-        </a>
-
-        <a href="${pageContext.request.contextPath}/category/list">
-            Categories
-        </a>
-
-        <a href="${pageContext.request.contextPath}/admin/sellers">
-            Sellers
-        </a>
-
-    </div>
-
-
     <!-- ===================================================== -->
     <!-- Add Inventory -->
     <!-- ===================================================== -->
 
     <div style="margin-bottom:20px;">
+    
+    <a href="${pageContext.request.contextPath}/admin/dashboard"
+			class="btn btn-primary" style="color: white;"> Dashboard </a> 
+			
+		<a href="${pageContext.request.contextPath}/product/list" 
+		class="btn btn-primary"
+		style="color: white;">
+            Products
+        </a>
+
+        <a href="${pageContext.request.contextPath}/inventory/list" 
+        class="btn btn-primary" 
+        style="color: white;">
+            All Inventory
+        </a>
+    
 
         <a
                 href="${pageContext.request.contextPath}/inventory/add"
-                class="btn add-btn">
+                class="btn btn-primary">
 
             Add Inventory
 

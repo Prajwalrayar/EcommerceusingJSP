@@ -362,6 +362,43 @@ public class AdminController {
 	}
 
 	// =====================================================
+	// ADD PRODUCT
+	// =====================================================
+
+	@GetMapping("/products/add")
+	public String showAddProductForm(Model model) {
+
+	    Product product = new Product();
+
+	    // Product ID will be generated automatically
+	    product.setProductId(
+	            com.crimsonlogic.ecommerce.util.IdGenerator.generateId("PRO")
+	    );
+
+	    model.addAttribute("product", product);
+
+	    // Load categories for dropdown
+	    model.addAttribute(
+	            "categories",
+	            categoryService.findAllCategories()
+	    );
+
+	    // Admin is adding the product, so seller is NOT required
+	    model.addAttribute("adminMode", true);
+
+	    model.addAttribute(
+	            "formAction",
+	            "/admin/products/add"
+	    );
+
+	    model.addAttribute(
+	            "cancelBackUrl",
+	            "/admin/products"
+	    );
+
+	    return "product/product-form";
+	}
+	// =====================================================
 	// CATEGORY MANAGEMENT
 	// =====================================================
 

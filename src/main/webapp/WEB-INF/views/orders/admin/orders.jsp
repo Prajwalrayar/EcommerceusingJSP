@@ -12,43 +12,42 @@
 
     <h1>Order Management</h1>
 
-
     <!-- Search -->
 
+    <!-- SEARCH + DASHBOARD -->
+
+<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+
+    <!-- SEARCH -->
     <form
-            action="${pageContext.request.contextPath}/orders/admin/search"
-            method="get">
+        action="${pageContext.request.contextPath}/orders/admin/search"
+        method="get"
+        style="display: flex; align-items: center; gap: 10px; margin: 0;">
 
         <input
-                type="text"
-                name="keyword"
-                value="${keyword}"
-                placeholder="Search customer, product or order ID..."/>
+            type="text"
+            name="keyword"
+            placeholder="Search customer, product or order"
+            style="padding: 10px; width: 240px;">
 
         <button
-                type="submit"
-                class="btn edit-btn">
-
+            type="submit"
+            class="btn btn-primary">
             Search
-
         </button>
 
     </form>
 
 
-    <br/>
+    <!-- DASHBOARD -->
+    <a
+        href="${pageContext.request.contextPath}/admin/dashboard"
+        class="btn btn-primary"
+        style="color: white;">
+        Dashboard
+    </a>
 
-
-    <!-- Status Filter -->
-
-    <form
-            action="${pageContext.request.contextPath}/orders/admin/status"
-            method="get">
-
-        <label>
-            Filter by Status:
-        </label>
-
+</div>
 
         <select name="status">
 

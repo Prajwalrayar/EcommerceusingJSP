@@ -24,6 +24,22 @@ public class Product {
 
     private ProductStatus productStatus;
 
+    /*
+     * ID of the user who created this product.
+     *
+     * ADMIN  -> ADM001
+     * SELLER -> SEL001
+     */
+    private String createdBy;
+    
+    private String userId;
+    
+    private int initialStock;
+
+    
+    // ==========================================================
+    // CONSTRUCTORS
+    // ==========================================================
 
     public Product() {
     }
@@ -50,6 +66,10 @@ public class Product {
     }
 
 
+    // ==========================================================
+    // PRODUCT ID
+    // ==========================================================
+
     public String getProductId() {
         return productId;
     }
@@ -58,6 +78,10 @@ public class Product {
         this.productId = productId;
     }
 
+
+    // ==========================================================
+    // PRODUCT NAME
+    // ==========================================================
 
     public String getProductName() {
         return productName;
@@ -68,6 +92,10 @@ public class Product {
     }
 
 
+    // ==========================================================
+    // BRAND
+    // ==========================================================
+
     public String getBrand() {
         return brand;
     }
@@ -77,23 +105,41 @@ public class Product {
     }
 
 
+    // ==========================================================
+    // DESCRIPTION
+    // ==========================================================
+
     public String getProductDescription() {
         return productDescription;
     }
 
-    public void setProductDescription(String productDescription) {
-        this.productDescription = productDescription;
+    public void setProductDescription(
+            String productDescription) {
+
+        this.productDescription =
+                productDescription;
     }
 
+
+    // ==========================================================
+    // PRICE
+    // ==========================================================
 
     public double getProductPrice() {
         return productPrice;
     }
 
-    public void setProductPrice(double productPrice) {
+    public void setProductPrice(
+            double productPrice) {
+
         this.productPrice = productPrice;
     }
 
+
+    
+    // ==========================================================
+    // RATING
+    // ==========================================================
 
     public double getRating() {
         return rating;
@@ -104,38 +150,97 @@ public class Product {
     }
 
 
+    // ==========================================================
+    // REVIEW COUNT
+    // ==========================================================
+
     public int getReviewCount() {
         return reviewCount;
     }
 
-    public void setReviewCount(int reviewCount) {
+    public void setReviewCount(
+            int reviewCount) {
+
         this.reviewCount = reviewCount;
     }
 
+
+    // ==========================================================
+    // CATEGORY
+    // ==========================================================
 
     public Category getCategory() {
         return category;
     }
 
-    public void setCategory(Category category) {
+    public void setCategory(
+            Category category) {
+
         this.category = category;
     }
 
+
+    // ==========================================================
+    // SELLER
+    // ==========================================================
 
     public Seller getSeller() {
         return seller;
     }
 
-    public void setSeller(Seller seller) {
+    public void setSeller(
+            Seller seller) {
+
         this.seller = seller;
     }
 
+
+    // ==========================================================
+    // PRODUCT STATUS
+    // ==========================================================
 
     public ProductStatus getProductStatus() {
         return productStatus;
     }
 
-    public void setProductStatus(ProductStatus productStatus) {
+    public void setProductStatus(
+            ProductStatus productStatus) {
+
         this.productStatus = productStatus;
     }
+
+
+    // ==========================================================
+    // CREATED BY
+    // ==========================================================
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(
+            String createdBy) {
+
+        this.createdBy = createdBy;
+    }
+    
+ // ==========================================================
+ // USER ID
+ // ==========================================================
+
+ public String getUserId() {
+     return userId;
+ }
+
+ public void setUserId(String userId) {
+     this.userId = userId;
+ }
+
+ public int getInitialStock() {
+     return initialStock;
+ }
+
+ public void setInitialStock(int initialStock) {
+     this.initialStock = initialStock;
+ }
 }

@@ -85,4 +85,16 @@ public class InventoryServiceImpl implements InventoryService {
                 sellerId
         );
     }
+
+
+    @Override
+    public Inventory findInventoryByIdAndSeller(
+            String inventoryId,
+            String sellerId) {
+
+        return inventoryMapper.findInventoryByIdAndSeller(
+                inventoryId,
+                sellerId
+        );
+    }
 }

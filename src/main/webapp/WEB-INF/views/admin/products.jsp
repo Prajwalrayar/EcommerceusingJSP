@@ -13,25 +13,6 @@
     <h1>Product Management</h1>
 
 
-    <!-- ===================================================== -->
-    <!-- NAVIGATION -->
-    <!-- ===================================================== -->
-
-    <div class="nav">
-
-        <a href="${pageContext.request.contextPath}/admin/categories">
-            Categories
-        </a>
-
-        <a href="${pageContext.request.contextPath}/admin/inventory">
-            Inventory
-        </a>
-
-        <a href="${pageContext.request.contextPath}/admin/dashboard">
-            Dashboard
-        </a>
-
-    </div>
 
 
     <!-- ===================================================== -->
@@ -39,13 +20,23 @@
     <!-- ===================================================== -->
 
     <div style="margin-bottom: 25px;">
+    
+    <a href="${pageContext.request.contextPath}/admin/dashboard"
+        	class="btn btn-primary" style="color: white;">
+            Dashboard
+        </a>
 
-        <a href="${pageContext.request.contextPath}/admin/products/add"
+        <a href="${pageContext.request.contextPath}/product/add"
            class="btn btn-primary">
 
             Add Product
 
         </a>
+        
+        <a href="${pageContext.request.contextPath}/admin/inventory"  class="btn btn-primary">
+            Inventory
+        </a>
+        
 
     </div>
 
@@ -126,7 +117,7 @@
 
                                 <!-- EDIT -->
 
-                                <a href="${pageContext.request.contextPath}/admin/products/edit/${product.productId}"
+                                <a href="${pageContext.request.contextPath}/product/edit/${product.productId}"
                                    class="btn btn-primary">
 
                                     Edit

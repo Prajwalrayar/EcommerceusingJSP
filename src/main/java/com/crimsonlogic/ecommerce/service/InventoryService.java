@@ -53,4 +53,8 @@ public interface InventoryService {
      */
     List<Inventory> findInventoryBySeller(
             String sellerId);
+    
+    Inventory findInventoryByIdAndSeller(
+            String inventoryId,
+            String sellerId);
 }

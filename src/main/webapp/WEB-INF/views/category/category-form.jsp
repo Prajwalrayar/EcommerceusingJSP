@@ -56,31 +56,21 @@
             action="${pageContext.request.contextPath}${formAction}"
             method="post">
 
+<c:if test="${not empty category.categoryId}">
 
-        <!-- ================================================= -->
-        <!-- Category ID -->
-        <!-- ================================================= -->
+    <div class="form-group">
 
-        <div class="form-group">
+        <label>
+            Category ID
+        </label>
 
-            <label for="categoryId">
-                Category ID
-            </label>
+        <input type="text"
+               value="${category.categoryId}"
+               readonly>
 
+    </div>
 
-            <input
-                    type="text"
-                    id="categoryId"
-                    name="categoryId"
-                    value="${category.categoryId}"
-                    required
-                    <c:if test="${not empty category.categoryId}">
-                        readonly
-                    </c:if>
-            />
-
-        </div>
-
+</c:if>
 
         <!-- ================================================= -->
         <!-- Category Name -->
@@ -99,6 +89,7 @@
                     name="categoryName"
                     value="${category.categoryName}"
                     required
+                    minlength = "3"
                     maxlength="100"
             />
 
@@ -120,6 +111,7 @@
                     id="categoryDescription"
                     name="categoryDescription"
                     rows="5"
+                    minlength="7"
                     maxlength="500"
                     required>${category.categoryDescription}</textarea>
 

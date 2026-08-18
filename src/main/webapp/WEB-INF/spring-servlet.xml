@@ -18,10 +18,9 @@ http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 
 	<mvc:annotation-driven />
 	<!-- Define Spring MVC view resolver -->
-	
-	<mvc:resources
-        mapping="/resources/**"
-        location="/resources/" />
+
+	<mvc:resources mapping="/resources/**"
+		location="/resources/" />
 
 	<bean
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
@@ -30,6 +29,60 @@ http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 	</bean>
 
 
+	<!-- ========================================================== ROLE INTERCEPTOR 
+		========================================================== -->
+
+	<mvc:interceptors>
+
+		<mvc:interceptor>
+
+			<!-- Protected ADMIN URLs -->
+			<mvc:mapping path="/admin/**" />
+
+			<!-- Protected SELLER URLs -->
+			<mvc:mapping path="/seller/**" />
+
+			<!-- Protected CUSTOMER URLs -->
+			<mvc:mapping path="/customer/**" />
+
+			<!-- Protected REPORT URLs -->
+			<mvc:mapping path="/reports/**" />
+
+			<!-- Protected INVENTORY URLs -->
+			<mvc:mapping path="/inventory/**" />
+
+			<!-- Protected PRODUCT URLs -->
+			<mvc:mapping path="/product/**" />
+
+			<!-- Protected ADDRESS URLs -->
+			<mvc:mapping path="/address/**" />
+
+
+			<!-- ================================================== PUBLIC URLs - 
+				DO NOT INTERCEPT ================================================== -->
+
+			<!-- Admin login -->
+			<mvc:exclude-mapping path="/admin/login" />
+
+			<!-- Seller login -->
+			<mvc:exclude-mapping path="/seller/login" />
+
+			<!-- Seller registration -->
+			<mvc:exclude-mapping path="/seller/register" />
+
+			<!-- Customer login -->
+			<mvc:exclude-mapping path="/customer/login" />
+
+			<!-- Customer registration -->
+			<mvc:exclude-mapping path="/customer/register" />
+
+
+			<bean
+				class="com.crimsonlogic.ecommerce.interceptor.RoleInterceptor" />
+
+		</mvc:interceptor>
+
+	</mvc:interceptors>
 	<!-- DATA SOURCE -->
 	<bean id="dataSource"
 		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
@@ -47,13 +100,12 @@ http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 		<property name="dataSource" ref="dataSource" />
 		<property name="mapperLocations"
 			value="classpath:mappers/*.xml" />
-			
-			<property name="configuration">
-    <bean class="org.apache.ibatis.session.Configuration">
-        <property name="mapUnderscoreToCamelCase"
-                  value="true"/>
-    </bean>
-</property>
+
+		<property name="configuration">
+			<bean class="org.apache.ibatis.session.Configuration">
+				<property name="mapUnderscoreToCamelCase" value="true" />
+			</bean>
+		</property>
 	</bean>
 
 	<!-- 3. Scan for Mapper Interfaces -->
@@ -80,7 +132,7 @@ http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 		<property name="sellerMapper" ref="sellerMapper" />
 
 	</bean>
-	
+
 	<bean id="adminService"
 		class="com.crimsonlogic.ecommerce.service.impl.AdminServiceImpl">
 

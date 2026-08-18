@@ -3,6 +3,8 @@ package com.crimsonlogic.ecommerce.service.impl;
 import com.crimsonlogic.ecommerce.dao.CategoryMapper;
 import com.crimsonlogic.ecommerce.model.Category;
 import com.crimsonlogic.ecommerce.service.CategoryService;
+import com.crimsonlogic.ecommerce.util.IdGenerator;
+import com.crimsonlogic.ecommerce.util.ValidationUtil;
 
 import java.util.List;
 
@@ -23,8 +25,39 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void insertCategory(Category category) {
 
+        // ------------------------------------------------------
+        // Generate Category ID automatically
+        // ------------------------------------------------------
+
+        if (category.getCategoryId() == null
+                || category.getCategoryId().trim().isEmpty()) {
+
+            category.setCategoryId(
+                    IdGenerator.generateId("CAT")
+            );
+        }
+
+
+        // ------------------------------------------------------
+        // Validate Category
+        // ------------------------------------------------------
+
+        ValidationUtil.validateCategoryName(
+                category.getCategoryName()
+        );
+
+        ValidationUtil.validateCategoryDescription(
+                category.getCategoryDescription()
+        );
+
+
+        // ------------------------------------------------------
+        // Insert
+        // ------------------------------------------------------
+
         categoryMapper.insertCategory(category);
     }
+
 
 
     // ==========================================================
@@ -33,6 +66,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void updateCategory(Category category) {
+
+        ValidationUtil.validateCategoryName(
+                category.getCategoryName()
+        );
+
+        ValidationUtil.validateCategoryDescription(
+                category.getCategoryDescription()
+        );
 
         categoryMapper.updateCategory(category);
     }

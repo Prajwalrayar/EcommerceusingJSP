@@ -13,10 +13,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.crimsonlogic.ecommerce.enumeration.OrderStatus;
 import com.crimsonlogic.ecommerce.exception.ValidationException;
 import com.crimsonlogic.ecommerce.model.Address;
 import com.crimsonlogic.ecommerce.model.Admin;
+import com.crimsonlogic.ecommerce.model.Category;
 import com.crimsonlogic.ecommerce.model.Customer;
+import com.crimsonlogic.ecommerce.model.Inventory;
 import com.crimsonlogic.ecommerce.model.Order;
 import com.crimsonlogic.ecommerce.model.Product;
 import com.crimsonlogic.ecommerce.model.Seller;
@@ -27,7 +30,9 @@ import com.crimsonlogic.ecommerce.model.report.ReportFilter;
 import com.crimsonlogic.ecommerce.model.report.SalesReport;
 import com.crimsonlogic.ecommerce.model.report.SellerSalesReport;
 import com.crimsonlogic.ecommerce.service.AdminService;
+import com.crimsonlogic.ecommerce.service.CategoryService;
 import com.crimsonlogic.ecommerce.service.CustomerService;
+import com.crimsonlogic.ecommerce.service.InventoryService;
 import com.crimsonlogic.ecommerce.service.OrderService;
 import com.crimsonlogic.ecommerce.service.ProductService;
 import com.crimsonlogic.ecommerce.service.ReportService;
@@ -37,590 +42,636 @@ import com.crimsonlogic.ecommerce.service.SellerService;
 @RequestMapping("/admin")
 public class AdminController {
 
-    private final AdminService adminService;
-    private final CustomerService customerService;
-    private final SellerService sellerService;
-    private final ProductService productService;
-    private final ReportService reportService;
-    private final OrderService orderService;
-
-    public AdminController(
-            AdminService adminService,
-            CustomerService customerService,
-            SellerService sellerService,
-            ProductService productService,
-            ReportService reportService,
-            OrderService orderService) {
-
-        this.adminService = adminService;
-        this.customerService = customerService;
-        this.sellerService = sellerService;
-        this.productService = productService;
-        this.reportService = reportService;
-        this.orderService = orderService;
-    }
-
-    // =====================================================
-    // ADMIN DASHBOARD
-    // =====================================================
-
-    @GetMapping("/dashboard")
-    public String dashboard(Model model) {
-
-        // 1. Total Customers
-        int totalCustomers = adminService.getAllCustomers().size();
-
-        // 2. Total Sellers
-        int totalSellers = adminService.getAllSellers().size();
-
-        // 3. Total Products
-        int totalProducts = productService.findAllProducts().size();
-
-        // 4. Total Orders
-        List<Order> allOrders = orderService.findAllOrders();
-        int totalOrders = allOrders.size();
-
-        // 5. Total Revenue
-        ReportFilter emptyFilter = new ReportFilter();
-        SalesReport salesReport = reportService.getSalesReport(emptyFilter);
-        double totalRevenue = (salesReport != null) ? salesReport.getTotalSales() : 0.0;
-
-        // 6. Pending Orders
-        long pendingOrders = allOrders.stream()
-                .filter(o -> o.getOrderStatus() != null &&
-                        (o.getOrderStatus().name().contains("PENDING")))
-                .count();
-
-        model.addAttribute("totalCustomers", totalCustomers);
-        model.addAttribute("totalSellers", totalSellers);
-        model.addAttribute("totalProducts", totalProducts);
-        model.addAttribute("totalOrders", totalOrders);
-        model.addAttribute("totalRevenue", totalRevenue);
-        model.addAttribute("pendingOrders", pendingOrders);
-
-        return "admin/dashboard";
-    }
-
-    // =====================================================
-    // CUSTOMER MANAGEMENT
-    // =====================================================
-
-    /**
-     * Displays all customers.
-     *
-     * URL:
-     *
-     * /admin/customers
-     */
-    @GetMapping("/customers")
-    public String viewAllCustomers(
-            Model model) {
-
-        List<Customer> customers =
-                adminService.getAllCustomers();
-
-        model.addAttribute(
-                "customers",
-                customers);
-
-        return "admin/customers";
-    }
-
-
-    /**
-     * Displays one customer's profile.
-     *
-     * Admin can only VIEW the customer.
-     *
-     * URL:
-     *
-     * /admin/customer/{customerId}
-     */
-    @GetMapping("/customer/{customerId}")
-    public String viewCustomerProfile(
-            @PathVariable String customerId,
-            Model model) {
-
-        Customer customer =
-                customerService.findCustomerById(
-                        customerId);
-
-        if (customer == null) {
-
-            return "redirect:/admin/customers";
-        }
-
-        List<Address> addresses =
-                customerService.findCustomerAddresses(
-                        customerId);
-
-        model.addAttribute(
-                "customer",
-                customer);
-
-        model.addAttribute(
-                "addresses",
-                addresses);
-
-        return "admin/customer-profile";
-    }
-
-
-    /**
-     * Deletes a customer.
-     *
-     * URL:
-     *
-     * /admin/customers/delete/{customerId}
-     */
-    @PostMapping("/customers/delete/{customerId}")
-    public String deleteCustomer(
-            @PathVariable String customerId) {
-
-        adminService.deleteCustomer(
-                customerId);
-
-        return "redirect:/admin/customers";
-    }
-
-
-    // =====================================================
-    // SELLER MANAGEMENT
-    // =====================================================
-
-    /**
-     * Displays all sellers.
-     *
-     * URL:
-     *
-     * /admin/sellers
-     */
-    @GetMapping("/sellers")
-    public String viewAllSellers(
-            Model model) {
-
-        List<Seller> sellers =
-                adminService.getAllSellers();
-
-        model.addAttribute(
-                "sellers",
-                sellers);
-
-        return "admin/sellers";
-    }
-
-
-    /**
-     * Displays one seller's profile.
-     *
-     * Admin can only VIEW the seller.
-     *
-     * URL:
-     *
-     * /admin/seller/{sellerId}
-     */
-    @GetMapping("/seller/{sellerId}")
-    public String viewSellerProfile(
-            @PathVariable String sellerId,
-            Model model) {
-
-        Seller seller =
-                sellerService.findSellerById(
-                        sellerId);
+	private final AdminService adminService;
+	private final CustomerService customerService;
+	private final SellerService sellerService;
+	private final ProductService productService;
+	private final ReportService reportService;
+	private final OrderService orderService;
+	private final CategoryService categoryService;
+	private final InventoryService inventoryService;
+
+	public AdminController(AdminService adminService, CustomerService customerService, SellerService sellerService,
+			ProductService productService, ReportService reportService, OrderService orderService,
+			CategoryService categoryService, InventoryService inventoryService) {
+
+		this.adminService = adminService;
+		this.customerService = customerService;
+		this.sellerService = sellerService;
+		this.productService = productService;
+		this.reportService = reportService;
+		this.orderService = orderService;
+		this.categoryService = categoryService;
+		this.inventoryService = inventoryService;
+	}
+
+	// =====================================================
+	// ADMIN DASHBOARD
+	// =====================================================
+
+	@GetMapping("/dashboard")
+	public String dashboard(Model model) {
+
+		// 1. Total Customers
+		int totalCustomers = adminService.getAllCustomers().size();
+
+		// 2. Total Sellers
+		int totalSellers = adminService.getAllSellers().size();
+
+		// 3. Total Products
+		int totalProducts = productService.findAllProducts().size();
+
+		// 4. Total Orders
+		List<Order> allOrders = orderService.findAllOrders();
+		int totalOrders = allOrders.size();
+
+		// 5. Total Revenue
+		ReportFilter emptyFilter = new ReportFilter();
+		SalesReport salesReport = reportService.getSalesReport(emptyFilter);
+		double totalRevenue = (salesReport != null) ? salesReport.getTotalSales() : 0.0;
+
+		// 6. Pending Orders
+		long pendingOrders = allOrders.stream()
+				.filter(o -> o.getOrderStatus() != null && (o.getOrderStatus().name().contains("PENDING"))).count();
+
+		model.addAttribute("totalCustomers", totalCustomers);
+		model.addAttribute("totalSellers", totalSellers);
+		model.addAttribute("totalProducts", totalProducts);
+		model.addAttribute("totalOrders", totalOrders);
+		model.addAttribute("totalRevenue", totalRevenue);
+		model.addAttribute("pendingOrders", pendingOrders);
+
+		return "admin/dashboard";
+	}
+
+	// =====================================================
+	// CUSTOMER MANAGEMENT
+	// =====================================================
+
+	/**
+	 * Displays all customers.
+	 *
+	 * URL:
+	 *
+	 * /admin/customers
+	 */
+	@GetMapping("/customers")
+	public String viewAllCustomers(Model model) {
+
+		List<Customer> customers = adminService.getAllCustomers();
+
+		model.addAttribute("customers", customers);
+
+		return "admin/customers";
+	}
+
+	/**
+	 * Displays one customer's profile.
+	 *
+	 * Admin can only VIEW the customer.
+	 *
+	 * URL:
+	 *
+	 * /admin/customer/{customerId}
+	 */
+	@GetMapping("/customer/{customerId}")
+	public String viewCustomerProfile(@PathVariable String customerId, Model model) {
+
+		Customer customer = customerService.findCustomerById(customerId);
+
+		if (customer == null) {
+
+			return "redirect:/admin/customers";
+		}
+
+		List<Address> addresses = customerService.findCustomerAddresses(customerId);
+
+		model.addAttribute("customer", customer);
+
+		model.addAttribute("addresses", addresses);
 
-        if (seller == null) {
+		return "admin/customer-profile";
+	}
 
-            return "redirect:/admin/sellers";
-        }
+	/**
+	 * Deletes a customer.
+	 *
+	 * URL:
+	 *
+	 * /admin/customers/delete/{customerId}
+	 */
+	@PostMapping("/customers/delete/{customerId}")
+	public String deleteCustomer(@PathVariable String customerId) {
 
-        model.addAttribute(
-                "seller",
-                seller);
+		adminService.deleteCustomer(customerId);
 
-        return "admin/seller-profile";
-    }
+		return "redirect:/admin/customers";
+	}
 
+	// =====================================================
+	// SELLER MANAGEMENT
+	// =====================================================
 
-    /**
-     * Deletes a seller.
-     *
-     * URL:
-     *
-     * /admin/sellers/delete/{sellerId}
-     */
-    @PostMapping("/sellers/delete/{sellerId}")
-    public String deleteSeller(
-            @PathVariable String sellerId) {
+	/**
+	 * Displays all sellers.
+	 *
+	 * URL:
+	 *
+	 * /admin/sellers
+	 */
+	@GetMapping("/sellers")
+	public String viewAllSellers(Model model) {
 
-        adminService.deleteSeller(
-                sellerId);
+		List<Seller> sellers = adminService.getAllSellers();
 
-        return "redirect:/admin/sellers";
-    }
+		model.addAttribute("sellers", sellers);
 
+		return "admin/sellers";
+	}
 
-    // =====================================================
-    // ADMIN PROFILE
-    // =====================================================
+	/**
+	 * Displays one seller's profile.
+	 *
+	 * Admin can only VIEW the seller.
+	 *
+	 * URL:
+	 *
+	 * /admin/seller/{sellerId}
+	 */
+	@GetMapping("/seller/{sellerId}")
+	public String viewSellerProfile(@PathVariable String sellerId, Model model) {
 
-    /**
-     * Displays Admin Profile.
-     *
-     * URL:
-     *
-     * /admin/profile
-     */
-    @GetMapping("/profile")
-    public String viewProfile(
-            HttpSession session,
-            Model model) {
+		Seller seller = sellerService.findSellerById(sellerId);
 
-        String adminId =
-                (String) session.getAttribute(
-                        "userId");
+		if (seller == null) {
 
-        if (adminId == null) {
+			return "redirect:/admin/sellers";
+		}
 
-            return "redirect:/admin/login";
-        }
+		model.addAttribute("seller", seller);
 
-        Admin admin =
-                adminService.getAdminProfile(
-                        adminId);
+		return "admin/seller-profile";
+	}
 
-        model.addAttribute(
-                "admin",
-                admin);
+	/**
+	 * Deletes a seller.
+	 *
+	 * URL:
+	 *
+	 * /admin/sellers/delete/{sellerId}
+	 */
+	@PostMapping("/sellers/delete/{sellerId}")
+	public String deleteSeller(@PathVariable String sellerId) {
 
-        return "admin/profile";
-    }
+		adminService.deleteSeller(sellerId);
 
+		return "redirect:/admin/sellers";
+	}
 
-    // =====================================================
-    // EDIT ADMIN PROFILE
-    // =====================================================
+	// =====================================================
+	// ADMIN PROFILE
+	// =====================================================
 
-    @GetMapping("/profile/edit")
-    public String editProfile(
-            HttpSession session,
-            Model model) {
+	/**
+	 * Displays Admin Profile.
+	 *
+	 * URL:
+	 *
+	 * /admin/profile
+	 */
+	@GetMapping("/profile")
+	public String viewProfile(HttpSession session, Model model) {
 
-        String adminId =
-                (String) session.getAttribute(
-                        "userId");
+		String adminId = (String) session.getAttribute("userId");
 
-        if (adminId == null) {
+		if (adminId == null) {
 
-            return "redirect:/admin/login";
-        }
+			return "redirect:/admin/login";
+		}
 
-        Admin admin =
-                adminService.getAdminProfile(
-                        adminId);
+		Admin admin = adminService.getAdminProfile(adminId);
 
-        model.addAttribute(
-                "admin",
-                admin);
+		model.addAttribute("admin", admin);
 
-        return "admin/edit-profile";
-    }
+		return "admin/profile";
+	}
 
+	// =====================================================
+	// EDIT ADMIN PROFILE
+	// =====================================================
 
-    // =====================================================
-    // UPDATE ADMIN PHONE
-    // =====================================================
+	@GetMapping("/profile/edit")
+	public String editProfile(HttpSession session, Model model) {
 
-    @PostMapping("/profile/update")
-    public String updateProfile(
-            @ModelAttribute Admin admin,
-            Model model) {
+		String adminId = (String) session.getAttribute("userId");
 
-        try {
+		if (adminId == null) {
 
-            adminService.updateAdminPhone(
-                    admin);
+			return "redirect:/admin/login";
+		}
 
-            return "redirect:/admin/profile";
+		Admin admin = adminService.getAdminProfile(adminId);
 
-        } catch (ValidationException exception) {
+		model.addAttribute("admin", admin);
 
-            model.addAttribute(
-                    "error",
-                    exception.getMessage());
+		return "admin/edit-profile";
+	}
 
-            model.addAttribute(
-                    "admin",
-                    admin);
+	// =====================================================
+	// UPDATE ADMIN PHONE
+	// =====================================================
 
-            return "admin/edit-profile";
-        }
-    }
+	@PostMapping("/profile/update")
+	public String updateProfile(@ModelAttribute Admin admin, Model model) {
 
+		try {
 
-    // =====================================================
-    // CHANGE PASSWORD - SHOW PAGE
-    // =====================================================
+			adminService.updateAdminPhone(admin);
 
-    @GetMapping("/profile/change-password")
-    public String showChangePasswordPage(
-            @RequestParam String adminId,
-            Model model) {
+			return "redirect:/admin/profile";
 
-        model.addAttribute(
-                "adminId",
-                adminId);
+		} catch (ValidationException exception) {
 
-        return "admin/change-password";
-    }
+			model.addAttribute("error", exception.getMessage());
 
+			model.addAttribute("admin", admin);
 
-    // =====================================================
-    // CHANGE PASSWORD
-    // =====================================================
+			return "admin/edit-profile";
+		}
+	}
 
-    @PostMapping("/profile/change-password")
-    public String changePassword(
-            @RequestParam String adminId,
-            @RequestParam String currentPassword,
-            @RequestParam String newPassword,
-            @RequestParam String confirmPassword,
-            Model model) {
+	// =====================================================
+	// CHANGE PASSWORD - SHOW PAGE
+	// =====================================================
 
-        try {
+	@GetMapping("/profile/change-password")
+	public String showChangePasswordPage(@RequestParam String adminId, Model model) {
 
-            adminService.changePassword(
-                    adminId,
-                    currentPassword,
-                    newPassword,
-                    confirmPassword);
+		model.addAttribute("adminId", adminId);
 
-            model.addAttribute(
-                    "success",
-                    "Password changed successfully.");
+		return "admin/change-password";
+	}
 
-            model.addAttribute(
-                    "adminId",
-                    adminId);
+	// =====================================================
+	// CHANGE PASSWORD
+	// =====================================================
 
-            return "admin/change-password";
+	@PostMapping("/profile/change-password")
+	public String changePassword(@RequestParam String adminId, @RequestParam String currentPassword,
+			@RequestParam String newPassword, @RequestParam String confirmPassword, Model model) {
 
-        } catch (ValidationException exception) {
+		try {
 
-            model.addAttribute(
-                    "error",
-                    exception.getMessage());
+			adminService.changePassword(adminId, currentPassword, newPassword, confirmPassword);
 
-            model.addAttribute(
-                    "adminId",
-                    adminId);
+			model.addAttribute("success", "Password changed successfully.");
 
-            return "admin/change-password";
-        }
-    }
+			model.addAttribute("adminId", adminId);
 
+			return "admin/change-password";
 
-    // =====================================================
-    // PRODUCT MANAGEMENT
-    // =====================================================
+		} catch (ValidationException exception) {
 
-    /**
-     * Displays all products.
-     *
-     * URL:
-     *
-     * /admin/products
-     */
-    @GetMapping("/products")
-    public String viewAllProducts(
-            Model model) {
+			model.addAttribute("error", exception.getMessage());
 
-        List<Product> products =
-                productService.findAllProducts();
+			model.addAttribute("adminId", adminId);
 
-        model.addAttribute(
-                "products",
-                products);
+			return "admin/change-password";
+		}
+	}
 
-        return "admin/products";
-    }
+	// =====================================================
+	// PRODUCT MANAGEMENT
+	// =====================================================
 
+	/**
+	 * Displays all products.
+	 *
+	 * URL:
+	 *
+	 * /admin/products
+	 */
+	@GetMapping("/products")
+	public String viewAllProducts(Model model) {
 
-    // =====================================================
-    // REPORTS
-    // =====================================================
+		List<Product> products = productService.findAllProducts();
 
-    /**
-     * Displays the Reports page.
-     *
-     * URL:
-     *
-     * /admin/reports
-     */
-    @GetMapping("/reports")
-    public String showReports(
-            Model model) {
+		model.addAttribute("products", products);
 
-        ReportFilter filter =
-                new ReportFilter();
+		return "admin/products";
+	}
 
-        model.addAttribute(
-                "filter",
-                filter);
+	// =====================================================
+	// ADD PRODUCT
+	// =====================================================
 
-        return "admin/reports";
-    }
+	@GetMapping("/products/add")
+	public String showAddProductForm(Model model) {
 
+	    Product product = new Product();
 
-    /**
-     * Generates the selected report.
-     *
-     * URL:
-     *
-     * /admin/reports
-     */
-    @PostMapping("/reports")
-    public String generateReport(
-            @ModelAttribute("filter")
-            ReportFilter filter,
+	    // Product ID will be generated automatically
+	    product.setProductId(
+	            com.crimsonlogic.ecommerce.util.IdGenerator.generateId("PRO")
+	    );
 
-            @RequestParam("reportType")
-            String reportType,
+	    model.addAttribute("product", product);
 
-            Model model) {
+	    // Load categories for dropdown
+	    model.addAttribute(
+	            "categories",
+	            categoryService.findAllCategories()
+	    );
 
+	    // Admin is adding the product, so seller is NOT required
+	    model.addAttribute("adminMode", true);
 
-        /*
-         * Keep the filter on the page
-         * so that the entered values
-         * remain available.
-         */
+	    model.addAttribute(
+	            "formAction",
+	            "/admin/products/add"
+	    );
 
-        model.addAttribute(
-                "filter",
-                filter);
+	    model.addAttribute(
+	            "cancelBackUrl",
+	            "/admin/products"
+	    );
 
-        model.addAttribute(
-                "reportType",
-                reportType);
+	    return "product/product-form";
+	}
+	// =====================================================
+	// CATEGORY MANAGEMENT
+	// =====================================================
 
+	@GetMapping("/categories")
+	public String viewAllCategories(Model model) {
 
-        // =================================================
-        // SALES REPORT
-        // =================================================
+		List<Category> categories = categoryService.findAllCategories();
 
-        if ("sales".equals(reportType)) {
+		model.addAttribute("categories", categories);
+		model.addAttribute("adminMode", true);
 
-            SalesReport report =
-                    reportService.getSalesReport(
-                            filter);
+		return "category/categories";
+	}
 
-            model.addAttribute(
-                    "salesReport",
-                    report);
+	@GetMapping("/categories/add")
+	public String showAddCategoryForm(Model model) {
 
-            return "admin/reports";
-        }
+		model.addAttribute("category", new Category());
 
+		model.addAttribute("formAction", "/admin/categories/add");
 
-        // =================================================
-        // PRODUCT SALES REPORT
-        // =================================================
+		model.addAttribute("cancelBackUrl", "/admin/categories");
 
-        if ("product".equals(reportType)) {
+		model.addAttribute("adminMode", true);
 
-            List<ProductSalesReport> report =
-                    reportService.getProductSalesReport(
-                            filter);
+		return "category/category-form";
+	}
 
-            model.addAttribute(
-                    "productSalesReport",
-                    report);
+	@PostMapping("/categories/add")
+	public String addCategory(@ModelAttribute Category category) {
 
-            return "admin/reports";
-        }
+		categoryService.insertCategory(category);
 
+		return "redirect:/admin/categories";
+	}
 
-        // =================================================
-        // CATEGORY SALES REPORT
-        // =================================================
+	@GetMapping("/categories/edit/{categoryId}")
+	public String showEditCategoryForm(@PathVariable String categoryId, Model model) {
 
-        if ("category".equals(reportType)) {
+		Category category = categoryService.findCategoryById(categoryId);
 
-            List<CategorySalesReport> report =
-                    reportService.getCategorySalesReport(
-                            filter);
+		if (category == null) {
 
-            model.addAttribute(
-                    "categorySalesReport",
-                    report);
+			return "redirect:/admin/categories";
+		}
 
-            return "admin/reports";
-        }
+		model.addAttribute("category", category);
 
+		model.addAttribute("formAction", "/admin/categories/edit");
 
-        // =================================================
-        // SELLER SALES REPORT
-        // =================================================
+		model.addAttribute("cancelBackUrl", "/admin/categories");
 
-        if ("seller".equals(reportType)) {
+		model.addAttribute("adminMode", true);
 
-            List<SellerSalesReport> report =
-                    reportService.getSellerSalesReport(
-                            filter);
+		return "category/category-form";
+	}
 
-            model.addAttribute(
-                    "sellerSalesReport",
-                    report);
+	@PostMapping("/categories/edit")
+	public String updateCategory(@ModelAttribute Category category) {
 
-            return "admin/reports";
-        }
+		categoryService.updateCategory(category);
 
+		return "redirect:/admin/categories";
+	}
 
-        // =================================================
-        // CUSTOMER REPORT
-        // =================================================
+	@PostMapping("/categories/delete/{categoryId}")
+	public String deleteCategory(@PathVariable String categoryId) {
 
-        if ("customer".equals(reportType)) {
+		categoryService.deleteCategory(categoryId);
 
-            CustomerReport report =
-                    reportService.getCustomerReport(
-                            filter);
+		return "redirect:/admin/categories";
+	}
 
-            model.addAttribute(
-                    "customerReport",
-                    report);
+//=====================================================
+//INVENTORY MANAGEMENT
+//=====================================================
 
-            return "admin/reports";
-        }
+	@GetMapping("/inventory")
+	public String viewAllInventory(Model model) {
 
+		List<Inventory> inventoryList = inventoryService.findAllInventory();
 
-        // =================================================
-        // CUSTOMER PRODUCT REPORT
-        // =================================================
+		model.addAttribute("inventoryList", inventoryList);
 
-        if ("customerProduct".equals(reportType)) {
+		model.addAttribute("adminMode", true);
 
-            List<ProductSalesReport> report =
-                    reportService.getCustomerProductReport(
-                            filter);
+		return "inventory/inventories";
+	}
 
-            model.addAttribute(
-                    "customerProductReport",
-                    report);
+	@GetMapping("/inventory/view/{inventoryId}")
+	public String viewInventory(@PathVariable String inventoryId, Model model) {
 
-            return "admin/reports";
-        }
+		Inventory inventory = inventoryService.findInventoryById(inventoryId);
 
+		if (inventory == null) {
+			return "redirect:/admin/inventory";
+		}
 
-        // =================================================
-        // INVALID REPORT TYPE
-        // =================================================
+		model.addAttribute("inventory", inventory);
 
-        model.addAttribute(
-                "error",
-                "Invalid report type.");
+		return "inventory/inventory-details";
+	}
 
-        return "admin/reports";
-    }
+	@PostMapping("/inventory/quantity/update")
+	public String updateInventoryQuantity(@ModelAttribute Inventory inventory) {
+
+		inventoryService.updateQuantity(inventory);
+
+		return "redirect:/admin/inventory";
+	}
+	// =====================================================
+	// REPORTS
+	// =====================================================
+
+	/**
+	 * Displays the Reports page.
+	 *
+	 * URL:
+	 *
+	 * /admin/reports
+	 */
+	@GetMapping("/reports")
+	public String showReports(Model model) {
+
+	    ReportFilter filter = new ReportFilter();
+
+	    model.addAttribute(
+	            "filter",
+	            filter
+	    );
+
+	    List<Seller> sellers =
+	            sellerService.findAllSellers();
+
+	    model.addAttribute(
+	            "sellers",
+	            sellers
+	    );
+
+	    List<Customer> customers =
+	            customerService.findAllCustomers();
+
+	    model.addAttribute(
+	            "customers",
+	            customers
+	    );
+
+	    List<Category> categories =
+	            categoryService.findAllCategories();
+
+	    model.addAttribute(
+	            "categories",
+	            categories
+	    );
+
+	    return "admin/reports";
+	}
+
+	/**
+	 * Generates the selected report.
+	 *
+	 * URL:
+	 *
+	 * /admin/reports
+	 */
+	@PostMapping("/reports")
+	public String generateReport(@ModelAttribute("filter") ReportFilter filter,
+
+			@RequestParam("reportType") String reportType,
+
+			Model model) {
+
+		/*
+		 * Keep the filter on the page so that the entered values remain available.
+		 */
+
+		model.addAttribute("filter", filter);
+
+		model.addAttribute("reportType", reportType);
+		
+		// Reload sellers after POST
+	    List<Seller> sellers =
+	            sellerService.findAllSellers();
+
+	    model.addAttribute(
+	            "sellers",
+	            sellers);
+
+		// =================================================
+		// SALES REPORT
+		// =================================================
+
+		if ("sales".equals(reportType)) {
+
+			SalesReport report = reportService.getSalesReport(filter);
+
+			model.addAttribute("salesReport", report);
+
+			return "admin/reports";
+		}
+
+		// =================================================
+		// PRODUCT SALES REPORT
+		// =================================================
+
+		if ("product".equals(reportType)) {
+
+			List<ProductSalesReport> report = reportService.getProductSalesReport(filter);
+
+			model.addAttribute("productSalesReport", report);
+
+			return "admin/reports";
+		}
+
+		// =================================================
+		// CATEGORY SALES REPORT
+		// =================================================
+
+		if ("category".equals(reportType)) {
+
+			List<CategorySalesReport> report = reportService.getCategorySalesReport(filter);
+
+			model.addAttribute("categorySalesReport", report);
+
+			return "admin/reports";
+		}
+
+		// =================================================
+		// SELLER SALES REPORT
+		// =================================================
+
+		if ("seller".equals(reportType)) {
+
+			List<SellerSalesReport> report = reportService.getSellerSalesReport(filter);
+
+			model.addAttribute("sellerSalesReport", report);
+
+			return "admin/reports";
+		}
+
+		// =================================================
+		// CUSTOMER REPORT
+		// =================================================
+
+		if ("customer".equals(reportType)) {
+
+			CustomerReport report = reportService.getCustomerReport(filter);
+
+			model.addAttribute("customerReport", report);
+
+			return "admin/reports";
+		}
+
+		// =================================================
+		// CUSTOMER PRODUCT REPORT
+		// =================================================
+
+		if ("customerProduct".equals(reportType)) {
+
+			List<ProductSalesReport> report = reportService.getCustomerProductReport(filter);
+
+			model.addAttribute("customerProductReport", report);
+
+			return "admin/reports";
+		}
+
+		// =================================================
+		// INVALID REPORT TYPE
+		// =================================================
+
+		model.addAttribute("error", "Invalid report type.");
+
+		return "admin/reports";
+	}
 
 }

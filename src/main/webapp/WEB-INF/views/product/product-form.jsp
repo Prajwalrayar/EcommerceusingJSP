@@ -4,6 +4,10 @@
            uri="http://java.sun.com/jsp/jstl/core" %>
 
 
+<!-- ===================================================== -->
+<!-- DETERMINE ADD OR EDIT -->
+<!-- ===================================================== -->
+
 <c:choose>
 
     <c:when test="${empty product.productId}">
@@ -46,34 +50,44 @@
     </h1>
 
 
+    <!-- ===================================================== -->
+    <!-- PRODUCT FORM -->
+    <!-- ===================================================== -->
+
     <form
             action="${pageContext.request.contextPath}${formAction}"
             method="post">
 
 
-        <!-- Product ID -->
+        <!-- ================================================= -->
+        <!-- PRODUCT ID -->
+        <!-- ================================================= -->
+        <!--
+             Product ID is NOT shown to the user.
 
-        <div class="form-group">
+             For ADD:
+             product.productId is empty, so nothing useful
+             is submitted.
 
-            <label for="productId">
-                Product ID
-            </label>
+             For EDIT:
+             existing productId is submitted as a hidden field
+             so the controller knows which product to update.
+        -->
+
+        <c:if test="${not empty product.productId}">
 
             <input
-                    type="text"
-                    id="productId"
+                    type="hidden"
                     name="productId"
                     value="${product.productId}"
-                    required
-                    <c:if test="${not empty product.productId}">
-                        readonly
-                    </c:if>
             />
 
-        </div>
+        </c:if>
 
 
-        <!-- Product Name -->
+        <!-- ================================================= -->
+        <!-- PRODUCT NAME -->
+        <!-- ================================================= -->
 
         <div class="form-group">
 
@@ -93,7 +107,9 @@
         </div>
 
 
-        <!-- Brand -->
+        <!-- ================================================= -->
+        <!-- BRAND -->
+        <!-- ================================================= -->
 
         <div class="form-group">
 
@@ -113,7 +129,9 @@
         </div>
 
 
-        <!-- Description -->
+        <!-- ================================================= -->
+        <!-- DESCRIPTION -->
+        <!-- ================================================= -->
 
         <div class="form-group">
 
@@ -125,12 +143,15 @@
                     id="productDescription"
                     name="productDescription"
                     rows="5"
+                    minlength="6"
                     required>${product.productDescription}</textarea>
 
         </div>
 
 
-        <!-- Price -->
+        <!-- ================================================= -->
+        <!-- PRICE -->
+        <!-- ================================================= -->
 
         <div class="form-group">
 
@@ -143,15 +164,17 @@
                     id="productPrice"
                     name="productPrice"
                     value="${product.productPrice}"
-                    min="0"
-                    step="0.01"
+                    min="100"
+                    step="1"
                     required
             />
 
         </div>
 
 
-        <!-- Category -->
+        <!-- ================================================= -->
+        <!-- CATEGORY -->
+        <!-- ================================================= -->
 
         <div class="form-group">
 
@@ -175,10 +198,10 @@
 
                     <option
                             value="${category.categoryId}"
-                            <c:if test="${category.categoryId == product.category.categoryId}">
+                            <c:if test="${not empty product.category
+                                    and product.category.categoryId eq category.categoryId}">
                                 selected
-                            </c:if>
-                    >
+                            </c:if>>
 
                         ${category.categoryName}
 
@@ -191,89 +214,32 @@
         </div>
 
 
-        <!-- Seller -->
+        <!-- ================================================= -->
+        <!-- QUANTITY -->
+        <!-- ================================================= -->
 
         <div class="form-group">
 
-            <label for="sellerId">
-                Seller
+            <label for="initialStock">
+                Quantity
             </label>
 
-            <select
-                    id="sellerId"
-                    name="seller.userId"
-                    required>
-
-                <option value="">
-                    -- Select Seller --
-                </option>
-
-
-                <c:forEach
-                        var="seller"
-                        items="${sellers}">
-
-                    <option
-                            value="${seller.userId}"
-                            <c:if test="${seller.userId == product.seller.userId}">
-                                selected
-                            </c:if>
-                    >
-
-                        ${seller.shopName}
-                        -
-                        ${seller.userName}
-
-                    </option>
-
-                </c:forEach>
-
-            </select>
+            <input
+                    type="number"
+                    id="initialStock"
+                    name="initialStock"
+                    value="${initialStock}"
+                    min="1"
+                    step="1"
+                    required
+            />
 
         </div>
 
 
-        <!-- Status -->
-
-        <div class="form-group">
-
-            <label for="productStatus">
-                Product Status
-            </label>
-
-            <select
-                    id="productStatus"
-                    name="productStatus"
-                    required>
-
-                <option value="">
-                    -- Select Status --
-                </option>
-
-
-                <c:forEach
-                        var="status"
-                        items="${statuses}">
-
-                    <option
-                            value="${status}"
-                            <c:if test="${status == product.productStatus}">
-                                selected
-                            </c:if>
-                    >
-
-                        ${status}
-
-                    </option>
-
-                </c:forEach>
-
-            </select>
-
-        </div>
-
-
-        <!-- Buttons -->
+        <!-- ================================================= -->
+        <!-- BUTTONS -->
+        <!-- ================================================= -->
 
         <button
                 type="submit"

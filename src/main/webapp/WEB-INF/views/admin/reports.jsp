@@ -1,1214 +1,1696 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java"%>
 
-<%@ taglib prefix="c"
-           uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
-<c:set var="pageTitle" value="Reports & Analytics"/>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
-<%@ include file="../common/header.jsp" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+
+
+<c:set var="pageTitle" value="Reports & Analytics" />
+
+
+<%@ include file="../common/header.jsp"%>
 
 
 <div class="reports-container">
 
 
-    <!-- ===================================================== -->
-    <!-- HEADER -->
-    <!-- ===================================================== -->
+	<!-- =====================================================
+         PAGE HEADER
+         ===================================================== -->
 
-    <div class="reports-header">
+	<div class="reports-header">
 
-        <div>
+		<div>
 
-            <h1>
-                Reports & Analytics
-            </h1>
+			<h1>Reports & Analytics</h1>
 
-            <p>
-                Analyse marketplace sales, products,
-                categories, sellers and customers.
-            </p>
+			<p>Analyse marketplace sales, products, categories, sellers and
+				customers.</p>
 
-        </div>
+		</div>
 
 
-        <a href="${pageContext.request.contextPath}/admin/dashboard"
-           class="back-btn">
+		<a href="${pageContext.request.contextPath}/admin/dashboard"
+			class="back-btn"> ← Dashboard </a>
 
-            ← Dashboard
+	</div>
 
-        </a>
 
-    </div>
 
+	<!-- =====================================================
+         ERROR MESSAGE
+         ===================================================== -->
 
+	<c:if test="${not empty error}">
 
-    <!-- ===================================================== -->
-    <!-- ERROR -->
-    <!-- ===================================================== -->
+		<div class="alert alert-danger">${error}</div>
 
-    <c:if test="${not empty error}">
+	</c:if>
 
-        <div class="alert alert-danger">
 
-            ${error}
 
-        </div>
+	<!-- =====================================================
+         REPORT SELECTION
+         ===================================================== -->
 
-    </c:if>
+	<div class="report-selector card">
 
+		<h2>Select Report</h2>
 
 
-    <!-- ===================================================== -->
-    <!-- REPORT SELECTION -->
-    <!-- ===================================================== -->
+		<!-- IMPORTANT:
+             Controller uses @GetMapping("/admin")
+             Therefore this form must use GET
+             and /reports/admin
+        -->
 
-    <div class="report-selector card">
+		<form method="get"
+			action="${pageContext.request.contextPath}/reports/admin"
+			id="reportForm">
 
 
-        <h2>
-            Select Report
-        </h2>
+			<!-- =================================================
+                 REPORT TYPE
+                 ================================================= -->
 
+			<div class="form-group">
 
-        <form method="post"
-              action="${pageContext.request.contextPath}/admin/reports/generate"
-              id="reportForm">
+				<label for="reportType"> Report Type </label> <select
+					id="reportType" name="reportType" required>
 
+					<option value="">-- Select Report --</option>
 
-            <div class="form-group">
 
-                <label for="reportType">
-                    Report Type
-                </label>
+					<option value="sales" ${reportType == 'sales' ? 'selected' : ''}>
 
+						Sales Summary</option>
 
-                <select id="reportType"
-                        name="reportType"
-                        required>
 
-                    <option value="">
-                        -- Select Report --
-                    </option>
+					<option value="product"
+						${reportType == 'product' ? 'selected' : ''}>Product
+						Sales</option>
 
 
-                    <option value="sales"
-                        ${reportType == 'sales' ? 'selected' : ''}>
+					<option value="category"
+						${reportType == 'category' ? 'selected' : ''}>Category
+						Sales</option>
 
-                        Sales Summary
 
-                    </option>
+					<option value="seller" ${reportType == 'seller' ? 'selected' : ''}>
 
+						Seller Sales</option>
 
-                    <option value="products"
-                        ${reportType == 'products' ? 'selected' : ''}>
 
-                        Product Sales
+					<option value="customer"
+						${reportType == 'customer' ? 'selected' : ''}>Customer
+						Report</option>
 
-                    </option>
 
+					<option value="customerProduct"
+						${reportType == 'customerProduct' ? 'selected' : ''}>
 
-                    <option value="categories"
-                        ${reportType == 'categories' ? 'selected' : ''}>
+						Customer Product Sales</option>
 
-                        Category Sales
+				</select>
 
-                    </option>
+			</div>
 
 
-                    <option value="sellers"
-                        ${reportType == 'sellers' ? 'selected' : ''}>
 
-                        Seller Sales
+			<!-- =================================================
+                 FILTERS
+                 ================================================= -->
 
-                    </option>
+			<c:if test="${reportType == 'seller'}">
 
+				<div class="filter-grid">
 
-                    <option value="customers"
-                        ${reportType == 'customers' ? 'selected' : ''}>
+					<!-- SELLER -->
 
-                        Customer Report
+					<div class="form-group">
 
-                    </option>
+						<label for="sellerId"> Seller </label> <select id="sellerId"
+							name="sellerId" required>
 
+							<option value="">-- Select Seller --</option>
 
-                    <option value="customerProducts"
-                        ${reportType == 'customerProducts' ? 'selected' : ''}>
+							<c:forEach var="seller" items="${sellers}">
 
-                        Customer Product Sales
+								<option value="${seller.userId}"
+									${filter.sellerId == seller.userId
+                              ? 'selected'
+                              : ''}>
 
-                    </option>
+									${seller.userName} (${seller.userId})</option>
 
-                </select>
+							</c:forEach>
 
-            </div>
+						</select>
 
+					</div>
+			</c:if>
 
 
-            <!-- ================================================= -->
-            <!-- FILTERS -->
-            <!-- ================================================= -->
 
-            <div class="filters-section">
+			<!-- =================================================
+                         CUSTOMER FILTER
+                         ================================================= -->
 
+			<c:if
+				test="${reportType == 'customer' ||
+                                 reportType == 'customerProduct'}">
 
-                <h2>
-                    Filters
-                </h2>
+				<div class="form-group">
 
+					<label for="customerId"> Customer </label> <select id="customerId"
+						name="customerId">
 
-                <div class="filter-grid">
+						<option value="">-- All Customers --</option>
 
 
-                    <!-- CUSTOMER ID -->
+						<c:forEach var="customer" items="${customers}">
 
-                    <div class="form-group">
+							<option value="${customer.customerId}"
+								${filter.customerId == customer.customerId ? 'selected' : ''}>
 
-                        <label>
-                            Customer ID
-                        </label>
+								${customer.customerName} (${customer.customerId})</option>
 
-                        <input type="text"
-                               name="customerId"
-                               value="${filter.customerId}"
-                               placeholder="Example: CUS1001">
+						</c:forEach>
 
-                    </div>
+					</select>
 
+				</div>
 
+			</c:if>
 
-                    <!-- SELLER ID -->
 
-                    <div class="form-group">
 
-                        <label>
-                            Seller ID
-                        </label>
+			<!-- =================================================
+                         CATEGORY FILTER
+                         ================================================= -->
 
-                        <input type="text"
-                               name="sellerId"
-                               value="${filter.sellerId}"
-                               placeholder="Example: SEL1001">
+			<c:if
+				test="${reportType == 'product' ||
+                                 reportType == 'category' ||
+                                 reportType == 'customerProduct'}">
 
-                    </div>
+				<div class="form-group">
 
+					<label for="categoryId"> Category </label> <select id="categoryId"
+						name="categoryId">
 
+						<option value="">-- All Categories --</option>
 
-                    <!-- CATEGORY ID -->
 
-                    <div class="form-group">
+						<c:forEach var="category" items="${categories}">
 
-                        <label>
-                            Category ID
-                        </label>
+							<option value="${category.categoryId}"
+								${filter.categoryId == category.categoryId ? 'selected' : ''}>
 
-                        <input type="text"
-                               name="categoryId"
-                               value="${filter.categoryId}"
-                               placeholder="Category ID">
+								${category.categoryName}</option>
 
-                    </div>
+						</c:forEach>
 
+					</select>
 
+				</div>
 
-                    <!-- PRODUCT ID -->
+			</c:if>
 
-                    <div class="form-group">
 
-                        <label>
-                            Product ID
-                        </label>
 
-                        <input type="text"
-                               name="productId"
-                               value="${filter.productId}"
-                               placeholder="Product ID">
+			<!-- =================================================
+                         PRODUCT ID
+                         ================================================= -->
 
-                    </div>
+			<c:if
+				test="${reportType == 'product' ||
+                                 reportType == 'customerProduct'}">
 
+				<div class="form-group">
 
+					<label for="productId"> Product ID </label> <input type="text"
+						id="productId" name="productId" value="${filter.productId}"
+						placeholder="Product ID" />
 
-                    <!-- PRODUCT NAME -->
+				</div>
 
-                    <div class="form-group">
+			</c:if>
 
-                        <label>
-                            Product Name
-                        </label>
 
-                        <input type="text"
-                               name="productName"
-                               value="${filter.productName}"
-                               placeholder="Product name">
 
-                    </div>
+			<!-- =================================================
+                         PRODUCT NAME
+                         ================================================= -->
 
+			<c:if
+				test="${reportType == 'product' ||
+                                 reportType == 'customerProduct'}">
 
+				<div class="form-group">
 
-                    <!-- MINIMUM PRICE -->
+					<label for="productName"> Product Name </label> <input type="text"
+						id="productName" name="productName" value="${filter.productName}"
+						placeholder="Product name" />
 
-                    <div class="form-group">
+				</div>
 
-                        <label>
-                            Minimum Price
-                        </label>
+			</c:if>
 
-                        <input type="number"
-                               step="0.01"
-                               name="minPrice"
-                               value="${filter.minPrice}"
-                               placeholder="0.00">
 
-                    </div>
 
+			<!-- =================================================
+                         MINIMUM PRICE
+                         NOT FOR SELLER REPORT
+                         ================================================= -->
 
+			<c:if test="${reportType != 'seller'}">
 
-                    <!-- MAXIMUM PRICE -->
+				<div class="form-group">
 
-                    <div class="form-group">
+					<label for="minPrice"> Minimum Price </label> <input type="number"
+						id="minPrice" name="minPrice" step="0.01"
+						value="${filter.minPrice}" placeholder="0.00" />
 
-                        <label>
-                            Maximum Price
-                        </label>
+				</div>
 
-                        <input type="number"
-                               step="0.01"
-                               name="maxPrice"
-                               value="${filter.maxPrice}"
-                               placeholder="0.00">
+			</c:if>
 
-                    </div>
 
 
+			<!-- =================================================
+                         MAXIMUM PRICE
+                         NOT FOR SELLER REPORT
+                         ================================================= -->
 
-                    <!-- MINIMUM QUANTITY -->
+			<c:if test="${reportType != 'seller'}">
 
-                    <div class="form-group">
+				<div class="form-group">
 
-                        <label>
-                            Minimum Quantity
-                        </label>
+					<label for="maxPrice"> Maximum Price </label> <input type="number"
+						id="maxPrice" name="maxPrice" step="0.01"
+						value="${filter.maxPrice}" placeholder="0.00" />
 
-                        <input type="number"
-                               name="minQuantity"
-                               value="${filter.minQuantity}"
-                               placeholder="0">
+				</div>
 
-                    </div>
+			</c:if>
 
 
 
-                    <!-- MAXIMUM QUANTITY -->
+			<!-- =================================================
+                         MINIMUM QUANTITY
+                         ================================================= -->
 
-                    <div class="form-group">
+			<c:if
+				test="${reportType == 'product' ||
+                                 reportType == 'category' ||
+                                 reportType == 'customerProduct'}">
 
-                        <label>
-                            Maximum Quantity
-                        </label>
+				<div class="form-group">
 
-                        <input type="number"
-                               name="maxQuantity"
-                               value="${filter.maxQuantity}"
-                               placeholder="0">
+					<label for="minQuantity"> Minimum Quantity </label> <input
+						type="number" id="minQuantity" name="minQuantity"
+						value="${filter.minQuantity}" placeholder="0" />
 
-                    </div>
+				</div>
 
+			</c:if>
 
 
-                    <!-- ORDER STATUS -->
 
-                    <div class="form-group">
+			<!-- =================================================
+                         MAXIMUM QUANTITY
+                         ================================================= -->
 
-                        <label>
-                            Order Status
-                        </label>
+			<c:if
+				test="${reportType == 'product' ||
+                                 reportType == 'category' ||
+                                 reportType == 'customerProduct'}">
 
-                        <input type="text"
-                               name="orderStatus"
-                               value="${filter.orderStatus}"
-                               placeholder="Example: COMPLETED">
+				<div class="form-group">
 
-                    </div>
+					<label for="maxQuantity"> Maximum Quantity </label> <input
+						type="number" id="maxQuantity" name="maxQuantity"
+						value="${filter.maxQuantity}" placeholder="0" />
 
+				</div>
 
+			</c:if>
 
-                    <!-- PAYMENT STATUS -->
 
-                    <div class="form-group">
 
-                        <label>
-                            Payment Status
-                        </label>
+			<!-- =================================================
+                         ORDER STATUS
+                         ================================================= -->
 
-                        <input type="text"
-                               name="paymentStatus"
-                               value="${filter.paymentStatus}"
-                               placeholder="Example: SUCCESS">
+			<c:if
+				test="${reportType == 'sales' ||
+                                 reportType == 'customer'}">
 
-                    </div>
+				<div class="form-group">
 
+					<label for="orderStatus"> Order Status </label> <input type="text"
+						id="orderStatus" name="orderStatus" value="${filter.orderStatus}"
+						placeholder="Example: COMPLETED" />
 
+				</div>
 
-                    <!-- FROM DATE -->
+			</c:if>
 
-                    <div class="form-group">
 
-                        <label>
-                            From Date
-                        </label>
 
-                        <input type="datetime-local"
-                               name="fromDate"
-                               value="${filter.fromDate}">
+			<!-- =================================================
+                         PAYMENT STATUS
+                         ================================================= -->
 
-                    </div>
+			<c:if
+				test="${reportType == 'sales' ||
+                                 reportType == 'customer'}">
 
+				<div class="form-group">
 
+					<label for="paymentStatus"> Payment Status </label> <input
+						type="text" id="paymentStatus" name="paymentStatus"
+						value="${filter.paymentStatus}" placeholder="Example: SUCCESS" />
 
-                    <!-- TO DATE -->
+				</div>
 
-                    <div class="form-group">
+			</c:if>
 
-                        <label>
-                            To Date
-                        </label>
 
-                        <input type="datetime-local"
-                               name="toDate"
-                               value="${filter.toDate}">
 
-                    </div>
+			<!-- =================================================
+                         FROM DATE
+                         ================================================= -->
 
+			<div class="form-group">
 
-                </div>
+				<label for="fromDate"> From Date </label> <input
+					type="datetime-local" id="fromDate" name="fromDate"
+					value="${filter.fromDate}" />
 
 
-                <!-- ================================================= -->
-                <!-- ACTIONS -->
-                <!-- ================================================= -->
+				<c:if test="${reportType == 'seller'}">
 
-                <div class="report-actions">
+					<small class="date-help"> Optional </small>
 
-                    <button type="submit"
-                            class="generate-btn">
+				</c:if>
 
-                        Generate Report
+			</div>
 
-                    </button>
 
 
-                    <a href="${pageContext.request.contextPath}/admin/reports"
-                       class="clear-btn">
+			<!-- =================================================
+                         TO DATE
+                         ================================================= -->
 
-                        Clear
+			<div class="form-group">
 
-                    </a>
+				<label for="toDate"> To Date </label> <input type="datetime-local"
+					id="toDate" name="toDate" value="${filter.toDate}" />
 
-                </div>
 
+				<c:if test="${reportType == 'seller'}">
 
-            </div>
+					<small class="date-help"> Optional — defaults to today </small>
 
-        </form>
+				</c:if>
 
-    </div>
+			</div>
+	</div>
 
 
 
-    <!-- ===================================================== -->
-    <!-- SALES REPORT -->
-    <!-- ===================================================== -->
+	<!-- =================================================
+                     BUTTONS
+                     ================================================= -->
 
-    <c:if test="${reportType == 'sales'}">
+	<div class="report-actions">
 
-        <div class="result-card">
 
-            <h2>
-                Sales Summary
-            </h2>
+		<button type="submit" class="generate-btn">Generate Report</button>
 
 
-            <div class="result-placeholder">
+		<a href="${pageContext.request.contextPath}/reports/admin"
+			class="clear-btn"> Clear </a>
 
-                <p>
-                    Sales report generated successfully.
-                </p>
 
-                <p>
-                    Your <strong>SalesReport</strong> object
-                    has been returned by ReportService.
-                </p>
+	</div>
 
-            </div>
 
-        </div>
+</div>
 
-    </c:if>
 
+</form>
 
+</div>
 
-    <!-- ===================================================== -->
-    <!-- PRODUCT REPORT -->
-    <!-- ===================================================== -->
 
-    <c:if test="${reportType == 'products'}">
 
-        <div class="result-card">
+<!-- =====================================================
+         SALES REPORT
+         ===================================================== -->
 
-            <h2>
-                Product Sales Report
-            </h2>
+<c:if test="${reportType == 'sales'}">
 
+	<div class="result-card">
 
-            <c:choose>
+		<h2>Sales Summary</h2>
 
-                <c:when test="${not empty productReport}">
 
-                    <table class="report-table">
+		<c:choose>
 
-                        <thead>
+			<c:when test="${not empty salesReport}">
 
-                            <tr>
+				<table class="report-table">
 
-                                <th>
-                                    Product
-                                </th>
+					<tbody>
 
-                                <th>
-                                    Sales Data
-                                </th>
+						<tr>
 
-                            </tr>
+							<th>Total Orders</th>
 
-                        </thead>
+							<td>${salesReport.totalOrders}</td>
 
+						</tr>
 
-                        <tbody>
 
-                            <c:forEach
-                                    var="report"
-                                    items="${productReport}">
+						<tr>
 
-                                <tr>
+							<th>Total Quantity</th>
 
-                                    <td>
-                                        ${report.productName}
-                                    </td>
+							<td>${salesReport.totalQuantity}</td>
 
-                                    <td>
-                                        ${report}
-                                    </td>
+						</tr>
 
-                                </tr>
 
-                            </c:forEach>
+						<tr>
 
-                        </tbody>
+							<th>Total Sales</th>
 
-                    </table>
+							<td>₹${salesReport.totalSales}</td>
 
-                </c:when>
+						</tr>
 
 
-                <c:otherwise>
+						<tr>
 
-                    <div class="no-results">
+							<th>Average Order Value</th>
 
-                        No product sales data found.
+							<td>₹${salesReport.averageOrderValue}</td>
 
-                    </div>
+						</tr>
 
-                </c:otherwise>
+					</tbody>
 
-            </c:choose>
+				</table>
 
-        </div>
+			</c:when>
 
-    </c:if>
 
+			<c:otherwise>
 
+				<div class="no-results">No sales data found.</div>
 
-    <!-- ===================================================== -->
-    <!-- CATEGORY REPORT -->
-    <!-- ===================================================== -->
+			</c:otherwise>
 
-    <c:if test="${reportType == 'categories'}">
+		</c:choose>
 
-        <div class="result-card">
+	</div>
 
-            <h2>
-                Category Sales Report
-            </h2>
+</c:if>
 
 
-            <c:choose>
 
-                <c:when test="${not empty categoryReport}">
+<!-- =====================================================
+         PRODUCT SALES REPORT
+         ===================================================== -->
 
-                    <table class="report-table">
+<c:if test="${reportType == 'product'}">
 
-                        <thead>
+	<div class="result-card">
 
-                            <tr>
+		<h2>Product Sales Report</h2>
 
-                                <th>
-                                    Category
-                                </th>
 
-                                <th>
-                                    Report
-                                </th>
+		<c:choose>
 
-                            </tr>
+			<c:when test="${not empty productSalesReport}">
 
-                        </thead>
+				<div class="table-wrapper">
 
+					<table class="report-table">
 
-                        <tbody>
+						<thead>
 
-                            <c:forEach
-                                    var="report"
-                                    items="${categoryReport}">
+							<tr>
 
-                                <tr>
+								<th>Product</th>
+								<th>Category</th>
+								<th>Seller</th>
+								<th>Price</th>
+								<th>Quantity Sold</th>
+								<th>Revenue</th>
+								<th>Average Rating</th>
 
-                                    <td>
-                                        ${report.categoryName}
-                                    </td>
+							</tr>
 
-                                    <td>
-                                        ${report}
-                                    </td>
+						</thead>
 
-                                </tr>
 
-                            </c:forEach>
+						<tbody>
 
-                        </tbody>
+							<c:forEach var="report" items="${productSalesReport}">
 
-                    </table>
+								<tr>
 
-                </c:when>
+									<td>${report.productName}</td>
 
+									<td>${report.categoryName}</td>
 
-                <c:otherwise>
+									<td>${report.sellerName}</td>
 
-                    <div class="no-results">
+									<td>₹<fmt:formatNumber value="${report.productPrice}"
+											minFractionDigits="2" maxFractionDigits="2" />
+									</td>
 
-                        No category sales data found.
+									<td>${report.quantitySold}</td>
 
-                    </div>
+									<td>₹<fmt:formatNumber value="${report.revenue}"
+											minFractionDigits="2" maxFractionDigits="2" />
+									</td>
 
-                </c:otherwise>
+									<td>${report.averageRating}</td>
 
-            </c:choose>
+								</tr>
 
-        </div>
+							</c:forEach>
 
-    </c:if>
+						</tbody>
 
+					</table>
 
+				</div>
 
-    <!-- ===================================================== -->
-    <!-- SELLER REPORT -->
-    <!-- ===================================================== -->
+			</c:when>
 
-    <c:if test="${reportType == 'sellers'}">
 
-        <div class="result-card">
+			<c:otherwise>
 
-            <h2>
-                Seller Sales Report
-            </h2>
+				<div class="no-results">No product sales data found.</div>
 
+			</c:otherwise>
 
-            <c:choose>
+		</c:choose>
 
-                <c:when test="${not empty sellerReport}">
+	</div>
 
-                    <table class="report-table">
+</c:if>
 
-                        <thead>
 
-                            <tr>
 
-                                <th>
-                                    Seller
-                                </th>
+<!-- =====================================================
+         CATEGORY SALES REPORT
+         ===================================================== -->
 
-                                <th>
-                                    Report
-                                </th>
+<c:if test="${reportType == 'category'}">
 
-                            </tr>
+	<div class="result-card">
 
-                        </thead>
+		<h2>Category Sales Report</h2>
 
 
-                        <tbody>
+		<c:choose>
 
-                            <c:forEach
-                                    var="report"
-                                    items="${sellerReport}">
+			<c:when test="${not empty categorySalesReport}">
 
-                                <tr>
+				<div class="table-wrapper">
 
-                                    <td>
-                                        ${report.sellerId}
-                                    </td>
+					<table class="report-table">
 
-                                    <td>
-                                        ${report}
-                                    </td>
+						<thead>
 
-                                </tr>
+							<tr>
 
-                            </c:forEach>
+								<th>Category</th>
+								<th>Quantity Sold</th>
+								<th>Revenue</th>
 
-                        </tbody>
+							</tr>
 
-                    </table>
+						</thead>
 
-                </c:when>
 
+						<tbody>
 
-                <c:otherwise>
+							<c:forEach var="report" items="${categorySalesReport}">
 
-                    <div class="no-results">
+								<tr>
 
-                        No seller sales data found.
+									<td>${report.categoryName}</td>
 
-                    </div>
+									<td>${report.quantitySold}</td>
 
-                </c:otherwise>
+									<td>₹<fmt:formatNumber value="${report.revenue}"
+											minFractionDigits="2" maxFractionDigits="2" />
+									</td>
 
-            </c:choose>
+								</tr>
 
-        </div>
+							</c:forEach>
 
-    </c:if>
+						</tbody>
 
+					</table>
 
+				</div>
 
-    <!-- ===================================================== -->
-    <!-- CUSTOMER REPORT -->
-    <!-- ===================================================== -->
+			</c:when>
 
-    <c:if test="${reportType == 'customers'}">
 
-        <div class="result-card">
+			<c:otherwise>
 
-            <h2>
-                Customer Report
-            </h2>
+				<div class="no-results">No category sales data found.</div>
 
+			</c:otherwise>
 
-            <c:choose>
+		</c:choose>
 
-                <c:when test="${not empty customerReport}">
+	</div>
 
-                    <div class="result-placeholder">
+</c:if>
 
-                        Customer report generated successfully.
 
-                    </div>
 
-                </c:when>
+<!-- =====================================================
+         SELLER SALES REPORT
+         SELLER FOCUSED
+         ===================================================== -->
 
+<c:if test="${reportType == 'seller'}">
 
-                <c:otherwise>
+	<div class="result-card">
 
-                    <div class="no-results">
+		<h2>Seller Sales Report</h2>
 
-                        No customer data found.
 
-                    </div>
+		<c:choose>
 
-                </c:otherwise>
+			<c:when test="${not empty sellerSalesReport}">
 
-            </c:choose>
+				<!-- =========================================
+                     SELLER SUMMARY
+                     ========================================= -->
 
-        </div>
+				<c:forEach var="seller" items="${sellerSalesReport}">
 
-    </c:if>
+					<div class="seller-summary">
 
+						<div class="seller-summary-box">
 
+							<span> Seller </span> <strong> ${seller.sellerName} </strong> <small>
+								${seller.sellerId} </small>
 
-    <!-- ===================================================== -->
-    <!-- CUSTOMER PRODUCT REPORT -->
-    <!-- ===================================================== -->
+						</div>
 
-    <c:if test="${reportType == 'customerProducts'}">
 
-        <div class="result-card">
+						<div class="seller-summary-box">
 
-            <h2>
-                Customer Product Report
-            </h2>
+							<span> Total Orders </span> <strong>
+								${seller.orderCount} </strong>
 
+						</div>
 
-            <c:choose>
 
-                <c:when test="${not empty customerProductReport}">
+						<div class="seller-summary-box">
 
-                    <table class="report-table">
+							<span> Total Quantity Sold </span> <strong>
+								${seller.quantitySold} </strong>
 
-                        <thead>
+						</div>
 
-                            <tr>
 
-                                <th>
-                                    Product
-                                </th>
+						<div class="seller-summary-box">
 
-                                <th>
-                                    Report
-                                </th>
+							<span> Total Sales </span> <strong> ₹${seller.revenue} </strong>
 
-                            </tr>
+						</div>
 
-                        </thead>
 
+						<div class="seller-summary-box">
 
-                        <tbody>
+							<span> Average Selling Price </span> <strong> <c:choose>
 
-                            <c:forEach
-                                    var="report"
-                                    items="${customerProductReport}">
+									<c:when test="${seller.quantitySold > 0}">
 
-                                <tr>
+                                        ₹${seller.revenue /
+                                           seller.quantitySold}
 
-                                    <td>
-                                        ${report.productName}
-                                    </td>
+                                    </c:when>
 
-                                    <td>
-                                        ${report}
-                                    </td>
+									<c:otherwise>
 
-                                </tr>
+                                        ₹0.00
 
-                            </c:forEach>
+                                    </c:otherwise>
 
-                        </tbody>
+								</c:choose>
 
-                    </table>
+							</strong>
 
-                </c:when>
+						</div>
 
+					</div>
 
-                <c:otherwise>
+				</c:forEach>
 
-                    <div class="no-results">
 
-                        No customer product data found.
+				<!-- =========================================
+                     PRODUCTS SOLD
+                     ========================================= -->
 
-                    </div>
+				<h3>Products Sold</h3>
 
-                </c:otherwise>
 
-            </c:choose>
+				<c:choose>
 
-        </div>
+					<c:when test="${not empty productSalesReport}">
 
-    </c:if>
+						<div class="table-wrapper">
+
+							<table class="report-table">
+
+								<thead>
+
+									<tr>
+
+										<th>Product</th>
+
+										<th>Category</th>
+
+										<th>Price</th>
+
+										<th>Quantity Sold</th>
+
+										<th>Total Revenue</th>
+
+										<th>Average Rating</th>
+
+									</tr>
+
+								</thead>
+
+
+								<tbody>
+
+									<c:forEach var="product" items="${productSalesReport}">
+
+										<tr>
+
+											<td>${product.productName}</td>
+
+											<td>${product.categoryName}</td>
+
+											<td>₹${product.productPrice}</td>
+
+											<td>${product.quantitySold}</td>
+
+											<td>₹${product.revenue}</td>
+
+											<td>${product.averageRating}</td>
+
+										</tr>
+
+									</c:forEach>
+
+								</tbody>
+
+							</table>
+
+						</div>
+
+					</c:when>
+
+
+					<c:otherwise>
+
+						<div class="no-results">No products were sold by this seller
+							for the selected date range.</div>
+
+					</c:otherwise>
+
+				</c:choose>
+
+			</c:when>
+
+
+			<c:otherwise>
+
+				<div class="no-results">No seller sales found for the selected
+					seller and date range.</div>
+
+			</c:otherwise>
+
+		</c:choose>
+
+	</div>
+
+</c:if>
+
+
+
+<!-- =====================================================
+         CUSTOMER REPORT
+         ===================================================== -->
+
+<c:if test="${reportType == 'customer'}">
+
+	<div class="result-card">
+
+		<h2>Customer Report</h2>
+
+
+		<c:choose>
+
+			<c:when test="${not empty customerReport}">
+
+				<table class="report-table">
+
+					<tbody>
+
+						<tr>
+
+							<th>Total Customers</th>
+
+							<td>${customerReport.totalCustomers}</td>
+
+						</tr>
+
+
+						<tr>
+
+							<th>Total Orders</th>
+
+							<td>${customerReport.totalOrders}</td>
+
+						</tr>
+
+
+						<tr>
+
+							<th>Total Quantity</th>
+
+							<td>${customerReport.totalQuantity}</td>
+
+						</tr>
+
+
+						<tr>
+
+							<th>Total Spent</th>
+
+							<td>₹${customerReport.totalSpent}</td>
+
+						</tr>
+
+					</tbody>
+
+				</table>
+
+			</c:when>
+
+
+			<c:otherwise>
+
+				<div class="no-results">No customer data found.</div>
+
+			</c:otherwise>
+
+		</c:choose>
+
+	</div>
+
+</c:if>
+
+
+
+<!-- =====================================================
+         CUSTOMER PRODUCT REPORT
+         ===================================================== -->
+
+<c:if test="${reportType == 'customerProduct'}">
+
+	<div class="result-card">
+
+		<h2>Customer Product Report</h2>
+
+
+		<c:choose>
+
+			<c:when test="${not empty customerProductReport}">
+
+				<div class="table-wrapper">
+
+					<table class="report-table">
+
+						<thead>
+
+							<tr>
+
+								<th>Product</th>
+
+								<th>Category</th>
+
+								<th>Quantity Sold</th>
+
+								<th>Revenue</th>
+
+							</tr>
+
+						</thead>
+
+
+						<tbody>
+
+							<c:forEach var="report" items="${customerProductReport}">
+
+								<tr>
+
+									<td>${report.productName}</td>
+
+									<td>${report.categoryName}</td>
+
+									<td>${report.quantitySold}</td>
+
+									<td>₹<fmt:formatNumber value="${report.revenue}"
+											minFractionDigits="2" maxFractionDigits="2" />
+									</td>
+
+								</tr>
+
+							</c:forEach>
+
+						</tbody>
+
+					</table>
+
+				</div>
+
+			</c:when>
+
+
+			<c:otherwise>
+
+				<div class="no-results">No customer product data found.</div>
+
+			</c:otherwise>
+
+		</c:choose>
+
+	</div>
+
+</c:if>
 
 
 </div>
 
 
 
+<!-- =========================================================
+     PAGE CSS
+     ========================================================= -->
+
 <style>
 
-
-/* ========================================================= */
-/* CONTAINER */
-/* ========================================================= */
-
+/* =========================================================
+   CONTAINER
+   ========================================================= */
 .reports-container {
-
-    max-width: 1250px;
-
-    margin: 35px auto;
-
-    padding: 0 30px;
-
+	max-width: 1250px;
+	margin: 35px auto;
+	padding: 0 30px;
 }
 
-
-
-/* ========================================================= */
-/* HEADER */
-/* ========================================================= */
-
+/* =========================================================
+   HEADER
+   ========================================================= */
 .reports-header {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    margin-bottom: 30px;
-
-    padding-bottom: 20px;
-
-    border-bottom: 1px solid #dee2e6;
-
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 30px;
+	padding-bottom: 20px;
+	border-bottom: 1px solid #dee2e6;
 }
-
 
 .reports-header h1 {
-
-    margin: 0;
-
-    font-size: 34px;
-
+	margin: 0;
+	font-size: 34px;
+	color: #212529;
 }
-
 
 .reports-header p {
-
-    margin-top: 8px;
-
-    color: #6c757d;
-
+	margin-top: 8px;
+	color: #6c757d;
 }
-
 
 .back-btn {
-
-    padding: 10px 18px;
-
-    background-color: #6c757d;
-
-    color: white;
-
-    text-decoration: none;
-
-    border-radius: 6px;
-
+	padding: 10px 18px;
+	background-color: #6c757d;
+	color: white;
+	text-decoration: none;
+	border-radius: 6px;
+	font-weight: 600;
 }
 
-
-
-/* ========================================================= */
-/* CARD */
-/* ========================================================= */
-
-.card,
-.result-card {
-
-    background: white;
-
-    border: 1px solid #e1e5e9;
-
-    border-radius: 10px;
-
-    padding: 30px;
-
-    margin-bottom: 30px;
-
-    box-shadow:
-        0 3px 10px rgba(0,0,0,0.05);
-
+.back-btn:hover {
+	background-color: #5c636a;
 }
 
-
-.card h2,
-.result-card h2 {
-
-    margin-top: 0;
-
+/* =========================================================
+   CARD
+   ========================================================= */
+.card, .result-card {
+	background: white;
+	border: 1px solid #e1e5e9;
+	border-radius: 10px;
+	padding: 30px;
+	margin-bottom: 30px;
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
 }
 
+.card h2, .result-card h2 {
+	margin-top: 0;
+}
 
-
-/* ========================================================= */
-/* FORM */
-/* ========================================================= */
-
+/* =========================================================
+   FORM
+   ========================================================= */
 .form-group {
-
-    margin-bottom: 20px;
-
+	margin-bottom: 20px;
 }
-
 
 .form-group label {
-
-    display: block;
-
-    margin-bottom: 7px;
-
-    font-weight: 600;
-
+	display: block;
+	margin-bottom: 7px;
+	font-weight: 600;
 }
 
-
-.form-group input,
-.form-group select {
-
-    width: 100%;
-
-    box-sizing: border-box;
-
-    padding: 12px 13px;
-
-    border: 1px solid #ced4da;
-
-    border-radius: 6px;
-
-    font-size: 15px;
-
+.form-group input, .form-group select {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 12px 13px;
+	border: 1px solid #ced4da;
+	border-radius: 6px;
+	font-size: 15px;
+	background: white;
 }
 
-
-.form-group input:focus,
-.form-group select:focus {
-
-    outline: none;
-
-    border-color: #0d6efd;
-
-    box-shadow:
-        0 0 0 3px rgba(13,110,253,0.12);
-
+.form-group input:focus, .form-group select:focus {
+	outline: none;
+	border-color: #0d6efd;
+	box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
 }
 
+.date-help {
+	display: block;
+	margin-top: 5px;
+	color: #6c757d;
+	font-size: 12px;
+}
 
-
-/* ========================================================= */
-/* FILTERS */
-/* ========================================================= */
-
+/* =========================================================
+   FILTERS
+   ========================================================= */
 .filters-section {
-
-    margin-top: 30px;
-
-    padding-top: 25px;
-
-    border-top: 1px solid #dee2e6;
-
+	margin-top: 30px;
+	padding-top: 25px;
+	border-top: 1px solid #dee2e6;
 }
-
 
 .filter-grid {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(3, 1fr);
-
-    column-gap: 25px;
-
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	column-gap: 25px;
+	row-gap: 5px;
 }
 
-
-
-/* ========================================================= */
-/* BUTTONS */
-/* ========================================================= */
-
+/* =========================================================
+   BUTTONS
+   ========================================================= */
 .report-actions {
-
-    display: flex;
-
-    gap: 12px;
-
-    margin-top: 15px;
-
+	display: flex;
+	gap: 12px;
+	margin-top: 15px;
 }
-
 
 .generate-btn {
-
-    border: none;
-
-    padding: 12px 22px;
-
-    background-color: #0d6efd;
-
-    color: white;
-
-    border-radius: 6px;
-
-    font-size: 15px;
-
-    font-weight: 600;
-
-    cursor: pointer;
-
+	border: none;
+	padding: 12px 22px;
+	background-color: #0d6efd;
+	color: white;
+	border-radius: 6px;
+	font-size: 15px;
+	font-weight: 600;
+	cursor: pointer;
 }
-
 
 .generate-btn:hover {
-
-    background-color: #0b5ed7;
-
+	background-color: #0b5ed7;
 }
-
 
 .clear-btn {
-
-    padding: 12px 22px;
-
-    background-color: #6c757d;
-
-    color: white;
-
-    border-radius: 6px;
-
-    text-decoration: none;
-
-    font-weight: 600;
-
+	padding: 12px 22px;
+	background-color: #6c757d;
+	color: white;
+	border-radius: 6px;
+	text-decoration: none;
+	font-weight: 600;
 }
 
+.clear-btn:hover {
+	background-color: #5c636a;
+}
 
-
-/* ========================================================= */
-/* REPORT TABLE */
-/* ========================================================= */
+/* =========================================================
+   TABLE
+   ========================================================= */
+.table-wrapper {
+	width: 100%;
+	overflow-x: auto;
+}
 
 .report-table {
-
-    width: 100%;
-
-    border-collapse: collapse;
-
-    margin-top: 20px;
-
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 20px;
 }
-
 
 .report-table th {
-
-    background-color: #343a40;
-
-    color: white;
-
-    padding: 13px;
-
-    text-align: left;
-
+	background-color: #343a40;
+	color: white;
+	padding: 13px;
+	text-align: left;
+	white-space: nowrap;
 }
-
 
 .report-table td {
-
-    padding: 13px;
-
-    border-bottom: 1px solid #dee2e6;
-
+	padding: 13px;
+	border-bottom: 1px solid #dee2e6;
 }
 
-
-.report-table tr:hover {
-
-    background-color: #f8f9fa;
-
+.report-table tbody tr:hover {
+	background-color: #f8f9fa;
 }
 
+/* =========================================================
+   SELLER SUMMARY
+   ========================================================= */
+.seller-report-card {
+	margin-top: 30px;
+}
 
+.seller-summary {
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	gap: 18px;
+	margin-bottom: 30px;
+}
 
-/* ========================================================= */
-/* NO RESULTS */
-/* ========================================================= */
+.seller-summary-box {
+	border: 1px solid #dee2e6;
+	border-radius: 8px;
+	padding: 20px;
+	text-align: center;
+	background-color: #f8f9fa;
+}
 
+.summary-title {
+	display: block;
+	color: #6c757d;
+	font-size: 14px;
+	margin-bottom: 10px;
+	font-weight: 600;
+}
+
+.seller-summary-box strong {
+	display: block;
+	font-size: 22px;
+	color: #212529;
+}
+
+/* =========================================================
+   SELLER PRODUCTS
+   ========================================================= */
+.seller-products-section {
+	margin-top: 30px;
+}
+
+.seller-products-section h3 {
+	margin-bottom: 15px;
+}
+
+.seller-products-table {
+	margin-top: 0;
+}
+
+/* =========================================================
+   NO RESULTS
+   ========================================================= */
 .no-results {
-
-    padding: 25px;
-
-    text-align: center;
-
-    background-color: #f8f9fa;
-
-    color: #6c757d;
-
-    border-radius: 6px;
-
+	padding: 25px;
+	text-align: center;
+	background-color: #f8f9fa;
+	color: #6c757d;
+	border-radius: 6px;
+	margin-top: 20px;
 }
 
-
-.result-placeholder {
-
-    padding: 25px;
-
-    background-color: #f8f9fa;
-
-    border-radius: 6px;
-
-}
-
-
-
-/* ========================================================= */
-/* ERROR */
-/* ========================================================= */
-
+/* =========================================================
+   ERROR
+   ========================================================= */
 .alert-danger {
-
-    padding: 14px 18px;
-
-    margin-bottom: 25px;
-
-    background-color: #f8d7da;
-
-    color: #842029;
-
-    border: 1px solid #f5c2c7;
-
-    border-radius: 6px;
-
+	padding: 14px 18px;
+	margin-bottom: 25px;
+	background-color: #f8d7da;
+	color: #842029;
+	border: 1px solid #f5c2c7;
+	border-radius: 6px;
 }
 
-
-
-/* ========================================================= */
-/* RESPONSIVE */
-/* ========================================================= */
-
-@media (max-width: 900px) {
-
-    .filter-grid {
-
-        grid-template-columns:
-            repeat(2, 1fr);
-
-    }
-
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media ( max-width : 1000px) {
+	.seller-summary {
+		grid-template-columns: repeat(2, 1fr);
+	}
 }
 
-
-@media (max-width: 600px) {
-
-    .reports-container {
-
-        padding: 0 15px;
-
-    }
-
-
-    .reports-header {
-
-        flex-direction: column;
-
-        align-items: flex-start;
-
-        gap: 15px;
-
-    }
-
-
-    .filter-grid {
-
-        grid-template-columns: 1fr;
-
-    }
-
+@media ( max-width : 900px) {
+	.filter-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
 }
 
+@media ( max-width : 600px) {
+	.reports-container {
+		padding: 0 15px;
+	}
+	.reports-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 15px;
+	}
+	.filter-grid {
+		grid-template-columns: 1fr;
+	}
+	.seller-summary {
+		grid-template-columns: 1fr;
+	}
+	.report-actions {
+		flex-direction: column;
+	}
+	.generate-btn, .clear-btn {
+		text-align: center;
+	}
+}
 </style>
 
 
-<%@ include file="../common/footer.jsp" %>
+
+<!-- =========================================================
+     SELLER DATE DEFAULT
+     ========================================================= -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    var reportType = document.getElementById("reportType");
+
+    var sellerId = document.getElementById("sellerId");
+
+    var customerId = document.getElementById("customerId");
+
+    var categoryId = document.getElementById("categoryId");
+
+    var productId = document.getElementById("productId");
+
+    var productName = document.getElementById("productName");
+
+    var minPrice = document.getElementById("minPrice");
+
+    var maxPrice = document.getElementById("maxPrice");
+
+    var minQuantity = document.getElementById("minQuantity");
+
+    var maxQuantity = document.getElementById("maxQuantity");
+
+    var orderStatus = document.getElementById("orderStatus");
+
+    var paymentStatus = document.getElementById("paymentStatus");
+
+    var fromDate = document.getElementById("fromDate");
+
+    var toDate = document.getElementById("toDate");
+
+
+    // ==========================================================
+    // GET PARENT FORM GROUP
+    // ==========================================================
+
+    function getFormGroup(element) {
+
+        if (!element) {
+            return null;
+        }
+
+        return element.closest(".form-group");
+    }
+
+
+    // ==========================================================
+    // SHOW / HIDE FIELD
+    // ==========================================================
+
+    function showField(element, required) {
+
+        if (!element) {
+            return;
+        }
+
+        var group = getFormGroup(element);
+
+        if (group) {
+            group.style.display = "";
+        }
+
+        element.disabled = false;
+
+        if (required) {
+            element.setAttribute("required", "required");
+        } else {
+            element.removeAttribute("required");
+        }
+    }
+
+
+    function hideField(element) {
+
+        if (!element) {
+            return;
+        }
+
+        var group = getFormGroup(element);
+
+        if (group) {
+            group.style.display = "none";
+        }
+
+        element.removeAttribute("required");
+
+        element.disabled = true;
+    }
+
+
+    // ==========================================================
+    // UPDATE FILTERS WHEN REPORT TYPE CHANGES
+    // ==========================================================
+
+    function updateReportFields() {
+
+        var type = reportType ? reportType.value : "";
+
+
+        // ------------------------------------------------------
+        // SELLER
+        // Seller Sales / Product Sales
+        // ------------------------------------------------------
+
+        if (type === "seller") {
+
+            showField(sellerId, true);
+
+        } else if (type === "product") {
+
+            showField(sellerId, false);
+
+        } else {
+
+            hideField(sellerId);
+
+        }
+
+
+        // ------------------------------------------------------
+        // CUSTOMER
+        // Customer Report / Customer Product Sales
+        // ------------------------------------------------------
+
+        if (type === "customer"
+                || type === "customerProduct") {
+
+            showField(customerId, false);
+
+        } else {
+
+            hideField(customerId);
+
+        }
+
+
+        // ------------------------------------------------------
+        // CATEGORY
+        // Product / Category / Customer Product
+        // ------------------------------------------------------
+
+        if (type === "product"
+                || type === "category"
+                || type === "customerProduct") {
+
+            showField(categoryId, false);
+
+        } else {
+
+            hideField(categoryId);
+
+        }
+
+
+        // ------------------------------------------------------
+        // PRODUCT ID
+        // Product / Customer Product
+        // ------------------------------------------------------
+
+        if (type === "product"
+                || type === "customerProduct") {
+
+            showField(productId, false);
+
+        } else {
+
+            hideField(productId);
+
+        }
+
+
+        // ------------------------------------------------------
+        // PRODUCT NAME
+        // Product / Customer Product
+        // ------------------------------------------------------
+
+        if (type === "product"
+                || type === "customerProduct") {
+
+            showField(productName, false);
+
+        } else {
+
+            hideField(productName);
+
+        }
+
+
+        // ------------------------------------------------------
+        // MIN PRICE
+        // Everything except Seller Sales
+        // ------------------------------------------------------
+
+        if (type !== ""
+                && type !== "seller") {
+
+            showField(minPrice, false);
+
+        } else {
+
+            hideField(minPrice);
+
+        }
+
+
+        // ------------------------------------------------------
+        // MAX PRICE
+        // Everything except Seller Sales
+        // ------------------------------------------------------
+
+        if (type !== ""
+                && type !== "seller") {
+
+            showField(maxPrice, false);
+
+        } else {
+
+            hideField(maxPrice);
+
+        }
+
+
+        // ------------------------------------------------------
+        // MIN QUANTITY
+        // Product / Category / Customer Product
+        // ------------------------------------------------------
+
+        if (type === "product"
+                || type === "category"
+                || type === "customerProduct") {
+
+            showField(minQuantity, false);
+
+        } else {
+
+            hideField(minQuantity);
+
+        }
+
+
+        // ------------------------------------------------------
+        // MAX QUANTITY
+        // Product / Category / Customer Product
+        // ------------------------------------------------------
+
+        if (type === "product"
+                || type === "category"
+                || type === "customerProduct") {
+
+            showField(maxQuantity, false);
+
+        } else {
+
+            hideField(maxQuantity);
+
+        }
+
+
+        // ------------------------------------------------------
+        // ORDER STATUS
+        // Sales / Customer
+        // ------------------------------------------------------
+
+        if (type === "sales"
+                || type === "customer") {
+
+            showField(orderStatus, false);
+
+        } else {
+
+            hideField(orderStatus);
+
+        }
+
+
+        // ------------------------------------------------------
+        // PAYMENT STATUS
+        // Sales / Customer
+        // ------------------------------------------------------
+
+        if (type === "sales"
+                || type === "customer") {
+
+            showField(paymentStatus, false);
+
+        } else {
+
+            hideField(paymentStatus);
+
+        }
+
+
+        // ------------------------------------------------------
+        // DATE FIELDS
+        // ------------------------------------------------------
+
+        if (fromDate) {
+            fromDate.disabled = false;
+        }
+
+        if (toDate) {
+            toDate.disabled = false;
+        }
+
+
+        // ------------------------------------------------------
+        // SELLER SALES DATE DEFAULT
+        // ------------------------------------------------------
+
+        if (type === "seller"
+                && toDate
+                && !toDate.value) {
+
+            var now = new Date();
+
+            var year = now.getFullYear();
+
+            var month = String(
+                now.getMonth() + 1
+            ).padStart(2, "0");
+
+            var day = String(
+                now.getDate()
+            ).padStart(2, "0");
+
+            toDate.value =
+                    year
+                    + "-"
+                    + month
+                    + "-"
+                    + day
+                    + "T23:59";
+
+        }
+
+    }
+
+
+    // ==========================================================
+    // REPORT TYPE CHANGE
+    // ==========================================================
+
+    if (reportType) {
+
+        reportType.addEventListener(
+                "change",
+                function () {
+
+                    updateReportFields();
+
+                }
+        );
+
+    }
+
+
+    // ==========================================================
+    // INITIAL LOAD
+    // ==========================================================
+
+    updateReportFields();
+
+});
+
+</script>
+
+
+<%@ include file="../common/footer.jsp"%>

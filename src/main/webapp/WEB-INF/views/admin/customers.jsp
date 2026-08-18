@@ -14,14 +14,16 @@
 
 
     <div class="nav">
-
+    
+    <a href="${pageContext.request.contextPath}/admin/dashboard"
+   class="btn btn-primary"
+   style="color: white;">
+    Dashboard
+</a>
         <a href="${pageContext.request.contextPath}/admin/sellers">
             View Sellers
         </a>
 
-        <a href="${pageContext.request.contextPath}/admin/profile">
-            Admin Profile
-        </a>
 
     </div>
 

@@ -278,7 +278,7 @@ public class OrderController {
 
         model.addAttribute("orders", orders);
 
-        return "admin/orders";
+        return "orders/admin/orders";
     }
 
 
@@ -295,7 +295,7 @@ public class OrderController {
 
         model.addAttribute("order", order);
 
-        return "admin/order-details";
+        return "orders/admin/order-details";
     }
 
 
@@ -313,7 +313,7 @@ public class OrderController {
         model.addAttribute("orders", orders);
         model.addAttribute("selectedStatus", status);
 
-        return "admin/orders";
+        return "orders/admin/orders";
     }
 
 
@@ -331,7 +331,7 @@ public class OrderController {
         model.addAttribute("orders", orders);
         model.addAttribute("keyword", keyword);
 
-        return "admin/orders";
+        return "orders/admin/orders";
     }
 
 

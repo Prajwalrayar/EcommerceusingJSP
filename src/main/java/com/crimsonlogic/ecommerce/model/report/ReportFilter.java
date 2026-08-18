@@ -1,39 +1,60 @@
 package com.crimsonlogic.ecommerce.model.report;
 
-import java.time.LocalDateTime;
-
 public class ReportFilter {
 
+    private String reportType;
+
     private String categoryId;
-
     private String productId;
-
     private String sellerId;
-
     private String customerId;
 
     private String productName;
 
     private String orderStatus;
-
     private String paymentStatus;
 
     private Double minPrice;
-
     private Double maxPrice;
 
     private Integer minQuantity;
-
     private Integer maxQuantity;
 
-    private LocalDateTime fromDate;
+    /*
+     * Keep dates as String because the JSP uses:
+     * <input type="datetime-local">
+     *
+     * Browser sends values like:
+     * 2026-08-18T10:30
+     */
+    private String fromDate;
+    private String toDate;
 
-    private LocalDateTime toDate;
 
+    // ==========================================================
+    // CONSTRUCTOR
+    // ==========================================================
 
     public ReportFilter() {
     }
 
+
+    // ==========================================================
+    // REPORT TYPE
+    // ==========================================================
+
+    public String getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(String reportType) {
+        this.reportType = reportType;
+    }
+
+
+    // ==========================================================
+    // CATEGORY
+    // ==========================================================
 
     public String getCategoryId() {
         return categoryId;
@@ -44,6 +65,10 @@ public class ReportFilter {
     }
 
 
+    // ==========================================================
+    // PRODUCT
+    // ==========================================================
+
     public String getProductId() {
         return productId;
     }
@@ -52,6 +77,10 @@ public class ReportFilter {
         this.productId = productId;
     }
 
+
+    // ==========================================================
+    // SELLER
+    // ==========================================================
 
     public String getSellerId() {
         return sellerId;
@@ -62,6 +91,10 @@ public class ReportFilter {
     }
 
 
+    // ==========================================================
+    // CUSTOMER
+    // ==========================================================
+
     public String getCustomerId() {
         return customerId;
     }
@@ -70,6 +103,10 @@ public class ReportFilter {
         this.customerId = customerId;
     }
 
+
+    // ==========================================================
+    // PRODUCT NAME
+    // ==========================================================
 
     public String getProductName() {
         return productName;
@@ -80,6 +117,10 @@ public class ReportFilter {
     }
 
 
+    // ==========================================================
+    // ORDER STATUS
+    // ==========================================================
+
     public String getOrderStatus() {
         return orderStatus;
     }
@@ -88,6 +129,10 @@ public class ReportFilter {
         this.orderStatus = orderStatus;
     }
 
+
+    // ==========================================================
+    // PAYMENT STATUS
+    // ==========================================================
 
     public String getPaymentStatus() {
         return paymentStatus;
@@ -98,6 +143,10 @@ public class ReportFilter {
     }
 
 
+    // ==========================================================
+    // MIN PRICE
+    // ==========================================================
+
     public Double getMinPrice() {
         return minPrice;
     }
@@ -106,6 +155,10 @@ public class ReportFilter {
         this.minPrice = minPrice;
     }
 
+
+    // ==========================================================
+    // MAX PRICE
+    // ==========================================================
 
     public Double getMaxPrice() {
         return maxPrice;
@@ -116,6 +169,10 @@ public class ReportFilter {
     }
 
 
+    // ==========================================================
+    // MIN QUANTITY
+    // ==========================================================
+
     public Integer getMinQuantity() {
         return minQuantity;
     }
@@ -124,6 +181,10 @@ public class ReportFilter {
         this.minQuantity = minQuantity;
     }
 
+
+    // ==========================================================
+    // MAX QUANTITY
+    // ==========================================================
 
     public Integer getMaxQuantity() {
         return maxQuantity;
@@ -134,20 +195,28 @@ public class ReportFilter {
     }
 
 
-    public LocalDateTime getFromDate() {
+    // ==========================================================
+    // FROM DATE
+    // ==========================================================
+
+    public String getFromDate() {
         return fromDate;
     }
 
-    public void setFromDate(LocalDateTime fromDate) {
+    public void setFromDate(String fromDate) {
         this.fromDate = fromDate;
     }
 
 
-    public LocalDateTime getToDate() {
+    // ==========================================================
+    // TO DATE
+    // ==========================================================
+
+    public String getToDate() {
         return toDate;
     }
 
-    public void setToDate(LocalDateTime toDate) {
+    public void setToDate(String toDate) {
         this.toDate = toDate;
     }
 }

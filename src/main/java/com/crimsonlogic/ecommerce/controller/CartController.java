@@ -66,7 +66,7 @@ public class CartController {
                 cartItems
         );
 
-        return "cart";
+        return "cart/cart";
     }
 
 

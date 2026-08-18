@@ -135,7 +135,7 @@
 
         FROM sellers s
 
-        WHERE s.user_id = #{userId}
+        WHERE s.user_id = #{sellerId}
 
     </select>
 

@@ -236,12 +236,14 @@ public class InventoryController {
         Object loggedInUser =
                 session.getAttribute("loggedInUser");
 
+        // ==========================================================
+        // SELLER
+        // ==========================================================
 
         if (loggedInUser instanceof Seller) {
 
             Seller seller =
                     (Seller) loggedInUser;
-
 
             Product product =
                     productService.findProductByIdAndSeller(
@@ -249,22 +251,48 @@ public class InventoryController {
                             seller.getUserId()
                     );
 
-
             if (product == null) {
 
                 return "redirect:/inventory/list";
             }
 
+            // ------------------------------------------------------
+            // Find existing inventory for this product
+            // ------------------------------------------------------
 
-            inventory.setProduct(product);
+            Inventory existingInventory =
+                    inventoryService.findInventoryByProduct(
+                            product.getProductId()
+                    );
 
-            inventoryService.insertInventory(
-                    inventory
-            );
+            if (existingInventory == null) {
+
+                // Only for old products that don't have inventory
+                inventory.setProduct(product);
+
+                inventoryService.insertInventory(
+                        inventory
+                );
+
+            } else {
+
+                // Reuse the existing Inventory ID
+                existingInventory.setQuantity(
+                        inventory.getQuantity()
+                );
+
+                inventoryService.updateQuantity(
+                        existingInventory
+                );
+            }
 
             return "redirect:/inventory/list";
         }
 
+
+        // ==========================================================
+        // ADMIN
+        // ==========================================================
 
         if (loggedInUser instanceof Admin) {
 
@@ -273,15 +301,13 @@ public class InventoryController {
                             inventory.getProduct().getProductId()
                     );
 
-
             if (product == null) {
 
                 return "redirect:/inventory/list";
             }
 
-
             /*
-             * Admin can create inventory only
+             * Admin can manage inventory only
              * for admin-created products.
              */
 
@@ -291,11 +317,35 @@ public class InventoryController {
             }
 
 
-            inventory.setProduct(product);
+            // ------------------------------------------------------
+            // Find existing inventory for this product
+            // ------------------------------------------------------
 
-            inventoryService.insertInventory(
-                    inventory
-            );
+            Inventory existingInventory =
+                    inventoryService.findInventoryByProduct(
+                            product.getProductId()
+                    );
+
+            if (existingInventory == null) {
+
+                // Only for old products that don't have inventory
+                inventory.setProduct(product);
+
+                inventoryService.insertInventory(
+                        inventory
+                );
+
+            } else {
+
+                // Reuse existing Inventory ID
+                existingInventory.setQuantity(
+                        inventory.getQuantity()
+                );
+
+                inventoryService.updateQuantity(
+                        existingInventory
+                );
+            }
 
             return "redirect:/inventory/list";
         }

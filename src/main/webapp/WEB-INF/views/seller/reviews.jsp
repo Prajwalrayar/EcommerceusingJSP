@@ -1,98 +1,191 @@
-<%@ page contentType="text/html;charset=UTF-8"
-         language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%@ taglib prefix="c"
            uri="http://java.sun.com/jsp/jstl/core" %>
 
+<c:set var="pageTitle"
+       value="Reviews & Ratings"/>
+
 <%@ include file="../common/header.jsp" %>
 
-<link rel="stylesheet"
-      href="${pageContext.request.contextPath}/resources/css/seller-dashboard.css">
 
-<div class="seller-page">
+<div class="container">
 
-    <div class="page-header">
+    <h1>Reviews & Ratings</h1>
 
-        <div>
-            <h1>Reviews & Ratings</h1>
-            <p>Customer feedback for your products</p>
+    <p>
+        Customer feedback for your products
+    </p>
+
+
+    <!-- ===================================================== -->
+    <!-- NO REVIEWS -->
+    <!-- ===================================================== -->
+
+    <c:if test="${empty reviews}">
+
+        <div class="card">
+
+            <h2>No Reviews Yet</h2>
+
+            <p>
+                Customers have not reviewed your products yet.
+            </p>
+
         </div>
 
-        <a href="${pageContext.request.contextPath}/seller/dashboard"
-           class="btn secondary-btn">
-            Dashboard
-        </a>
-
-    </div>
+    </c:if>
 
 
-    <div class="review-grid">
+    <!-- ===================================================== -->
+    <!-- REVIEWS -->
+    <!-- ===================================================== -->
 
-        <c:forEach var="review"
-                   items="${reviews}">
+    <c:if test="${not empty reviews}">
 
-            <div class="review-card">
+        <table>
 
-                <div class="review-header">
+            <thead>
 
-                    <div>
+                <tr>
 
-                        <h3>
-                            ${review.product.productName}
-                        </h3>
+                    <th>Review ID</th>
 
-                        <p>
+                    <th>Product</th>
+
+                    <th>Customer</th>
+
+                    <th>Rating</th>
+
+                    <th>Review</th>
+
+                    <th>Review Date</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                <c:forEach
+                        var="review"
+                        items="${reviews}">
+
+                    <tr>
+
+                        <!-- Review ID -->
+
+                        <td>
+                            ${review.reviewId}
+                        </td>
+
+
+                        <!-- Product -->
+
+                        <td>
+
+                            <strong>
+                                ${review.product.productName}
+                            </strong>
+
+                            <br>
+
+                            ${review.product.brand}
+
+                        </td>
+
+
+                        <!-- Customer -->
+
+                        <td>
+
                             ${review.customer.userName}
-                        </p>
 
-                    </div>
+                            <br>
 
-                    <div class="rating">
+                            <small>
+                                ${review.customer.userEmail}
+                            </small>
 
-                        ⭐ ${review.rating}/5
-
-                    </div>
-
-                </div>
+                        </td>
 
 
-                <div class="review-text">
+                        <!-- Rating -->
 
-                    ${review.reviewText}
+                        <td>
 
-                </div>
+                            <c:choose>
+
+                                <c:when test="${review.rating == 5}">
+                                    ⭐⭐⭐⭐⭐
+                                </c:when>
+
+                                <c:when test="${review.rating == 4}">
+                                    ⭐⭐⭐⭐
+                                </c:when>
+
+                                <c:when test="${review.rating == 3}">
+                                    ⭐⭐⭐
+                                </c:when>
+
+                                <c:when test="${review.rating == 2}">
+                                    ⭐⭐
+                                </c:when>
+
+                                <c:otherwise>
+                                    ⭐
+                                </c:otherwise>
+
+                            </c:choose>
+
+                            <br>
+
+                            (${review.rating}/5)
+
+                        </td>
 
 
-                <div class="review-footer">
+                        <!-- Review -->
 
-                    Order:
-                    <strong>
-                        ${review.order.orderId}
-                    </strong>
+                        <td>
 
-                    <span>
-                        ${review.reviewDate}
-                    </span>
+                            ${review.reviewText}
 
-                </div>
-
-            </div>
-
-        </c:forEach>
+                        </td>
 
 
-        <c:if test="${empty reviews}">
+                        <!-- Date -->
 
-            <div class="empty-message">
+                        <td>
 
-                No reviews have been received yet.
+                            ${review.reviewDate}
 
-            </div>
+                        </td>
 
-        </c:if>
+                    </tr>
 
-    </div>
+                </c:forEach>
+
+            </tbody>
+
+        </table>
+
+    </c:if>
+
+
+    <br>
+
+
+    <a
+            href="${pageContext.request.contextPath}/seller/dashboard"
+            class="btn">
+
+        Back to Dashboard
+
+    </a>
 
 </div>
+
 
 <%@ include file="../common/footer.jsp" %>

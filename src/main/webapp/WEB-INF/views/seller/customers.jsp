@@ -19,7 +19,8 @@
         </div>
 
         <a href="${pageContext.request.contextPath}/seller/dashboard"
-           class="btn secondary-btn">
+           class="btn btn-primary"
+   		style="color: white;">
             Dashboard
         </a>
 

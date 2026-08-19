@@ -72,4 +72,5 @@ public interface InventoryMapper {
     List<Inventory> findInventoryBySeller(
             @Param("sellerId")
             String sellerId);
+    
 }

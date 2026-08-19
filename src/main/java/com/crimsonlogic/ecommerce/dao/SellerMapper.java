@@ -87,4 +87,8 @@ public interface SellerMapper {
     List<Customer> findCustomersBySeller(
             @Param("sellerId")
             String sellerId);
+    
+    Double findAverageRatingBySeller(
+            @Param("sellerId")
+            String sellerId);
 }

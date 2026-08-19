@@ -151,25 +151,67 @@ public class RoleInterceptor implements HandlerInterceptor {
         }
 
 
-        // ==========================================================
-        // REPORTS
-        // ==========================================================
+     // ==========================================================
+     // REPORTS
+     // ==========================================================
 
-        if (requestUri.startsWith(
-                contextPath + "/reports")) {
+     if (requestUri.startsWith(
+             contextPath + "/reports/admin")) {
 
-            if (role == Role.ADMIN) {
+         if (role == Role.ADMIN) {
 
-                return true;
-            }
+             return true;
+         }
 
-            response.sendError(
-                    HttpServletResponse.SC_FORBIDDEN,
-                    "Access denied. Admin role required."
-            );
+         response.sendError(
+                 HttpServletResponse.SC_FORBIDDEN,
+                 "Access denied. Admin role required."
+         );
 
-            return false;
-        }
+         return false;
+     }
+
+
+     // ==========================================================
+     // SELLER REPORTS
+     // ==========================================================
+
+     if (requestUri.startsWith(
+             contextPath + "/reports/seller")) {
+
+         if (role == Role.SELLER) {
+
+             return true;
+         }
+
+         response.sendError(
+                 HttpServletResponse.SC_FORBIDDEN,
+                 "Access denied. Seller role required."
+         );
+
+         return false;
+     }
+
+
+     // ==========================================================
+     // CUSTOMER REPORTS
+     // ==========================================================
+
+     if (requestUri.startsWith(
+             contextPath + "/reports/customer")) {
+
+         if (role == Role.CUSTOMER) {
+
+             return true;
+         }
+
+         response.sendError(
+                 HttpServletResponse.SC_FORBIDDEN,
+                 "Access denied. Customer role required."
+         );
+
+         return false;
+     }
 
 
         // ==========================================================

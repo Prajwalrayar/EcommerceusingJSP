@@ -20,6 +20,11 @@
         View your sales performance, sold products and
         category performance.
     </p>
+    
+    <a href="${pageContext.request.contextPath}/seller/dashboard"
+   class="btn btn-primary">
+    Dashboard
+</a>
 
 </div>
 
@@ -183,13 +188,9 @@
 
         <div class="form-actions">
 
-            <button
-                    type="submit"
-                    class="btn edit-btn">
-
-                Apply Filters
-
-            </button>
+            <button type="submit" class="btn btn-primary">
+		        Apply Filters
+		    </button>
 
 
             <a

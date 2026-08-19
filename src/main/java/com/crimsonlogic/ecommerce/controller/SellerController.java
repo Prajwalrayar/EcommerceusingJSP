@@ -2,9 +2,12 @@ package com.crimsonlogic.ecommerce.controller;
 
 import com.crimsonlogic.ecommerce.exception.ValidationException;
 import com.crimsonlogic.ecommerce.model.Address;
+import com.crimsonlogic.ecommerce.model.Customer;
 import com.crimsonlogic.ecommerce.model.Product;
 import com.crimsonlogic.ecommerce.model.Review;
 import com.crimsonlogic.ecommerce.model.Seller;
+import com.crimsonlogic.ecommerce.model.report.CategorySalesReport;
+import com.crimsonlogic.ecommerce.model.report.ProductSalesReport;
 import com.crimsonlogic.ecommerce.model.report.ReportFilter;
 import com.crimsonlogic.ecommerce.model.report.SalesReport;
 import com.crimsonlogic.ecommerce.service.AddressService;
@@ -384,6 +387,90 @@ public class SellerController {
         return "seller/dashboard";
     }
     
+    @GetMapping("/reports")
+    public String sellerReports(
+            HttpSession session,
+            Model model,
+            @ModelAttribute ReportFilter filter) {
+
+        Seller seller =
+                requireLoggedInSeller(session);
+
+        filter.setSellerId(
+                seller.getUserId()
+        );
+
+        /*
+         * Seller sees completed/sold orders only.
+         */
+        filter.setOrderStatus(
+                "DELIVERED"
+        );
+
+        SalesReport salesReport =
+                reportService.getSalesReport(
+                        filter
+                );
+
+        List<ProductSalesReport> productSales =
+                reportService.getProductSalesReport(
+                        filter
+                );
+
+        List<CategorySalesReport> categorySales =
+                reportService.getCategorySalesReport(
+                        filter
+                );
+
+        model.addAttribute(
+                "salesReport",
+                salesReport
+        );
+
+        model.addAttribute(
+                "productSales",
+                productSales
+        );
+
+        model.addAttribute(
+                "categorySales",
+                categorySales
+        );
+
+        model.addAttribute(
+                "filter",
+                filter
+        );
+
+        model.addAttribute(
+                "seller",
+                seller
+        );
+
+        return "reports/seller-reports";
+    }
+    
+    
+    @GetMapping("/customers")
+    public String sellerCustomers(
+            HttpSession session,
+            Model model) {
+
+        Seller seller =
+                requireLoggedInSeller(session);
+
+        List<Customer> customers =
+                sellerService.findCustomersBySeller(
+                        seller.getUserId()
+                );
+
+        model.addAttribute(
+                "customers",
+                customers
+        );
+
+        return "seller/customers";
+    }
     private Seller requireLoggedInSeller(
             HttpSession session) {
 

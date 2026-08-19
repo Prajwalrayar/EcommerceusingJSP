@@ -2,33 +2,47 @@ package com.crimsonlogic.ecommerce.controller;
 
 import com.crimsonlogic.ecommerce.model.Order;
 import com.crimsonlogic.ecommerce.model.Review;
+import com.crimsonlogic.ecommerce.model.report.ReportFilter;
+import com.crimsonlogic.ecommerce.model.report.SalesReport;
 import com.crimsonlogic.ecommerce.service.OrderService;
+import com.crimsonlogic.ecommerce.service.ReportService;
 import com.crimsonlogic.ecommerce.service.ReviewService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Controller
-@RequestMapping("/customer")
+@RequestMapping("/")
 public class ReviewController {
 
     private ReviewService reviewService;
     private OrderService orderService;
+    private ReportService reportService;
 
 
     // ==========================================================
     // Setter Injection
     // ==========================================================
 
+    @Autowired
     public void setReviewService(ReviewService reviewService) {
         this.reviewService = reviewService;
     }
 
+    @Autowired
     public void setOrderService(OrderService orderService) {
         this.orderService = orderService;
+    }
+    
+    @Autowired
+    public void setReportService(ReportService reportService) {
+        this.reportService = reportService;
     }
 
 
@@ -36,7 +50,7 @@ public class ReviewController {
     // Show Review Form
     // ==========================================================
 
-    @GetMapping("/review/{orderId}")
+    @GetMapping("/customer/review/{orderId}")
     public String showReviewForm(
             @PathVariable("orderId")
             String orderId,
@@ -106,7 +120,7 @@ public class ReviewController {
         );
 
 
-        return "review/review-form";
+        return "/customer/review/review-form";
     }
 
 
@@ -114,7 +128,7 @@ public class ReviewController {
     // Submit Review
     // ==========================================================
 
-    @PostMapping("/review/{orderId}")
+    @PostMapping("/customer/review/{orderId}")
     public String submitReview(
 
             @PathVariable("orderId")
@@ -268,4 +282,56 @@ public class ReviewController {
                 + "?customerId="
                 + customerId;
     }
+    
+	 // ==========================================================
+	 // SELLER - VIEW REVIEWS
+	 // ==========================================================
+	
+	 @GetMapping("/seller/reviews/{sellerId}")
+	 public String sellerReviews(
+	         @PathVariable("sellerId")
+	         String sellerId,
+	
+	         Model model) {
+	
+	
+		 
+	     List<Review> reviews =
+	             reviewService.findReviewsBySeller(
+	                     sellerId
+	             );
+	
+	
+	     model.addAttribute(
+	             "reviews",
+	             reviews
+	     );
+	
+	     model.addAttribute(
+	             "sellerId",
+	             sellerId
+	     );
+	
+	
+	     return "seller/reviews";
+	 }
+	 
+	 @Controller
+	 @RequestMapping("/reports")
+	 public class ReportController {
+
+	     @GetMapping("/filter")
+	     public String filterReport(
+	             @ModelAttribute ReportFilter filter,
+	             Model model) {
+
+	         SalesReport report =
+	                 reportService.getSalesReport(filter);
+
+	         model.addAttribute("salesReport", report);
+	         model.addAttribute("filter", filter);
+
+	         return "seller/sales-report";
+	     }
+	 }
 }

@@ -16,9 +16,14 @@ public class ProductServiceImpl implements ProductService {
     private ProductMapper productMapper;
     private InventoryService inventoryService;
 
-    public void setProductMapper(ProductMapper productMapper,
-    		InventoryService inventoryService) {
+    public void setProductMapper(ProductMapper productMapper) {
         this.productMapper = productMapper;
+    }
+
+
+    public void setInventoryService(
+            InventoryService inventoryService) {
+
         this.inventoryService = inventoryService;
     }
 
@@ -132,6 +137,98 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void updateProduct(Product product) {
+
+        // ----------------------------------------------------------
+        // Validate Product ID
+        // ----------------------------------------------------------
+
+        if (product == null
+                || product.getProductId() == null
+                || product.getProductId().trim().isEmpty()) {
+
+            throw new com.crimsonlogic.ecommerce.exception.ValidationException(
+                    "Product ID is required."
+            );
+        }
+
+
+        // ----------------------------------------------------------
+        // Find Existing Product
+        // ----------------------------------------------------------
+
+        Product existingProduct =
+                productMapper.findProductById(
+                        product.getProductId()
+                );
+
+
+        if (existingProduct == null) {
+
+            throw new com.crimsonlogic.ecommerce.exception.ValidationException(
+                    "Product not found."
+            );
+        }
+
+
+        // ----------------------------------------------------------
+        // Validate Product
+        // ----------------------------------------------------------
+
+        ValidationUtil.validateProductName(
+                product.getProductName()
+        );
+
+        ValidationUtil.validateField(
+                product.getBrand(),
+                "Brand"
+        );
+
+        ValidationUtil.validateProductDescription(
+                product.getProductDescription()
+        );
+
+        ValidationUtil.validateProductPrice(
+                product.getProductPrice()
+        );
+
+
+        if (product.getCategory() == null) {
+
+            throw new com.crimsonlogic.ecommerce.exception.ValidationException(
+                    "Category must be selected."
+            );
+        }
+
+
+        // ----------------------------------------------------------
+        // Preserve Existing Status
+        // ----------------------------------------------------------
+
+        product.setProductStatus(
+                existingProduct.getProductStatus()
+        );
+
+
+        // ----------------------------------------------------------
+        // Preserve Seller / Creator Information
+        // ----------------------------------------------------------
+
+        product.setCreatedBy(
+                existingProduct.getCreatedBy()
+        );
+
+        product.setUserId(
+                existingProduct.getUserId()
+        );
+
+        product.setSeller(
+                existingProduct.getSeller()
+        );
+
+
+        // ----------------------------------------------------------
+        // Update Product
+        // ----------------------------------------------------------
 
         productMapper.updateProduct(product);
     }

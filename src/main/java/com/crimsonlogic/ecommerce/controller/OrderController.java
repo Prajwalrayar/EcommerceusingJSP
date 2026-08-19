@@ -171,7 +171,7 @@ public class OrderController {
         model.addAttribute("orders", orders);
         model.addAttribute("sellerId", sellerId);
 
-        return "seller/orders";
+        return "orders/seller/orders";
     }
 
 
@@ -190,7 +190,7 @@ public class OrderController {
         model.addAttribute("orders", orders);
         model.addAttribute("sellerId", sellerId);
 
-        return "seller/pending-orders";
+        return "orders/seller/pending-orders";
     }
 
 
@@ -210,7 +210,7 @@ public class OrderController {
 
         model.addAttribute("order", order);
 
-        return "seller/order-details";
+        return "orders/seller/order-details";
     }
 
 
@@ -299,7 +299,7 @@ public class OrderController {
         model.addAttribute("sellerId", sellerId);
         model.addAttribute("productName", productName);
 
-        return "seller/orders";
+        return "orders/seller/orders";
     }
 
 
@@ -390,9 +390,14 @@ public class OrderController {
     
     @GetMapping("/seller/{sellerId}/status")
     public String sellerOrdersByStatus(
+
             @PathVariable String sellerId,
-            @RequestParam OrderStatus status,
+
+            @RequestParam(value = "status", required = false)
+            OrderStatus status,
+
             HttpSession session,
+
             Model model) {
 
         Object loggedInUser =
@@ -409,11 +414,35 @@ public class OrderController {
             return "redirect:/";
         }
 
-        List<Order> orders =
-                orderService.findOrdersBySellerAndStatus(
-                        sellerId,
-                        status
-                );
+
+        // ==========================================================
+        // GET ORDERS
+        // ==========================================================
+
+        List<Order> orders;
+
+        if (status == null) {
+
+            // All statuses
+            orders =
+                    orderService.findOrdersBySeller(
+                            sellerId
+                    );
+
+        } else {
+
+            // Selected status
+            orders =
+                    orderService.findOrdersBySellerAndStatus(
+                            sellerId,
+                            status
+                    );
+        }
+
+
+        // ==========================================================
+        // MODEL
+        // ==========================================================
 
         model.addAttribute(
                 "orders",
@@ -430,13 +459,16 @@ public class OrderController {
                 status
         );
 
+        // IMPORTANT: dynamic dropdown
         model.addAttribute(
                 "orderStatuses",
                 OrderStatus.values()
         );
 
+
         return "seller/orders";
     }
+    
     
     @GetMapping("/seller/{sellerId}/search-order")
     public String searchSellerOrdersByOrderId(

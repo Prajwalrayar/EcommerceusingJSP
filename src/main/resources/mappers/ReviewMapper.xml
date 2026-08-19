@@ -119,7 +119,7 @@
     <insert id="insertReview"
             parameterType="com.crimsonlogic.ecommerce.model.Review">
 
-        INSERT INTO reviews
+        INSERT INTO review
         (
         review_id,
         order_id,
@@ -180,7 +180,7 @@
         c.user_email AS customer_email,
         c.user_phone AS customer_phone
 
-        FROM reviews r
+        FROM review r
 
 
         INNER JOIN orders o
@@ -233,7 +233,7 @@
         c.user_email AS customer_email,
         c.user_phone AS customer_phone
 
-	    FROM reviews r
+	    FROM review r
 	
 	    INNER JOIN orders o
 	        ON r.order_id = o.order_id

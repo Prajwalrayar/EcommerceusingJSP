@@ -7,6 +7,7 @@ import com.crimsonlogic.ecommerce.exception.ValidationException;
 import com.crimsonlogic.ecommerce.model.Inventory;
 import com.crimsonlogic.ecommerce.model.Product;
 import com.crimsonlogic.ecommerce.service.InventoryService;
+import com.crimsonlogic.ecommerce.util.IdGenerator;
 import com.crimsonlogic.ecommerce.util.ValidationUtil;
 
 import java.util.List;
@@ -17,17 +18,33 @@ public class InventoryServiceImpl implements InventoryService {
     private ProductMapper productMapper;
 
     public void setInventoryMapper(
-            InventoryMapper inventoryMapper,
-            ProductMapper productMapper) {
+            InventoryMapper inventoryMapper) {
 
         this.inventoryMapper = inventoryMapper;
+    }
+
+    public void setProductMapper(
+            ProductMapper productMapper) {
         this.productMapper = productMapper;
     }
 
-
     @Override
-    public void insertInventory(
-            Inventory inventory) {
+    public void insertInventory(Inventory inventory) {
+
+        if (inventory.getInventoryId() == null
+                || inventory.getInventoryId().trim().isEmpty()) {
+
+            inventory.setInventoryId(
+                    IdGenerator.generateId("INV")
+            );
+        }
+
+        if (inventory.getQuantity() < 0) {
+
+            throw new ValidationException(
+                    "Quantity cannot be negative."
+            );
+        }
 
         inventoryMapper.insertInventory(inventory);
     }

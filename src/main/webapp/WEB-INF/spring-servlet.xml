@@ -162,6 +162,9 @@ http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 		class="com.crimsonlogic.ecommerce.service.impl.InventoryServiceImpl">
 
 		<property name="inventoryMapper" ref="inventoryMapper" />
+		
+		<property name="productMapper"
+              ref="productMapper" />
 
 	</bean>
 	<bean id="orderService"
@@ -181,6 +184,9 @@ http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 		class="com.crimsonlogic.ecommerce.service.impl.ProductServiceImpl">
 
 		<property name="productMapper" ref="productMapper" />
+		
+		<property name="inventoryService"
+              ref="inventoryService"/>
 
 	</bean>
 	<bean id="reportService"

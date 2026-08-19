@@ -2,7 +2,9 @@ package com.crimsonlogic.ecommerce.service.impl;
 
 import com.crimsonlogic.ecommerce.dao.ProductMapper;
 import com.crimsonlogic.ecommerce.enumeration.ProductStatus;
+import com.crimsonlogic.ecommerce.model.Inventory;
 import com.crimsonlogic.ecommerce.model.Product;
+import com.crimsonlogic.ecommerce.service.InventoryService;
 import com.crimsonlogic.ecommerce.service.ProductService;
 import com.crimsonlogic.ecommerce.util.IdGenerator;
 import com.crimsonlogic.ecommerce.util.ValidationUtil;
@@ -12,10 +14,12 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     private ProductMapper productMapper;
+    private InventoryService inventoryService;
 
-
-    public void setProductMapper(ProductMapper productMapper) {
+    public void setProductMapper(ProductMapper productMapper,
+    		InventoryService inventoryService) {
         this.productMapper = productMapper;
+        this.inventoryService = inventoryService;
     }
 
 
@@ -100,6 +104,29 @@ public class ProductServiceImpl implements ProductService {
         // ----------------------------------------------------------
 
         productMapper.insertProduct(product);
+
+
+        // ----------------------------------------------------------
+        // Create Inventory
+        // ----------------------------------------------------------
+
+        Inventory inventory = new Inventory();
+
+        inventory.setInventoryId(
+                IdGenerator.generateId("INV")
+        );
+
+        inventory.setProduct(
+                product
+        );
+
+        inventory.setQuantity(
+                product.getInitialStock()
+        );
+
+        inventoryService.insertInventory(
+                inventory
+        );
     }
 
 

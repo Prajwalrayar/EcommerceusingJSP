@@ -1,6 +1,9 @@
 package com.crimsonlogic.ecommerce.dao;
 
 import com.crimsonlogic.ecommerce.model.Review;
+
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 
 public interface ReviewMapper {
@@ -27,4 +30,8 @@ public interface ReviewMapper {
             @Param("orderId")
             String orderId
     );
+    
+    List<Review> findReviewsBySeller(
+            @Param("sellerId")
+            String sellerId);
 }

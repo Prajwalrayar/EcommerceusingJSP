@@ -146,4 +146,25 @@ public interface OrderMapper {
 
             @Param("sellerId")
             String sellerId);
+    
+    /**
+     * Returns seller orders by status.
+     */
+    List<Order> findOrdersBySellerAndStatus(
+            @Param("sellerId")
+            String sellerId,
+
+            @Param("status")
+            OrderStatus status);
+
+
+    /**
+     * Searches seller orders by order number.
+     */
+    List<Order> findOrdersBySellerAndOrderId(
+            @Param("sellerId")
+            String sellerId,
+
+            @Param("orderId")
+            String orderId);
 }

@@ -2,9 +2,12 @@ package com.crimsonlogic.ecommerce.service.impl;
 
 import com.crimsonlogic.ecommerce.dao.OrderMapper;
 import com.crimsonlogic.ecommerce.enumeration.OrderStatus;
+import com.crimsonlogic.ecommerce.exception.ValidationException;
 import com.crimsonlogic.ecommerce.model.Order;
 import com.crimsonlogic.ecommerce.service.OrderService;
+import com.crimsonlogic.ecommerce.util.IdGenerator;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class OrderServiceImpl implements OrderService {
@@ -19,6 +22,60 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void insertOrder(Order order) {
+
+        if (order == null) {
+
+            throw new ValidationException(
+                    "Order information is required."
+            );
+        }
+
+        if (order.getOrderId() == null
+                || order.getOrderId().trim().isEmpty()) {
+
+            order.setOrderId(
+                    IdGenerator.generateId("ORD")
+            );
+        }
+
+        if (order.getCustomer() == null
+                || order.getCustomer().getUserId() == null
+                || order.getCustomer().getUserId().trim().isEmpty()) {
+
+            throw new ValidationException(
+                    "Customer is required."
+            );
+        }
+
+        if (order.getProduct() == null
+                || order.getProduct().getProductId() == null
+                || order.getProduct().getProductId().trim().isEmpty()) {
+
+            throw new ValidationException(
+                    "Product is required."
+            );
+        }
+
+        if (order.getQuantity() <= 0) {
+
+            throw new ValidationException(
+                    "Order quantity must be greater than 0."
+            );
+        }
+
+        if (order.getTotalPrice() <= 0) {
+
+            throw new ValidationException(
+                    "Order total price must be greater than 0."
+            );
+        }
+
+        if (order.getOrderStatus() == null) {
+
+            order.setOrderStatus(
+                    OrderStatus.PENDING_APPROVAL
+            );
+        }
 
         orderMapper.insertOrder(order);
     }
@@ -69,7 +126,74 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void updateOrderStatus(Order order) {
 
-        orderMapper.updateOrderStatus(order);
+        if (order == null) {
+
+            throw new ValidationException(
+                    "Order information is required."
+            );
+        }
+
+        if (order.getOrderId() == null
+                || order.getOrderId().trim().isEmpty()) {
+
+            throw new ValidationException(
+                    "Order ID is required."
+            );
+        }
+
+        if (order.getOrderStatus() == null) {
+
+            throw new ValidationException(
+                    "Order status is required."
+            );
+        }
+
+        Order existingOrder =
+                orderMapper.findOrderById(
+                        order.getOrderId()
+                );
+
+        if (existingOrder == null) {
+
+            throw new ValidationException(
+                    "Order not found."
+            );
+        }
+
+        validateStatusTransition(
+                existingOrder.getOrderStatus(),
+                order.getOrderStatus()
+        );
+
+        existingOrder.setOrderStatus(
+                order.getOrderStatus()
+        );
+
+        if (order.getOrderStatus()
+                == OrderStatus.SHIPPED) {
+
+            if (existingOrder.getTrackingNumber() == null
+                    || existingOrder.getTrackingNumber()
+                            .trim()
+                            .isEmpty()) {
+
+                existingOrder.setTrackingNumber(
+                        IdGenerator.generateId("TRK")
+                );
+            }
+        }
+
+        if (order.getOrderStatus()
+                == OrderStatus.DELIVERED) {
+
+            existingOrder.setDeliveredDate(
+                    LocalDateTime.now()
+            );
+        }
+
+        orderMapper.updateOrderStatus(
+                existingOrder
+        );
     }
 
 
@@ -154,5 +278,121 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.findOrderByIdAndSeller(
                 orderId,
                 sellerId);
+    }
+    
+    private void validateStatusTransition(
+            OrderStatus current,
+            OrderStatus next) {
+
+        if (current == null) {
+
+            throw new ValidationException(
+                    "Current order status is missing."
+            );
+        }
+
+        if (next == null) {
+
+            throw new ValidationException(
+                    "New order status is required."
+            );
+        }
+
+        if (current == next) {
+            return;
+        }
+
+        boolean valid = false;
+
+        switch (current) {
+
+            case PENDING_APPROVAL:
+
+                valid = next == OrderStatus.CONFIRMED
+                        || next == OrderStatus.CANCELLED
+                        || next == OrderStatus.REJECTED;
+
+                break;
+
+
+            case CONFIRMED:
+
+                valid = next == OrderStatus.SHIPPED
+                        || next == OrderStatus.CANCELLED;
+
+                break;
+
+
+            case SHIPPED:
+
+                valid = next == OrderStatus.IN_TRANSIT;
+
+                break;
+
+
+            case IN_TRANSIT:
+
+                valid = next == OrderStatus.OUT_FOR_DELIVERY;
+
+                break;
+
+
+            case OUT_FOR_DELIVERY:
+
+                valid = next == OrderStatus.DELIVERED;
+
+                break;
+
+
+            case DELIVERED:
+
+                valid = next == OrderStatus.RETURN_REQUESTED;
+
+                break;
+
+
+            case RETURN_REQUESTED:
+
+            case CANCELLED:
+
+            case REJECTED:
+
+                valid = false;
+
+                break;
+        }
+
+        if (!valid) {
+
+            throw new ValidationException(
+                    "Invalid order status transition: "
+                    + current
+                    + " → "
+                    + next
+            );
+        }
+    }
+    
+    @Override
+    public List<Order> findOrdersBySellerAndStatus(
+            String sellerId,
+            OrderStatus status) {
+
+        return orderMapper.findOrdersBySellerAndStatus(
+                sellerId,
+                status
+        );
+    }
+
+
+    @Override
+    public List<Order> findOrdersBySellerAndOrderId(
+            String sellerId,
+            String orderId) {
+
+        return orderMapper.findOrdersBySellerAndOrderId(
+                sellerId,
+                orderId
+        );
     }
 }

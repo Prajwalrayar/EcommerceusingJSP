@@ -1,6 +1,7 @@
 package com.crimsonlogic.ecommerce.service;
 
 import com.crimsonlogic.ecommerce.model.Address;
+import com.crimsonlogic.ecommerce.model.Customer;
 import com.crimsonlogic.ecommerce.model.Seller;
 
 import java.util.List;
@@ -54,5 +55,8 @@ public interface SellerService {
             String addressId);
 
     List<Address> findAddressesBySeller(
+            String sellerId);
+    
+    List<Customer> findCustomersBySeller(
             String sellerId);
 }

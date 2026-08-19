@@ -3,6 +3,7 @@ package com.crimsonlogic.ecommerce.service.impl;
 import com.crimsonlogic.ecommerce.dao.SellerMapper;
 import com.crimsonlogic.ecommerce.exception.ValidationException;
 import com.crimsonlogic.ecommerce.model.Address;
+import com.crimsonlogic.ecommerce.model.Customer;
 import com.crimsonlogic.ecommerce.model.Seller;
 import com.crimsonlogic.ecommerce.service.SellerService;
 import com.crimsonlogic.ecommerce.service.abstraction.UserService;
@@ -282,5 +283,23 @@ public class SellerServiceImpl
 
         return sellerMapper.findAddressesBySeller(
                 sellerId);
+    }
+
+
+    @Override
+    public List<Customer> findCustomersBySeller(
+            String sellerId) {
+
+        if (sellerId == null
+                || sellerId.trim().isEmpty()) {
+
+            throw new ValidationException(
+                    "Seller ID is required."
+            );
+        }
+
+        return sellerMapper.findCustomersBySeller(
+                sellerId
+        );
     }
 }

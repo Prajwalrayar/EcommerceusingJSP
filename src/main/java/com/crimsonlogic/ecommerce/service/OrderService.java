@@ -146,4 +146,12 @@ public interface OrderService {
 
             @Param("sellerId")
             String sellerId);
+    
+    List<Order> findOrdersBySellerAndStatus(
+            String sellerId,
+            OrderStatus status);
+
+    List<Order> findOrdersBySellerAndOrderId(
+            String sellerId,
+            String orderId);
 }

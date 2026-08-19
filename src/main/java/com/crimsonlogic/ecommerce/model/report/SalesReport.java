@@ -9,6 +9,8 @@ public class SalesReport {
     private double totalSales;
 
     private double averageOrderValue;
+    
+    private double averageSoldQuantity;
 
 
     public SalesReport() {
@@ -48,5 +50,15 @@ public class SalesReport {
 
     public void setAverageOrderValue(double averageOrderValue) {
         this.averageOrderValue = averageOrderValue;
+    }
+    
+    public double getAverageSoldQuantity() {
+        return averageSoldQuantity;
+    }
+
+    public void setAverageSoldQuantity(
+            double averageSoldQuantity) {
+
+        this.averageSoldQuantity = averageSoldQuantity;
     }
 }

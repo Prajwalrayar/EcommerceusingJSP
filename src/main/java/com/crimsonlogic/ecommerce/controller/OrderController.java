@@ -1,15 +1,20 @@
 package com.crimsonlogic.ecommerce.controller;
 
 import com.crimsonlogic.ecommerce.enumeration.OrderStatus;
+import com.crimsonlogic.ecommerce.exception.ValidationException;
 import com.crimsonlogic.ecommerce.model.Order;
+import com.crimsonlogic.ecommerce.model.Seller;
 import com.crimsonlogic.ecommerce.service.OrderService;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/orders")
@@ -215,29 +220,64 @@ public class OrderController {
     @PostMapping("/seller/{sellerId}/status")
     public String updateSellerOrderStatus(
             @PathVariable String sellerId,
-            @ModelAttribute Order order) {
+            @ModelAttribute Order order,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
 
-        Order existingOrder =
-                orderService.findOrderByIdAndSeller(
-                        order.getOrderId(),
-                        sellerId);
+        Object loggedInUser =
+                session.getAttribute("loggedInUser");
 
-        if (existingOrder != null) {
+        if (!(loggedInUser instanceof Seller)) {
 
-            existingOrder.setOrderStatus(
-                    order.getOrderStatus());
-
-            if (order.getOrderStatus() ==
-                    OrderStatus.DELIVERED) {
-
-                existingOrder.setDeliveredDate(
-                        LocalDateTime.now());
-            }
-
-            orderService.updateOrderStatus(existingOrder);
+            return "redirect:/";
         }
 
-        return "redirect:/orders/seller/" + sellerId;
+        Seller seller =
+                (Seller) loggedInUser;
+
+        if (!seller.getUserId().equals(sellerId)) {
+
+            return "redirect:/";
+        }
+
+        try {
+
+            Order existingOrder =
+                    orderService.findOrderByIdAndSeller(
+                            order.getOrderId(),
+                            sellerId
+                    );
+
+            if (existingOrder == null) {
+
+                throw new ValidationException(
+                        "Order not found or does not belong to you."
+                );
+            }
+
+            existingOrder.setOrderStatus(
+                    order.getOrderStatus()
+            );
+
+            orderService.updateOrderStatus(
+                    existingOrder
+            );
+
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    "Order status updated successfully."
+            );
+
+        } catch (ValidationException ex) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    ex.getMessage()
+            );
+        }
+
+        return "redirect:/orders/seller/"
+                + sellerId;
     }
 
 
@@ -345,5 +385,106 @@ public class OrderController {
         orderService.deleteOrder(orderId);
 
         return "redirect:/orders/admin";
+    }
+    
+    
+    @GetMapping("/seller/{sellerId}/status")
+    public String sellerOrdersByStatus(
+            @PathVariable String sellerId,
+            @RequestParam OrderStatus status,
+            HttpSession session,
+            Model model) {
+
+        Object loggedInUser =
+                session.getAttribute("loggedInUser");
+
+        if (!(loggedInUser instanceof Seller)) {
+            return "redirect:/";
+        }
+
+        Seller seller =
+                (Seller) loggedInUser;
+
+        if (!seller.getUserId().equals(sellerId)) {
+            return "redirect:/";
+        }
+
+        List<Order> orders =
+                orderService.findOrdersBySellerAndStatus(
+                        sellerId,
+                        status
+                );
+
+        model.addAttribute(
+                "orders",
+                orders
+        );
+
+        model.addAttribute(
+                "sellerId",
+                sellerId
+        );
+
+        model.addAttribute(
+                "selectedStatus",
+                status
+        );
+
+        model.addAttribute(
+                "orderStatuses",
+                OrderStatus.values()
+        );
+
+        return "seller/orders";
+    }
+    
+    @GetMapping("/seller/{sellerId}/search-order")
+    public String searchSellerOrdersByOrderId(
+            @PathVariable String sellerId,
+            @RequestParam String orderId,
+            HttpSession session,
+            Model model) {
+
+        Object loggedInUser =
+                session.getAttribute("loggedInUser");
+
+        if (!(loggedInUser instanceof Seller)) {
+            return "redirect:/";
+        }
+
+        Seller seller =
+                (Seller) loggedInUser;
+
+        if (!seller.getUserId().equals(sellerId)) {
+            return "redirect:/";
+        }
+
+        List<Order> orders =
+                orderService.findOrdersBySellerAndOrderId(
+                        sellerId,
+                        orderId.trim()
+                );
+
+        model.addAttribute(
+                "orders",
+                orders
+        );
+
+        model.addAttribute(
+                "sellerId",
+                sellerId
+        );
+
+        model.addAttribute(
+                "orderId",
+                orderId
+        );
+
+        model.addAttribute(
+                "orderStatuses",
+                OrderStatus.values()
+        );
+
+        return "seller/orders";
     }
 }

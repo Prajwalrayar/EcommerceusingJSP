@@ -1,6 +1,7 @@
 package com.crimsonlogic.ecommerce.dao;
 
 import com.crimsonlogic.ecommerce.model.Address;
+import com.crimsonlogic.ecommerce.model.Customer;
 import com.crimsonlogic.ecommerce.model.Seller;
 import org.apache.ibatis.annotations.Param;
 
@@ -80,6 +81,10 @@ public interface SellerMapper {
      * Removes all Seller addresses.
      */
     void removeAllAddressesFromSeller(
+            @Param("sellerId")
+            String sellerId);
+    
+    List<Customer> findCustomersBySeller(
             @Param("sellerId")
             String sellerId);
 }

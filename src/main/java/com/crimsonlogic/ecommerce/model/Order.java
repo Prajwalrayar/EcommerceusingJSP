@@ -45,6 +45,8 @@ public class Order {
      * Delivered date and time.
      */
     private LocalDateTime deliveredDate;
+    
+    private String trackingNumber;
 
 
     /**
@@ -145,5 +147,13 @@ public class Order {
 
     public void setDeliveredDate(LocalDateTime deliveredDate) {
         this.deliveredDate = deliveredDate;
+    }
+    
+    public String getTrackingNumber() {
+        return trackingNumber;
+    }
+
+    public void setTrackingNumber(String trackingNumber) {
+        this.trackingNumber = trackingNumber;
     }
 }

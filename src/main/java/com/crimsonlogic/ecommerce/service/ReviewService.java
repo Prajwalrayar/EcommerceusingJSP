@@ -1,6 +1,9 @@
 package com.crimsonlogic.ecommerce.service;
 
 import com.crimsonlogic.ecommerce.model.Review;
+
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 
 public interface ReviewService {
@@ -27,4 +30,7 @@ public interface ReviewService {
             @Param("orderId")
             String orderId
     );
+    
+    List<Review> findReviewsBySeller(
+            String sellerId);
 }

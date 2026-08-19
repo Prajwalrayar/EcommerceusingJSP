@@ -778,4 +778,148 @@ public class CustomerServiceImpl
                     "Address ID is required.");
         }
     }
+
+
+    @Override
+    public void rechargeWallet(
+            String customerId,
+            double amount,
+            String paymentMethod,
+            String upiId) {
+
+
+        // =====================================================
+        // CUSTOMER VALIDATION
+        // =====================================================
+
+        if (customerId == null ||
+                customerId.trim().isEmpty()) {
+
+            throw new ValidationException(
+                    "Customer ID is required."
+            );
+        }
+
+
+        // =====================================================
+        // AMOUNT VALIDATION
+        // =====================================================
+
+        if (amount <= 0) {
+
+            throw new ValidationException(
+                    "Recharge amount must be greater than zero."
+            );
+        }
+
+
+        // =====================================================
+        // PAYMENT METHOD VALIDATION
+        // =====================================================
+
+        if (paymentMethod == null ||
+                paymentMethod.trim().isEmpty()) {
+
+            throw new ValidationException(
+                    "Payment method is required."
+            );
+        }
+
+
+        // =====================================================
+        // UPI PAYMENT
+        // =====================================================
+
+        if ("UPI".equals(paymentMethod)) {
+
+
+            /*
+             * Use the project's existing ValidationUtil.
+             *
+             * DO NOT duplicate the UPI regular expression here.
+             */
+            ValidationUtil.validateUpiId(
+                    upiId
+            );
+
+
+            // -------------------------------------------------
+            // FIND CUSTOMER
+            // -------------------------------------------------
+
+            Customer customer =
+                    customerMapper.findCustomerById(
+                            customerId
+                    );
+
+
+            if (customer == null) {
+
+                throw new ValidationException(
+                        "Customer not found."
+                );
+            }
+
+
+            // -------------------------------------------------
+            // CALCULATE NEW BALANCE
+            // -------------------------------------------------
+
+            double currentBalance =
+                    customer.getWalletBalance();
+
+
+            double newBalance =
+                    currentBalance + amount;
+
+
+            // -------------------------------------------------
+            // UPDATE WALLET
+            // -------------------------------------------------
+
+            customerMapper.updateWalletBalance(
+                    customerId,
+                    newBalance
+            );
+
+
+            return;
+        }
+
+
+        // =====================================================
+        // DEBIT CARD
+        // =====================================================
+
+        if ("DEBIT_CARD".equals(paymentMethod)) {
+
+            /*
+             * Debit Card is intentionally NOT implemented yet.
+             *
+             * We will add proper:
+             * - card number validation
+             * - expiry validation
+             * - CVV validation
+             * - payment processing
+             *
+             * later.
+             *
+             * Therefore NO WALLET UPDATE is performed here.
+             */
+
+            throw new ValidationException(
+                    "Debit Card recharge is currently unavailable. "
+                            + "Card validation will be implemented later."
+            );
+        }
+
+
+        // =====================================================
+        // INVALID PAYMENT METHOD
+        // =====================================================
+
+        throw new ValidationException(
+                "Invalid payment method."
+        );
+    }
 }

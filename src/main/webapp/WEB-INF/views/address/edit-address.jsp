@@ -18,23 +18,6 @@
             method="post">
 
 
-        <!-- Address ID -->
-
-        <div class="form-group">
-
-            <label for="addressId">
-                Address ID
-            </label>
-
-            <input
-                    type="text"
-                    id="addressId"
-                    name="addressId"
-                    value="${address.addressId}"
-                    readonly>
-
-        </div>
-
 
         <!-- House Number -->
 

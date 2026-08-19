@@ -282,6 +282,94 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.findAvailableProducts();
     }
 
+    
+    @Override
+    public List<Product> searchAvailableProducts(
+            String keyword,
+            String categoryId,
+            String sellerId,
+            Double minPrice,
+            Double maxPrice) {
+
+        // ----------------------------------------------------------
+        // Normalize optional text filters
+        // ----------------------------------------------------------
+
+        if (keyword != null) {
+            keyword = keyword.trim();
+
+            if (keyword.isEmpty()) {
+                keyword = null;
+            }
+        }
+
+        if (categoryId != null) {
+            categoryId = categoryId.trim();
+
+            if (categoryId.isEmpty()) {
+                categoryId = null;
+            }
+        }
+
+        if (sellerId != null) {
+            sellerId = sellerId.trim();
+
+            if (sellerId.isEmpty()) {
+                sellerId = null;
+            }
+        }
+
+
+        // ----------------------------------------------------------
+        // Validate minimum price
+        // ----------------------------------------------------------
+
+        if (minPrice != null && minPrice < 0) {
+
+            throw new com.crimsonlogic.ecommerce.exception.ValidationException(
+                    "Minimum price cannot be negative."
+            );
+        }
+
+
+        // ----------------------------------------------------------
+        // Validate maximum price
+        // ----------------------------------------------------------
+
+        if (maxPrice != null && maxPrice < 0) {
+
+            throw new com.crimsonlogic.ecommerce.exception.ValidationException(
+                    "Maximum price cannot be negative."
+            );
+        }
+
+
+        // ----------------------------------------------------------
+        // Validate price range
+        // ----------------------------------------------------------
+
+        if (minPrice != null
+                && maxPrice != null
+                && minPrice > maxPrice) {
+
+            throw new com.crimsonlogic.ecommerce.exception.ValidationException(
+                    "Minimum price cannot be greater than maximum price."
+            );
+        }
+
+
+        // ----------------------------------------------------------
+        // Database-level filtering
+        // ----------------------------------------------------------
+
+        return productMapper.searchAvailableProducts(
+                keyword,
+                categoryId,
+                sellerId,
+                minPrice,
+                maxPrice
+        );
+    }
 
     @Override
     public void updateProductStatus(Product product) {
@@ -323,5 +411,11 @@ public class ProductServiceImpl implements ProductService {
     public int countReviews(String productId) {
 
         return productMapper.countReviews(productId);
+    }
+    
+    @Override
+    public List<Product> findCustomerAvailableProducts() {
+
+        return productMapper.findCustomerAvailableProducts();
     }
 }

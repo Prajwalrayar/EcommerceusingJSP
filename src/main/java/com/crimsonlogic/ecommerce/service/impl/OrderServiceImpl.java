@@ -1,25 +1,36 @@
 package com.crimsonlogic.ecommerce.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import com.crimsonlogic.ecommerce.dao.CartMapper;
 import com.crimsonlogic.ecommerce.dao.OrderMapper;
 import com.crimsonlogic.ecommerce.enumeration.OrderStatus;
 import com.crimsonlogic.ecommerce.exception.ValidationException;
 import com.crimsonlogic.ecommerce.model.Order;
+import com.crimsonlogic.ecommerce.service.CartService;
 import com.crimsonlogic.ecommerce.service.OrderService;
 import com.crimsonlogic.ecommerce.util.IdGenerator;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 public class OrderServiceImpl implements OrderService {
 
     private OrderMapper orderMapper;
+    private CartService cartService;
+    private CartMapper cartMapper;
 
 
     public void setOrderMapper(OrderMapper orderMapper) {
         this.orderMapper = orderMapper;
     }
 
+    public void setCartService(CartService cartService) {
+        this.cartService = cartService;
+    }
 
+    public void setCartMapper(CartMapper cartMapper) {
+        this.cartMapper = cartMapper;
+    }
+    
     @Override
     public void insertOrder(Order order) {
 
@@ -394,5 +405,118 @@ public class OrderServiceImpl implements OrderService {
                 sellerId,
                 orderId
         );
+    }
+
+
+    @Override
+    public void placeOrder(
+            String customerId,
+            String addressId,
+            String paymentMethod,
+            String upiId) {
+
+        if (customerId == null ||
+                customerId.trim().isEmpty()) {
+
+            throw new ValidationException(
+                    "Customer ID is required."
+            );
+        }
+
+        if (addressId == null ||
+                addressId.trim().isEmpty()) {
+
+            throw new ValidationException(
+                    "Delivery address is required."
+            );
+        }
+
+        if (paymentMethod == null ||
+                paymentMethod.trim().isEmpty()) {
+
+            throw new ValidationException(
+                    "Payment method is required."
+            );
+        }
+
+        /*
+         * Get customer's cart.
+         */
+        List<com.crimsonlogic.ecommerce.model.Cart> cartItems =
+                cartMapper.findCartByCustomer(customerId);
+
+        if (cartItems == null ||
+                cartItems.isEmpty()) {
+
+            throw new ValidationException(
+                    "Your cart is empty."
+            );
+        }
+
+        /*
+         * Create one Order for each cart item.
+         */
+        for (com.crimsonlogic.ecommerce.model.Cart cart : cartItems) {
+
+            if (cart.getProduct() == null) {
+
+                throw new ValidationException(
+                        "Product information is missing."
+                );
+            }
+
+            double totalPrice =
+                    cart.getProduct().getProductPrice()
+                            * cart.getQuantity();
+
+            Order order = new Order();
+
+            order.setOrderId(
+                    IdGenerator.generateId("ORD")
+            );
+
+            order.setCustomer(
+                    cart.getCustomer()
+            );
+
+            order.setProduct(
+                    cart.getProduct()
+            );
+
+            order.setQuantity(
+                    cart.getQuantity()
+            );
+
+            order.setTotalPrice(
+                    totalPrice
+            );
+
+            /*
+             * Order becomes visible to seller only
+             * after successful payment.
+             */
+            order.setOrderStatus(
+                    OrderStatus.PENDING_APPROVAL
+            );
+
+            order.setOrderDate(
+                    LocalDateTime.now()
+            );
+
+            order.setDeliveredDate(null);
+            order.setTrackingNumber(null);
+
+            /*
+             * Insert Order.
+             */
+            orderMapper.insertOrder(order);
+
+            /*
+             * Payment will be created by the controller
+             * after order creation.
+             *
+             * This method only creates the order.
+             */
+        }
     }
 }

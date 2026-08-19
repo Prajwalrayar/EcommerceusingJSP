@@ -14,12 +14,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.crimsonlogic.ecommerce.model.Address;
+import com.crimsonlogic.ecommerce.model.Cart;
 import com.crimsonlogic.ecommerce.model.Customer;
 import com.crimsonlogic.ecommerce.model.Product;
 import com.crimsonlogic.ecommerce.service.AddressService;
 import com.crimsonlogic.ecommerce.service.CartService;
+import com.crimsonlogic.ecommerce.service.CategoryService;
 import com.crimsonlogic.ecommerce.service.CustomerService;
 import com.crimsonlogic.ecommerce.service.ProductService;
+import com.crimsonlogic.ecommerce.service.SellerService;
+import com.crimsonlogic.ecommerce.util.IdGenerator;
 
 
 @Controller
@@ -34,13 +38,19 @@ public class CustomerController {
     private final ProductService productService;
 
     private final CartService cartService;
+    
+    private final CategoryService categoryService;
+    
+    private final SellerService sellerService;
 
 
     public CustomerController(
             CustomerService customerService,
             AddressService addressService,
             ProductService productService,
-            CartService cartService) {
+            CartService cartService,
+            SellerService sellerService,
+            CategoryService categoryService) {
 
         this.customerService =
                 customerService;
@@ -53,6 +63,9 @@ public class CustomerController {
 
         this.cartService =
                 cartService;
+        
+        this.categoryService = categoryService;
+        this.sellerService = sellerService;
     }
 
 
@@ -68,22 +81,20 @@ public class CustomerController {
         Customer customer =
                 getLoggedInCustomer(session);
 
-
         if (customer == null) {
 
             return "redirect:/customer/login";
         }
 
 
-        /*
-         * Refresh customer information from database.
-         *
-         * This ensures that the profile displayed on the
-         * dashboard is not stale session data.
-         */
+        // =====================================================
+        // REFRESH CUSTOMER FROM DATABASE
+        // =====================================================
+
         Customer currentCustomer =
                 customerService.findCustomerById(
-                        customer.getUserId());
+                        customer.getUserId()
+                );
 
 
         if (currentCustomer == null) {
@@ -94,17 +105,56 @@ public class CustomerController {
         }
 
 
-        /*
-         * Keep the latest Customer in session.
-         */
+        // =====================================================
+        // UPDATE SESSION
+        // =====================================================
+
         session.setAttribute(
                 "loggedInUser",
-                currentCustomer);
+                currentCustomer
+        );
 
+
+        // =====================================================
+        // CUSTOMER
+        // =====================================================
 
         model.addAttribute(
                 "customer",
-                currentCustomer);
+                currentCustomer
+        );
+
+
+        // =====================================================
+        // WALLET BALANCE
+        // =====================================================
+
+        model.addAttribute(
+                "walletBalance",
+                currentCustomer.getWalletBalance()
+        );
+
+
+        // =====================================================
+        // CART ITEMS
+        // =====================================================
+
+        List<Cart> cartItems =
+                cartService.findCartByCustomer(
+                        currentCustomer.getUserId()
+                );
+
+
+        model.addAttribute(
+                "cartItems",
+                cartItems
+        );
+
+
+        model.addAttribute(
+                "cartItemCount",
+                cartItems.size()
+        );
 
 
         return "customer/dashboard";
@@ -308,12 +358,42 @@ public class CustomerController {
     }
 
 
+    
+    @GetMapping("/addresses")
+    public String myAddresses(
+            HttpSession session,
+            Model model) {
+
+        Customer customer =
+                getLoggedInCustomer(session);
+
+        if (customer == null) {
+            return "redirect:/customer/login";
+        }
+
+        List<Address> addresses =
+                customerService.findCustomerAddresses(
+                        customer.getUserId()
+                );
+
+        model.addAttribute(
+                "customer",
+                customer
+        );
+
+        model.addAttribute(
+                "addresses",
+                addresses
+        );
+
+        return "address/addresses";
+    }
     // =====================================================
     // SHOW ASSIGN ADDRESS PAGE
     // =====================================================
 
     @GetMapping("/{customerId}/addresses/add")
-    public String showAssignAddressPage(
+    public String showAddAddressPage(
             @PathVariable String customerId,
             HttpSession session,
             Model model) {
@@ -321,107 +401,222 @@ public class CustomerController {
         Customer loggedInCustomer =
                 getLoggedInCustomer(session);
 
-
         if (loggedInCustomer == null) {
-
             return "redirect:/customer/login";
         }
 
-
-        /*
-         * Customer can manage only his/her own addresses.
-         */
         if (!loggedInCustomer.getUserId()
                 .equals(customerId)) {
 
             return "redirect:/customer/profile/"
                     + loggedInCustomer.getUserId();
         }
-
 
         Customer customer =
                 customerService.findCustomerById(
-                        customerId);
-
+                        customerId
+                );
 
         if (customer == null) {
-
             return "redirect:/customer/dashboard";
         }
 
-
-        List<Address> addresses =
-                addressService.findAllAddresses();
-
-
-        List<Address> customerAddresses =
-                customerService.findCustomerAddresses(
-                        customerId);
-
-
         model.addAttribute(
                 "customer",
-                customer);
-
-
-        model.addAttribute(
-                "addresses",
-                addresses);
-
+                customer
+        );
 
         model.addAttribute(
-                "customerAddresses",
-                customerAddresses);
+                "address",
+                new Address()
+        );
 
-
-        return "address/assign-customer-address";
+        return "address/add-address";
     }
 
+    
+	 // =====================================================
+	 // CUSTOMER WALLET
+	 // =====================================================
+	
+	 @GetMapping("/wallet")
+	 public String viewWallet(
+	         HttpSession session,
+	         Model model) {
+	
+	     Customer customer =
+	             getLoggedInCustomer(session);
+	
+	     if (customer == null) {
+	
+	         return "redirect:/customer/login";
+	     }
+	
+	
+	     /*
+	      * Always load the latest wallet balance
+	      * from the database.
+	      */
+	     Customer freshCustomer =
+	             customerService.findCustomerById(
+	                     customer.getUserId());
+	
+	
+	     if (freshCustomer == null) {
+	
+	         session.invalidate();
+	
+	         return "redirect:/customer/login";
+	     }
+	
+	
+	     model.addAttribute(
+	             "customer",
+	             freshCustomer);
+	
+	
+	     return "customer/wallet";
+	 }
+    
+	 
+	// =====================================================
+	// RECHARGE CUSTOMER WALLET
+	// =====================================================
 
-    // =====================================================
-    // ASSIGN ADDRESS
-    // =====================================================
+	@PostMapping("/wallet/recharge")
+	public String rechargeWallet(
+	        @RequestParam("amount") double amount,
+	        @RequestParam("paymentMethod") String paymentMethod,
+	        @RequestParam(value = "upiId", required = false) String upiId,
+	        HttpSession session,
+	        Model model) {
 
-    @PostMapping("/{customerId}/addresses/add")
-    public String assignAddress(
-            @PathVariable String customerId,
-            @RequestParam String addressId,
-            HttpSession session) {
+	    Customer customer =
+	            getLoggedInCustomer(session);
 
-        Customer loggedInCustomer =
-                getLoggedInCustomer(session);
+	    if (customer == null) {
 
-
-        if (loggedInCustomer == null) {
-
-            return "redirect:/customer/login";
-        }
+	        return "redirect:/customer/login";
+	    }
 
 
-        /*
-         * Customer can assign an address only to
-         * his/her own account.
-         */
-        if (!loggedInCustomer.getUserId()
-                .equals(customerId)) {
+	    try {
 
-            return "redirect:/customer/profile/"
-                    + loggedInCustomer.getUserId();
-        }
+	        customerService.rechargeWallet(
+	                customer.getUserId(),
+	                amount,
+	                paymentMethod,
+	                upiId
+	        );
 
 
-        /*
-         * Address validation and duplicate assignment
-         * rules are handled by CustomerServiceImpl.
-         */
-        customerService.assignAddress(
-                customerId,
-                addressId);
+	        return "redirect:/customer/wallet";
+
+	    } catch (RuntimeException exception) {
+
+	        Customer freshCustomer =
+	                customerService.findCustomerById(
+	                        customer.getUserId()
+	                );
 
 
-        return "redirect:/customer/profile/"
-                + customerId;
-    }
+	        model.addAttribute(
+	                "customer",
+	                freshCustomer
+	        );
+
+
+	        model.addAttribute(
+	                "error",
+	                exception.getMessage()
+	        );
+
+
+	        return "customer/wallet";
+	    }
+	}
+
+	// =====================================================
+	// ADD ADDRESS
+	// =====================================================
+
+	@PostMapping("/{customerId}/addresses/add")
+	public String addAddress(
+	        @PathVariable String customerId,
+	        @ModelAttribute Address address,
+	        HttpSession session,
+	        Model model) {
+
+	    Customer loggedInCustomer =
+	            getLoggedInCustomer(session);
+
+	    if (loggedInCustomer == null) {
+	        return "redirect:/customer/login";
+	    }
+
+	    if (!loggedInCustomer.getUserId()
+	            .equals(customerId)) {
+
+	        return "redirect:/customer/profile/"
+	                + loggedInCustomer.getUserId();
+	    }
+
+	    try {
+
+	        // -------------------------------------------------
+	        // GENERATE ADDRESS ID
+	        // -------------------------------------------------
+
+	        address.setAddressId(
+	                IdGenerator.generateId("ADDR")
+	        );
+
+	        // -------------------------------------------------
+	        // INSERT ADDRESS
+	        // -------------------------------------------------
+
+	        addressService.insertAddress(address);
+
+	        // -------------------------------------------------
+	        // ASSIGN ADDRESS TO CUSTOMER
+	        // -------------------------------------------------
+
+	        customerService.assignAddress(
+	                customerId,
+	                address.getAddressId()
+	        );
+
+	        // -------------------------------------------------
+	        // REDIRECT TO CHECKOUT
+	        // -------------------------------------------------
+
+	        return "redirect:/checkout/" + customerId;
+
+	    } catch (RuntimeException exception) {
+
+	        Customer customer =
+	                customerService.findCustomerById(
+	                        customerId
+	                );
+
+	        model.addAttribute(
+	                "customer",
+	                customer
+	        );
+
+	        model.addAttribute(
+	                "address",
+	                address
+	        );
+
+	        model.addAttribute(
+	                "error",
+	                exception.getMessage()
+	        );
+
+	        return "address/add-address";
+	    }
+	}
 
 
     // =====================================================
@@ -477,32 +672,49 @@ public class CustomerController {
 
     @GetMapping("/products")
     public String products(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String categoryId,
+            @RequestParam(required = false) String sellerId,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
             HttpSession session,
             Model model) {
 
         Customer customer =
                 getLoggedInCustomer(session);
 
-
         if (customer == null) {
-
             return "redirect:/customer/login";
         }
 
-
         List<Product> products =
-                productService.findAllProducts();
+                productService.searchAvailableProducts(
+                        keyword,
+                        categoryId,
+                        sellerId,
+                        minPrice,
+                        maxPrice
+                );
 
+        model.addAttribute("products", products);
+        model.addAttribute("customer", customer);
+
+        // These are only for displaying dropdown options.
+        model.addAttribute(
+                "categories",
+                categoryService.findAllCategories()
+        );
 
         model.addAttribute(
-                "products",
-                products);
+                "sellers",
+                sellerService.findAllSellers()
+        );
 
-
-        model.addAttribute(
-                "customer",
-                customer);
-
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("selectedCategoryId", categoryId);
+        model.addAttribute("selectedSellerId", sellerId);
+        model.addAttribute("minPrice", minPrice);
+        model.addAttribute("maxPrice", maxPrice);
 
         return "customer/products";
     }
@@ -572,7 +784,13 @@ public class CustomerController {
              * correct the request.
              */
             List<Product> products =
-                    productService.findAllProducts();
+                    productService.searchAvailableProducts(
+                            null,
+                            null,
+                            null,
+                            null,
+                            null
+                    );
 
 
             model.addAttribute(
@@ -590,6 +808,41 @@ public class CustomerController {
     }
 
 
+ // =====================================================
+ // VIEW CUSTOMER CART
+ // =====================================================
+
+ @GetMapping("/cart")
+ public String viewCart(
+         HttpSession session,
+         Model model) {
+
+     Customer customer =
+             getLoggedInCustomer(session);
+
+     if (customer == null) {
+         return "redirect:/customer/login";
+     }
+
+     List<com.crimsonlogic.ecommerce.model.Cart> cartItems =
+             cartService.findCartByCustomer(
+                     customer.getUserId()
+             );
+
+     model.addAttribute(
+             "customer",
+             customer
+     );
+
+     model.addAttribute(
+             "cartItems",
+             cartItems
+     );
+
+     return "cart/cart";
+ }
+ 
+ 
     // =====================================================
     // GET LOGGED-IN CUSTOMER
     // =====================================================

@@ -55,4 +55,26 @@ public interface ProductService {
     int countReviews(
             @Param("productId")
             String productId);
+    
+    /**
+     * Searches available products using optional filters.
+     *
+     * Filters:
+     * - Product name
+     * - Category
+     * - Seller
+     * - Minimum price
+     * - Maximum price
+     *
+     * Only products with AVAILABLE status and
+     * positive inventory quantity are returned.
+     */
+    List<Product> searchAvailableProducts(
+            String keyword,
+            String categoryId,
+            String sellerId,
+            Double minPrice,
+            Double maxPrice);
+    
+    List<Product> findCustomerAvailableProducts();
 }

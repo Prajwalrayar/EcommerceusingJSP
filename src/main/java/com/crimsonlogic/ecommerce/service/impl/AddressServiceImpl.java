@@ -1,7 +1,6 @@
 package com.crimsonlogic.ecommerce.service.impl;
 
 import com.crimsonlogic.ecommerce.dao.AddressMapper;
-import com.crimsonlogic.ecommerce.dao.AdminMapper;
 import com.crimsonlogic.ecommerce.model.Address;
 import com.crimsonlogic.ecommerce.service.AddressService;
 
@@ -12,22 +11,24 @@ public class AddressServiceImpl implements AddressService {
     private AddressMapper addressMapper;
 
     public void setAddressMapper(AddressMapper addressMapper) {
-
         this.addressMapper = addressMapper;
     }
 
     @Override
     public void insertAddress(Address address) {
+
         addressMapper.insertAddress(address);
     }
 
     @Override
     public void updateAddress(Address address) {
+
         addressMapper.updateAddress(address);
     }
 
     @Override
     public void deleteAddress(String addressId) {
+
         addressMapper.deleteAddress(addressId);
     }
 
@@ -39,6 +40,38 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public List<Address> findAllAddresses() {
-        return  addressMapper.findAllAddresses();
+
+        return addressMapper.findAllAddresses();
+    }
+
+    @Override
+    public List<Address> findAddressesByCustomer(
+            String customerId) {
+
+        return addressMapper.findAddressesByCustomer(
+                customerId
+        );
+    }
+
+    @Override
+    public void assignAddressToCustomer(
+            String customerId,
+            String addressId) {
+
+        addressMapper.assignAddressToCustomer(
+                customerId,
+                addressId
+        );
+    }
+
+    @Override
+    public void removeAddressFromCustomer(
+            String customerId,
+            String addressId) {
+
+        addressMapper.removeAddressFromCustomer(
+                customerId,
+                addressId
+        );
     }
 }

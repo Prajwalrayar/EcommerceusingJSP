@@ -1,162 +1,103 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
-<%@ taglib prefix="c"
-           uri="http://java.sun.com/jsp/jstl/core" %>
-
-<c:set var="pageTitle" value="Add Address"/>
-
 <%@ include file="../common/header.jsp" %>
 
-
-<div class="form-container">
-
-    <h1>Add Address</h1>
+<link rel="stylesheet"
+      href="${pageContext.request.contextPath}/resources/css/address.css">
 
 
-    <form
-            action="${pageContext.request.contextPath}/address/add"
-            method="post">
+<div class="address-page">
+
+    <div class="address-card">
+
+        <h1>Add Address</h1>
+
+        <p class="address-description">
+            Add a new address for:
+            <strong>${customer.userName}</strong>
+        </p>
 
 
-        <!-- Address ID -->
+        <!-- =====================================================
+             ADD ADDRESS FORM
+             ===================================================== -->
 
-        <div class="form-group">
-
-            <label for="addressId">
-                Address ID
-            </label>
-
-            <input
-                    type="text"
-                    id="addressId"
-                    name="addressId"
-                    required>
-
-        </div>
-
-
-        <!-- House Number -->
-
-        <div class="form-group">
-
-            <label for="houseNumber">
-                House Number
-            </label>
-
-            <input
-                    type="text"
-                    id="houseNumber"
-                    name="houseNumber"
-                    required>
-
-        </div>
-
-
-        <!-- Street -->
-
-        <div class="form-group">
-
-            <label for="street">
-                Street
-            </label>
-
-            <input
-                    type="text"
-                    id="street"
-                    name="street"
-                    required>
-
-        </div>
-
-
-        <!-- City -->
-
-        <div class="form-group">
-
-            <label for="city">
-                City
-            </label>
-
-            <input
-                    type="text"
-                    id="city"
-                    name="city"
-                    required>
-
-        </div>
+        <form action="${pageContext.request.contextPath}/address/customer/${customerId}/add"
+		    method="post">
+		
+		    <label>House Number</label>
+		   		<input
+		        	type="text"
+		        	name="houseNumber"
+		        	required>
+		
+		    <label>Street</label>
+		    <input
+		        type="text"
+		        name="street"
+		        required>
+		
+		    <label>City</label>
+		    <input
+		        type="text"
+		        name="city"
+		        required>
+		
+		    <label>State</label>
+		    <input
+		        type="text"
+		        name="state"
+		        required>
+		
+		    <label>Country</label>
+		    <input
+		        type="text"
+		        name="country"
+		        required>
+		
+		    <label>ZIP Code</label>
+		    <input
+		        type="text"
+		        name="zipCode"
+		        required>
+		
+		    <button
+		        type="submit"
+		        class="btn edit-btn">
+		        Add Address
+		    </button>
+		
+		</form>
 
 
-        <!-- State -->
+            <!-- =====================================================
+                 BUTTONS
+                 ===================================================== -->
 
-        <div class="form-group">
+            <div class="address-actions">
 
-            <label for="state">
-                State
-            </label>
+                <button
+                        type="submit"
+                        class="add-address-btn">
 
-            <input
-                    type="text"
-                    id="state"
-                    name="state"
-                    required>
+                    Add Address
 
-        </div>
+                </button>
 
 
-        <!-- Country -->
+                <a
+                        href="${pageContext.request.contextPath}/customer/profile/${customer.userId}"
+                        class="back-btn">
 
-        <div class="form-group">
+                    Back to Customer Profile
 
-            <label for="country">
-                Country
-            </label>
+                </a>
 
-            <input
-                    type="text"
-                    id="country"
-                    name="country"
-                    required>
+            </div>
 
-        </div>
+        </form>
 
-
-        <!-- ZIP Code -->
-
-        <div class="form-group">
-
-            <label for="zipCode">
-                ZIP Code
-            </label>
-
-            <input
-                    type="text"
-                    id="zipCode"
-                    name="zipCode"
-                    required>
-
-        </div>
-
-
-        <!-- Buttons -->
-
-        <button
-                type="submit"
-                class="btn add-btn">
-
-            Save Address
-
-        </button>
-
-
-        <a
-                href="${pageContext.request.contextPath}/address/list"
-                class="btn back-btn">
-
-            Cancel
-
-        </a>
-
-    </form>
+    </div>
 
 </div>
 

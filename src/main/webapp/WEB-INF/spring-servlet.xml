@@ -164,6 +164,30 @@ http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 		<property name="customerMapper" ref="customerMapper" />
 
 	</bean>
+	
+	<bean id="checkoutService"
+      class="com.crimsonlogic.ecommerce.service.impl.CheckoutServiceImpl">
+
+    <property name="customerService"
+              ref="customerService"/>
+
+    <property name="cartService"
+              ref="cartService"/>
+
+    <property name="orderService"
+              ref="orderService"/>
+
+    <property name="paymentService"
+              ref="paymentService"/>
+
+    <property name="addressService"
+              ref="addressService"/>
+
+    <property name="inventoryService"
+              ref="inventoryService"/>
+
+</bean>
+
 	<bean id="inventoryService"
 		class="com.crimsonlogic.ecommerce.service.impl.InventoryServiceImpl">
 
@@ -177,6 +201,9 @@ http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 		class="com.crimsonlogic.ecommerce.service.impl.OrderServiceImpl">
 
 		<property name="orderMapper" ref="orderMapper" />
+		
+		<property name="cartService"
+              ref="cartService"/>
 
 	</bean>
 

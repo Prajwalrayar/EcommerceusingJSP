@@ -44,74 +44,94 @@
 
     <div class="stats-grid">
 
-        <div class="stat-card">
+    <!-- WALLET BALANCE -->
+    <div class="stat-card">
 
-            <div class="stat-icon">💰</div>
-
-            <div>
-                <div class="stat-value">
-                    ₹${walletBalance}
-                </div>
-
-                <div class="stat-label">
-                    Wallet Balance
-                </div>
-            </div>
-
+        <div class="stat-icon">
+            💰
         </div>
 
+        <div class="stat-content">
 
-        <div class="stat-card">
-
-            <div class="stat-icon">🛒</div>
-
-            <div>
-                <div class="stat-value">
-                    ${cartItemCount}
-                </div>
-
-                <div class="stat-label">
-                    Cart Items
-                </div>
+            <div class="stat-value">
+                ₹ ${walletBalance}
             </div>
 
-        </div>
-
-
-        <div class="stat-card">
-
-            <div class="stat-icon">📦</div>
-
-            <div>
-                <div class="stat-value">
-                    ${totalOrders}
-                </div>
-
-                <div class="stat-label">
-                    Total Orders
-                </div>
-            </div>
-
-        </div>
-
-
-        <div class="stat-card">
-
-            <div class="stat-icon">💵</div>
-
-            <div>
-                <div class="stat-value">
-                    ₹${totalSpent}
-                </div>
-
-                <div class="stat-label">
-                    Total Spent
-                </div>
+            <div class="stat-title">
+                Wallet Balance
             </div>
 
         </div>
 
     </div>
+
+
+    <!-- CART ITEMS -->
+    <div class="stat-card">
+
+        <div class="stat-icon">
+            🛒
+        </div>
+
+        <div class="stat-content">
+
+            <div class="stat-value">
+                ${cartItemCount}
+            </div>
+
+            <div class="stat-title">
+                Cart Items
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TOTAL ORDERS -->
+    <div class="stat-card">
+
+        <div class="stat-icon">
+            📦
+        </div>
+
+        <div class="stat-content">
+
+            <div class="stat-value">
+                ${totalOrders}
+            </div>
+
+            <div class="stat-title">
+                Total Orders
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TOTAL SPENT -->
+    <div class="stat-card">
+
+        <div class="stat-icon">
+            💵
+        </div>
+
+        <div class="stat-content">
+
+            <div class="stat-value">
+                ₹ ${totalSpent}
+            </div>
+
+            <div class="stat-title">
+                Total Spent
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 
     <!-- OPERATIONS -->
@@ -153,10 +173,12 @@
             </a>
 
 
-            <a href="${pageContext.request.contextPath}/product/list"
+            <a href="${pageContext.request.contextPath}/customer/products"
                class="management-card">
 
-                <span>🛍️</span>
+                <div class="operation-icon">
+			        🛍️
+			    </div>
 
                 <strong>Products</strong>
 
@@ -167,18 +189,18 @@
             </a>
 
 
-            <a href="${pageContext.request.contextPath}/cart/customer/${customer.userId}"
-               class="management-card">
-
-                <span>🛒</span>
-
-                <strong>My Cart</strong>
-
-                <small>
-                    Manage cart and checkout
-                </small>
-
-            </a>
+            <a href="${pageContext.request.contextPath}/cart/${customer.userId}"
+			     class="management-card">
+			
+			        <span>
+			            🛒
+			        </span>
+			
+			        <strong>My Cart</strong>
+			
+			        <small>Manage cart and checkout</small>
+		
+			</a>
 
 
             <a href="${pageContext.request.contextPath}/orders/customer/${customer.userId}"
@@ -209,18 +231,18 @@
             </a>
 
 
-            <a href="${pageContext.request.contextPath}/address/customer/${customer.userId}"
-               class="management-card">
-
-                <span>📍</span>
-
-                <strong>My Addresses</strong>
-
-                <small>
-                    Manage delivery addresses
-                </small>
-
-            </a>
+            <a href="${pageContext.request.contextPath}/customer/addresses"
+			   class="management-card">
+			
+			    <span>📍</span>
+			
+			    <strong>My Addresses</strong>
+			
+			    <small>
+			        Manage delivery addresses
+			    </small>
+			
+			</a>
 
         </div>
 

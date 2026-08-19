@@ -154,4 +154,15 @@ public interface OrderService {
     List<Order> findOrdersBySellerAndOrderId(
             String sellerId,
             String orderId);
+    
+    /**
+     * Places orders for all items in customer's cart.
+     *
+     * @param customerId Customer ID
+     */
+    void placeOrder(
+            String customerId,
+            String addressId,
+            String paymentMethod,
+            String upiId);
 }

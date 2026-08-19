@@ -59,6 +59,12 @@ public interface CustomerService {
     void assignAddress(
             String customerId,
             String addressId);
+    
+    void rechargeWallet(
+            String customerId,
+            double amount,
+            String paymentMethod,
+            String upiId);
 
     void removeAddress(
             String customerId,

@@ -144,6 +144,12 @@ http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 		class="com.crimsonlogic.ecommerce.service.impl.CartServiceImpl">
 
 		<property name="cartMapper" ref="cartMapper" />
+		
+		<property name="customerMapper" ref="customerMapper"/>
+
+    <property name="productMapper" ref="productMapper"/>
+
+    <property name="inventoryMapper" ref="inventoryMapper"/>
 
 	</bean>
 	<bean id="categoryService"

@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.crimsonlogic.ecommerce.model.Address;
-import com.crimsonlogic.ecommerce.model.Cart;
 import com.crimsonlogic.ecommerce.model.Customer;
 import com.crimsonlogic.ecommerce.model.Product;
 import com.crimsonlogic.ecommerce.service.AddressService;
@@ -22,13 +21,18 @@ import com.crimsonlogic.ecommerce.service.CartService;
 import com.crimsonlogic.ecommerce.service.CustomerService;
 import com.crimsonlogic.ecommerce.service.ProductService;
 
+
 @Controller
 @RequestMapping("/customer")
 public class CustomerController {
 
+
     private final CustomerService customerService;
+
     private final AddressService addressService;
+
     private final ProductService productService;
+
     private final CartService cartService;
 
 
@@ -38,10 +42,17 @@ public class CustomerController {
             ProductService productService,
             CartService cartService) {
 
-        this.customerService = customerService;
-        this.addressService = addressService;
-        this.productService = productService;
-        this.cartService = cartService;
+        this.customerService =
+                customerService;
+
+        this.addressService =
+                addressService;
+
+        this.productService =
+                productService;
+
+        this.cartService =
+                cartService;
     }
 
 
@@ -55,17 +66,46 @@ public class CustomerController {
             Model model) {
 
         Customer customer =
-                (Customer) session.getAttribute(
-                        "loggedInUser");
+                getLoggedInCustomer(session);
+
 
         if (customer == null) {
 
             return "redirect:/customer/login";
         }
 
+
+        /*
+         * Refresh customer information from database.
+         *
+         * This ensures that the profile displayed on the
+         * dashboard is not stale session data.
+         */
+        Customer currentCustomer =
+                customerService.findCustomerById(
+                        customer.getUserId());
+
+
+        if (currentCustomer == null) {
+
+            session.invalidate();
+
+            return "redirect:/customer/login";
+        }
+
+
+        /*
+         * Keep the latest Customer in session.
+         */
+        session.setAttribute(
+                "loggedInUser",
+                currentCustomer);
+
+
         model.addAttribute(
                 "customer",
-                customer);
+                currentCustomer);
+
 
         return "customer/dashboard";
     }
@@ -78,23 +118,55 @@ public class CustomerController {
     @GetMapping("/profile/{customerId}")
     public String viewCustomerProfile(
             @PathVariable String customerId,
+            HttpSession session,
             Model model) {
+
+        Customer loggedInCustomer =
+                getLoggedInCustomer(session);
+
+
+        if (loggedInCustomer == null) {
+
+            return "redirect:/customer/login";
+        }
+
+
+        /*
+         * A customer can view only his/her own profile.
+         */
+        if (!loggedInCustomer.getUserId()
+                .equals(customerId)) {
+
+            return "redirect:/customer/profile/"
+                    + loggedInCustomer.getUserId();
+        }
+
 
         Customer customer =
                 customerService.findCustomerById(
                         customerId);
 
+
+        if (customer == null) {
+
+            return "redirect:/customer/dashboard";
+        }
+
+
         List<Address> addresses =
                 customerService.findCustomerAddresses(
                         customerId);
+
 
         model.addAttribute(
                 "customer",
                 customer);
 
+
         model.addAttribute(
                 "addresses",
                 addresses);
+
 
         return "customer/customer-profile";
     }
@@ -107,15 +179,45 @@ public class CustomerController {
     @GetMapping("/profile/edit/{customerId}")
     public String editProfile(
             @PathVariable String customerId,
+            HttpSession session,
             Model model) {
+
+        Customer loggedInCustomer =
+                getLoggedInCustomer(session);
+
+
+        if (loggedInCustomer == null) {
+
+            return "redirect:/customer/login";
+        }
+
+
+        /*
+         * A customer can edit only his/her own profile.
+         */
+        if (!loggedInCustomer.getUserId()
+                .equals(customerId)) {
+
+            return "redirect:/customer/profile/"
+                    + loggedInCustomer.getUserId();
+        }
+
 
         Customer customer =
                 customerService.findCustomerById(
                         customerId);
 
+
+        if (customer == null) {
+
+            return "redirect:/customer/dashboard";
+        }
+
+
         model.addAttribute(
                 "customer",
                 customer);
+
 
         return "customer/edit-profile";
     }
@@ -127,13 +229,82 @@ public class CustomerController {
 
     @PostMapping("/profile/update")
     public String updateProfile(
-            @ModelAttribute Customer customer) {
+            @ModelAttribute Customer customer,
+            HttpSession session,
+            Model model) {
 
-        customerService.updateCustomer(
-                customer);
+        Customer loggedInCustomer =
+                getLoggedInCustomer(session);
 
-        return "redirect:/customer/profile/"
-                + customer.getUserId();
+
+        if (loggedInCustomer == null) {
+
+            return "redirect:/customer/login";
+        }
+
+
+        /*
+         * Never trust a customer ID coming only from the form.
+         *
+         * The submitted ID must belong to the logged-in user.
+         */
+        if (customer.getUserId() == null ||
+                !loggedInCustomer.getUserId()
+                        .equals(customer.getUserId())) {
+
+            return "redirect:/customer/profile/"
+                    + loggedInCustomer.getUserId();
+        }
+
+
+        try {
+
+            /*
+             * All validation and business logic are handled
+             * inside CustomerServiceImpl.
+             */
+            customerService.updateCustomer(
+                    customer);
+
+
+            /*
+             * Reload the updated Customer.
+             */
+            Customer updatedCustomer =
+                    customerService.findCustomerById(
+                            loggedInCustomer.getUserId());
+
+
+            /*
+             * Update session with latest Customer data.
+             */
+            session.setAttribute(
+                    "loggedInUser",
+                    updatedCustomer);
+
+
+            return "redirect:/customer/profile/"
+                    + updatedCustomer.getUserId();
+
+        } catch (RuntimeException exception) {
+
+            /*
+             * Validation/business rules remain in service layer.
+             *
+             * Controller only passes the service error to JSP.
+             */
+            model.addAttribute(
+                    "error",
+                    exception.getMessage());
+
+
+            model.addAttribute(
+                    "customer",
+                    customer);
+
+
+            return "customer/edit-profile";
+        }
     }
 
 
@@ -144,30 +315,64 @@ public class CustomerController {
     @GetMapping("/{customerId}/addresses/add")
     public String showAssignAddressPage(
             @PathVariable String customerId,
+            HttpSession session,
             Model model) {
+
+        Customer loggedInCustomer =
+                getLoggedInCustomer(session);
+
+
+        if (loggedInCustomer == null) {
+
+            return "redirect:/customer/login";
+        }
+
+
+        /*
+         * Customer can manage only his/her own addresses.
+         */
+        if (!loggedInCustomer.getUserId()
+                .equals(customerId)) {
+
+            return "redirect:/customer/profile/"
+                    + loggedInCustomer.getUserId();
+        }
+
 
         Customer customer =
                 customerService.findCustomerById(
                         customerId);
 
+
+        if (customer == null) {
+
+            return "redirect:/customer/dashboard";
+        }
+
+
         List<Address> addresses =
                 addressService.findAllAddresses();
+
 
         List<Address> customerAddresses =
                 customerService.findCustomerAddresses(
                         customerId);
 
+
         model.addAttribute(
                 "customer",
                 customer);
+
 
         model.addAttribute(
                 "addresses",
                 addresses);
 
+
         model.addAttribute(
                 "customerAddresses",
                 customerAddresses);
+
 
         return "address/assign-customer-address";
     }
@@ -180,11 +385,39 @@ public class CustomerController {
     @PostMapping("/{customerId}/addresses/add")
     public String assignAddress(
             @PathVariable String customerId,
-            @RequestParam String addressId) {
+            @RequestParam String addressId,
+            HttpSession session) {
 
+        Customer loggedInCustomer =
+                getLoggedInCustomer(session);
+
+
+        if (loggedInCustomer == null) {
+
+            return "redirect:/customer/login";
+        }
+
+
+        /*
+         * Customer can assign an address only to
+         * his/her own account.
+         */
+        if (!loggedInCustomer.getUserId()
+                .equals(customerId)) {
+
+            return "redirect:/customer/profile/"
+                    + loggedInCustomer.getUserId();
+        }
+
+
+        /*
+         * Address validation and duplicate assignment
+         * rules are handled by CustomerServiceImpl.
+         */
         customerService.assignAddress(
                 customerId,
                 addressId);
+
 
         return "redirect:/customer/profile/"
                 + customerId;
@@ -199,11 +432,39 @@ public class CustomerController {
             "/{customerId}/addresses/remove/{addressId}")
     public String removeAddress(
             @PathVariable String customerId,
-            @PathVariable String addressId) {
+            @PathVariable String addressId,
+            HttpSession session) {
 
+        Customer loggedInCustomer =
+                getLoggedInCustomer(session);
+
+
+        if (loggedInCustomer == null) {
+
+            return "redirect:/customer/login";
+        }
+
+
+        /*
+         * Customer can remove an address only from
+         * his/her own account.
+         */
+        if (!loggedInCustomer.getUserId()
+                .equals(customerId)) {
+
+            return "redirect:/customer/profile/"
+                    + loggedInCustomer.getUserId();
+        }
+
+
+        /*
+         * Address ownership and validation are handled
+         * by CustomerServiceImpl.
+         */
         customerService.removeAddress(
                 customerId,
                 addressId);
+
 
         return "redirect:/customer/profile/"
                 + customerId;
@@ -220,24 +481,28 @@ public class CustomerController {
             Model model) {
 
         Customer customer =
-                (Customer) session.getAttribute(
-                        "loggedInUser");
+                getLoggedInCustomer(session);
+
 
         if (customer == null) {
 
             return "redirect:/customer/login";
         }
 
+
         List<Product> products =
                 productService.findAllProducts();
+
 
         model.addAttribute(
                 "products",
                 products);
 
+
         model.addAttribute(
                 "customer",
                 customer);
+
 
         return "customer/products";
     }
@@ -251,54 +516,98 @@ public class CustomerController {
     public String addToCart(
             @RequestParam("productId") String productId,
             @RequestParam("quantity") int quantity,
-            HttpSession session) {
+            HttpSession session,
+            Model model) {
 
         Customer customer =
-                (Customer) session.getAttribute(
-                        "loggedInUser");
+                getLoggedInCustomer(session);
+
 
         if (customer == null) {
 
             return "redirect:/customer/login";
         }
 
-        Cart existingCart =
-                cartService.findCartItem(
-                        customer.getUserId(),
-                        productId);
 
-        if (existingCart != null) {
+        try {
 
-            existingCart.setQuantity(
-                    existingCart.getQuantity()
-                            + quantity);
+            /*
+             * IMPORTANT:
+             *
+             * The controller does NOT:
+             *
+             * - create Cart
+             * - generate Cart ID
+             * - find existing Cart
+             * - calculate Cart quantity
+             * - validate Product
+             * - validate Inventory
+             * - validate stock
+             *
+             * All of these business rules belong to
+             * CartServiceImpl.
+             *
+             * The project uses Cart, NOT CartItem.
+             */
+            cartService.addToCart(
+                    customer.getUserId(),
+                    productId,
+                    quantity);
 
-            cartService.updateCartItem(
-                    existingCart);
 
-        } else {
+            return "redirect:/customer/cart";
 
-            Product product =
-                    productService.findProductById(
-                            productId);
+        } catch (RuntimeException exception) {
 
-            if (product == null) {
+            /*
+             * Business validation remains in service layer.
+             */
+            model.addAttribute(
+                    "error",
+                    exception.getMessage());
 
-                return "redirect:/customer/products";
-            }
 
-            Cart cart = new Cart();
+            /*
+             * Return to product page so the customer can
+             * correct the request.
+             */
+            List<Product> products =
+                    productService.findAllProducts();
 
-            cart.setCustomer(customer);
 
-            cart.setProduct(product);
+            model.addAttribute(
+                    "products",
+                    products);
 
-            cart.setQuantity(quantity);
 
-            cartService.insertCartItem(
-                    cart);
+            model.addAttribute(
+                    "customer",
+                    customer);
+
+
+            return "customer/products";
+        }
+    }
+
+
+    // =====================================================
+    // GET LOGGED-IN CUSTOMER
+    // =====================================================
+
+    private Customer getLoggedInCustomer(
+            HttpSession session) {
+
+        Object loggedInUser =
+                session.getAttribute(
+                        "loggedInUser");
+
+
+        if (!(loggedInUser instanceof Customer)) {
+
+            return null;
         }
 
-        return "redirect:/customer/cart";
+
+        return (Customer) loggedInUser;
     }
 }

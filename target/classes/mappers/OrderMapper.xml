@@ -495,8 +495,8 @@
         INNER JOIN products p
         ON o.product_id = p.product_id
 
-        LEFT JOIN payments pay
-        ON o.order_id = pay.order_id
+        LEFT JOIN payment pay
+        ON o.order_id = pay.order_id	
 
         WHERE o.customer_id = #{customerId}
 

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.crimsonlogic.ecommerce.dao.WalletMapper">
+
+    <insert id="insertWallet">
+
+        INSERT INTO wallet
+        (
+            wallet_id,
+            customer_id,
+            balance
+        )
+        VALUES
+        (
+            #{walletId},
+            #{customer.userId},
+            #{balance}
+        )
+
+    </insert>
+
+
+    <select id="findByCustomerId"
+            resultType="com.crimsonlogic.ecommerce.model.Wallet">
+
+        SELECT
+            wallet_id,
+            customer_id,
+            balance
+        FROM wallet
+        WHERE customer_id = #{customerId}
+
+    </select>
+
+
+    <update id="updateBalance">
+
+        UPDATE wallet
+        SET balance = balance + #{amount}
+        WHERE customer_id = #{customerId}
+
+    </update>
+
+
+    <update id="deductBalance">
+
+        UPDATE wallet
+        SET balance = balance - #{amount}
+        WHERE customer_id = #{customerId}
+          AND balance >= #{amount}
+
+    </update>
+
+</mapper>

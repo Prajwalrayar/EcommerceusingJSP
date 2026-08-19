@@ -7,37 +7,42 @@ import java.util.List;
 public interface CartService {
 
     /**
-     * Inserts Cart Item.
+     * Inserts Cart.
      */
-    void insertCartItem(Cart cart);
+    void insertCartItem(
+            Cart cart);
 
 
     /**
-     * Updates Cart Item.
+     * Updates Cart.
      */
-    void updateCartItem(Cart cart);
+    void updateCartItem(
+            Cart cart);
 
 
     /**
-     * Deletes Cart Item.
+     * Deletes Cart.
      */
-    void deleteCartItem(String cartId);
+    void deleteCartItem(
+            String cartId);
 
 
     /**
      * Clears Customer Cart.
      */
-    void clearCart(String customerId);
+    void clearCart(
+            String customerId);
 
 
     /**
-     * Finds Cart Item by ID.
+     * Finds Cart by ID.
      */
-    Cart findCartItemById(String cartId);
+    Cart findCartItemById(
+            String cartId);
 
 
     /**
-     * Finds Cart Item by Customer and Product.
+     * Finds Cart by Customer and Product.
      */
     Cart findCartItem(
             String customerId,
@@ -52,7 +57,21 @@ public interface CartService {
 
 
     /**
-     * Returns All Cart Items.
+     * Returns All Cart records.
      */
     List<Cart> findAllCartItems();
+
+
+    /**
+     * Adds Product to Customer Cart.
+     *
+     * All validation and business rules are handled
+     * inside CartServiceImpl.
+     *
+     * No CartItem is used.
+     */
+    void addToCart(
+            String customerId,
+            String productId,
+            int quantity);
 }

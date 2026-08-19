@@ -46,7 +46,7 @@ public class OrderController {
         model.addAttribute("orders", orders);
         model.addAttribute("customerId", customerId);
 
-        return "customer/orders";
+        return "orders/customer/orders";
     }
 
 
@@ -66,7 +66,7 @@ public class OrderController {
 
         model.addAttribute("order", order);
 
-        return "customer/order-details";
+        return "orders/customer/order-details";
     }
 
 
@@ -84,7 +84,7 @@ public class OrderController {
         model.addAttribute("orders", orders);
         model.addAttribute("customerId", customerId);
 
-        return "customer/cancelable-orders";
+        return "orders/customer/cancelable-orders";
     }
 
 
@@ -127,7 +127,7 @@ public class OrderController {
         model.addAttribute("orders", orders);
         model.addAttribute("customerId", customerId);
 
-        return "customer/payment-pending-orders";
+        return "orders/customer/payment-pending-orders";
     }
 
 
@@ -149,7 +149,7 @@ public class OrderController {
         model.addAttribute("customerId", customerId);
         model.addAttribute("productName", productName);
 
-        return "customer/orders";
+        return "orders/customer/orders";
     }
 
 

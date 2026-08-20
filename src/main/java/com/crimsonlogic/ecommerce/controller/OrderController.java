@@ -517,6 +517,6 @@ public class OrderController {
                 OrderStatus.values()
         );
 
-        return "seller/orders";
+        return "orders/seller/orders";
     }
 }

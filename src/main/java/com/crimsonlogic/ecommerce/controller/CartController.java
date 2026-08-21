@@ -5,6 +5,7 @@ import com.crimsonlogic.ecommerce.model.Customer;
 import com.crimsonlogic.ecommerce.model.Product;
 import com.crimsonlogic.ecommerce.service.CartService;
 import com.crimsonlogic.ecommerce.service.CustomerService;
+import com.crimsonlogic.ecommerce.service.OrderService;
 import com.crimsonlogic.ecommerce.service.ProductService;
 
 import org.springframework.stereotype.Controller;
@@ -20,21 +21,24 @@ public class CartController {
     private final CartService cartService;
     private final CustomerService customerService;
     private final ProductService productService;
+    private final OrderService orderService;
 
 
     public CartController(
             CartService cartService,
             CustomerService customerService,
-            ProductService productService) {
+            ProductService productService,
+            OrderService orderService) {
 
         this.cartService = cartService;
         this.customerService = customerService;
         this.productService = productService;
+        this.orderService = orderService;
     }
 
 
     // ==========================================================
-    // Customer Cart
+    // CUSTOMER CART
     // ==========================================================
 
     @GetMapping("/{customerId}")
@@ -71,7 +75,7 @@ public class CartController {
 
 
     // ==========================================================
-    // Add Product To Cart
+    // ADD PRODUCT TO CART
     // ==========================================================
 
     @PostMapping("/{customerId}/add/{productId}")
@@ -81,11 +85,35 @@ public class CartController {
             @RequestParam(defaultValue = "1")
             int quantity) {
 
+        if (quantity <= 0) {
+            return "redirect:/customer/products";
+        }
+
+        Customer customer =
+                customerService.findCustomerById(
+                        customerId
+                );
+
+        Product product =
+                productService.findProductById(
+                        productId
+                );
+
+        if (customer == null || product == null) {
+            return "redirect:/customer/products";
+        }
+
+
         Cart existingCart =
                 cartService.findCartItem(
                         customerId,
                         productId
                 );
+
+
+        // ------------------------------------------------------
+        // Product already exists in cart
+        // ------------------------------------------------------
 
         if (existingCart != null) {
 
@@ -98,21 +126,13 @@ public class CartController {
                     existingCart
             );
 
-        } else {
+        }
 
-            Customer customer =
-                    customerService.findCustomerById(
-                            customerId
-                    );
+        // ------------------------------------------------------
+        // New cart item
+        // ------------------------------------------------------
 
-            Product product =
-                    productService.findProductById(
-                            productId
-                    );
-
-            if (customer == null || product == null) {
-                return "redirect:/product/list";
-            }
+        else {
 
             Cart cart = new Cart();
 
@@ -121,18 +141,21 @@ public class CartController {
             );
 
             cart.setCustomer(customer);
+
             cart.setProduct(product);
+
             cart.setQuantity(quantity);
 
             cartService.insertCartItem(cart);
         }
+
 
         return "redirect:/cart/" + customerId;
     }
 
 
     // ==========================================================
-    // Update Quantity
+    // UPDATE QUANTITY
     // ==========================================================
 
     @PostMapping("/{customerId}/update/{cartId}")
@@ -169,7 +192,7 @@ public class CartController {
 
 
     // ==========================================================
-    // Remove Item
+    // REMOVE ITEM
     // ==========================================================
 
     @PostMapping("/{customerId}/remove/{cartId}")
@@ -177,22 +200,35 @@ public class CartController {
             @PathVariable String customerId,
             @PathVariable String cartId) {
 
-        cartService.deleteCartItem(cartId);
+        Cart cart =
+                cartService.findCartItemById(
+                        cartId
+                );
+
+        if (cart != null) {
+
+            cartService.deleteCartItem(
+                    cartId
+            );
+        }
 
         return "redirect:/cart/" + customerId;
     }
 
 
     // ==========================================================
-    // Clear Cart
+    // CLEAR CART
     // ==========================================================
 
     @PostMapping("/{customerId}/clear")
     public String clearCart(
             @PathVariable String customerId) {
 
-        cartService.clearCart(customerId);
+        cartService.clearCart(
+                customerId
+        );
 
         return "redirect:/cart/" + customerId;
     }
+    
 }

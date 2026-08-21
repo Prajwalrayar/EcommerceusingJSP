@@ -96,8 +96,15 @@
 
 
     <!-- ===================================================== -->
-    <!-- UPDATE CUSTOMER -->
+    <!-- UPDATE CUSTOMER PROFILE -->
     <!-- ===================================================== -->
+    <!--
+        Only profile information is updated here.
+
+        Password is intentionally NOT updated here.
+
+        Password changes must use updatePassword().
+    -->
 
     <update id="updateCustomer"
             parameterType="com.crimsonlogic.ecommerce.model.Customer">
@@ -107,8 +114,7 @@
         SET
             user_name = #{userName},
             user_email = #{userEmail},
-            user_phone = #{userPhNo},
-            user_password = #{userPassword}
+            user_phone = #{userPhNo}
 
         WHERE user_id = #{userId}
 
@@ -123,7 +129,8 @@
 
         UPDATE customers
 
-        SET user_password = #{userPassword}
+        SET
+            user_password = #{userPassword}
 
         WHERE user_id = #{userId}
 
@@ -138,7 +145,8 @@
 
         UPDATE customers
 
-        SET wallet_balance = #{walletBalance}
+        SET
+            wallet_balance = #{walletBalance}
 
         WHERE user_id = #{customerId}
 
@@ -264,6 +272,7 @@
         )
 
     </insert>
+
 
 
     <!-- ===================================================== -->

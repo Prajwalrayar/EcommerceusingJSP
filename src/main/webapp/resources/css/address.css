@@ -1,0 +1,111 @@
+/* =========================================================
+   ADDRESS PAGE
+   ========================================================= */
+
+.address-page {
+    max-width: 900px;
+    margin: 40px auto;
+}
+
+.address-card {
+    background: #ffffff;
+    padding: 35px 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.address-card h1 {
+    margin-bottom: 15px;
+}
+
+.address-description {
+    margin-bottom: 30px;
+    font-size: 18px;
+}
+
+.address-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 25px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.form-group input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #1976d2;
+}
+
+.address-actions {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.add-address-btn {
+    display: inline-block;
+    padding: 12px 22px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.add-address-btn:hover {
+    background: #1565c0;
+}
+
+.back-btn {
+    display: inline-block;
+    padding: 12px 22px;
+    background: #eeeeee;
+    color: #222;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.back-btn:hover {
+    background: #dddddd;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .address-page {
+        margin: 20px;
+    }
+
+    .address-card {
+        padding: 25px;
+    }
+
+    .address-form {
+        grid-template-columns: 1fr;
+    }
+}

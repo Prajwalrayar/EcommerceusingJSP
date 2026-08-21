@@ -8,11 +8,18 @@
 <%@ include file="../common/header.jsp" %>
 
 
-<!-- CUSTOMER PROFILE -->
+<!-- ==========================================================
+     CUSTOMER PROFILE
+     ========================================================== -->
 
 <div class="card">
 
     <h1>Customer Profile</h1>
+
+
+    <!-- ======================================================
+         CUSTOMER ID
+         ====================================================== -->
 
     <div class="profile-row">
 
@@ -27,6 +34,10 @@
     </div>
 
 
+    <!-- ======================================================
+         CUSTOMER NAME
+         ====================================================== -->
+
     <div class="profile-row">
 
         <div class="profile-label">
@@ -39,6 +50,10 @@
 
     </div>
 
+
+    <!-- ======================================================
+         CUSTOMER EMAIL
+         ====================================================== -->
 
     <div class="profile-row">
 
@@ -53,6 +68,10 @@
     </div>
 
 
+    <!-- ======================================================
+         CUSTOMER PHONE
+         ====================================================== -->
+
     <div class="profile-row">
 
         <div class="profile-label">
@@ -66,6 +85,10 @@
     </div>
 
 
+    <!-- ======================================================
+         WALLET BALANCE
+         ====================================================== -->
+
     <div class="profile-row">
 
         <div class="profile-label">
@@ -78,14 +101,34 @@
 
     </div>
 
+
+    <!-- ======================================================
+         EDIT PROFILE
+         ====================================================== -->
+
+    <div class="actions">
+
+        <a
+                class="btn edit-btn"
+                href="${pageContext.request.contextPath}/customer/profile/edit/${customer.userId}">
+
+            Edit Profile
+
+        </a>
+
+    </div>
+
 </div>
 
 
-<!-- CUSTOMER ADDRESSES -->
+<!-- ==========================================================
+     CUSTOMER ADDRESSES
+     ========================================================== -->
 
 <div class="card">
 
     <h2>Customer Addresses</h2>
+
 
     <div class="actions">
 
@@ -100,7 +143,9 @@
     </div>
 
 
-    <!-- REUSABLE ADDRESS TABLE -->
+    <!-- ======================================================
+         REUSABLE ADDRESS TABLE
+         ====================================================== -->
 
     <c:set
             var="userType"
@@ -115,13 +160,16 @@
 </div>
 
 
-<!-- NAVIGATION -->
+<!-- ==========================================================
+     CUSTOMER NAVIGATION
+     ========================================================== -->
 
 <div class="nav">
 
-    <a href="${pageContext.request.contextPath}/admin/customers">
+    <a
+            href="${pageContext.request.contextPath}/customer/dashboard">
 
-        Back to Customers
+        Back to Dashboard
 
     </a>
 

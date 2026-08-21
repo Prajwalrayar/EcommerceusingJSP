@@ -542,4 +542,16 @@ public class ValidationUtil {
 
      validateQuantity(quantity);
  }
+ 
+ public static void validateStockQuantity(
+	        int quantity)
+	        throws ValidationException {
+
+	    if (quantity < 0) {
+
+	        throw new ValidationException(
+	                "Stock quantity cannot be negative."
+	        );
+	    }
+	}
 }

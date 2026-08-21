@@ -14,6 +14,10 @@
 
 
     <div class="nav">
+    
+	    <a href="${pageContext.request.contextPath}/customer/dashboard">
+	        Dashboard
+	    </a>
 
         <a href="${pageContext.request.contextPath}/orders/customer/${customerId}">
             All Orders

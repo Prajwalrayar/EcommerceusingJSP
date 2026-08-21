@@ -14,43 +14,27 @@
 
 
     <!-- ===================================================== -->
-    <!-- Navigation -->
-    <!-- ===================================================== -->
-
-    <div class="nav">
-
-        <a href="${pageContext.request.contextPath}/category/list">
-            Categories
-        </a>
-
-        <a href="${pageContext.request.contextPath}/admin/sellers">
-            Sellers
-        </a>
-
-        <a href="${pageContext.request.contextPath}/admin/customers">
-            Customers
-        </a>
-
-        <a href="${pageContext.request.contextPath}/product/list">
-            All Products
-        </a>
-
-        <a href="${pageContext.request.contextPath}/product/available">
-            Available Products
-        </a>
-
-    </div>
-
-
-    <!-- ===================================================== -->
     <!-- Add Product -->
     <!-- ===================================================== -->
 
     <div style="margin-bottom:20px;">
+    
+    	<a href="${pageContext.request.contextPath}/product/list"
+    		class="btn btn-primary"
+   			style="color: white;">
+            All Products
+        </a>
+        
+        <a href="${pageContext.request.contextPath}/seller/dashboard"
+	      	class="btn btn-primary"
+   			style="color: white;">
+	        Dashboard
+	    </a>
 
         <a
                 href="${pageContext.request.contextPath}/product/add"
-                class="btn add-btn">
+                class="btn btn-primary"
+   				style="color: white;">
 
             Add Product
 

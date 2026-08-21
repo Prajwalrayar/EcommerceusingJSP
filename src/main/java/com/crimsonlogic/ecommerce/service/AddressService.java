@@ -6,16 +6,47 @@ import java.util.List;
 
 public interface AddressService {
 
-    // Inserts Address.
+    /**
+     * Inserts Address.
+     */
     void insertAddress(Address address);
 
-    // Updates Address.
+    /**
+     * Updates Address.
+     */
     void updateAddress(Address address);
 
-    // Deletes Address.
+    /**
+     * Deletes Address.
+     */
     void deleteAddress(String addressId);
-    // Finds Address by ID.
+
+    /**
+     * Finds Address by ID.
+     */
     Address findAddressById(String addressId);
 
+    /**
+     * Returns all addresses.
+     */
     List<Address> findAllAddresses();
+
+    /**
+     * Returns addresses assigned to customer.
+     */
+    List<Address> findAddressesByCustomer(String customerId);
+
+    /**
+     * Assigns address to customer.
+     */
+    void assignAddressToCustomer(
+            String customerId,
+            String addressId);
+
+    /**
+     * Removes address from customer.
+     */
+    void removeAddressFromCustomer(
+            String customerId,
+            String addressId);
 }

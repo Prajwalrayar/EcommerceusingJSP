@@ -316,6 +316,46 @@
         WHERE seller_id = #{sellerId}
 
     </delete>
+    
+    <select id="findCustomersBySeller"
+        resultType="com.crimsonlogic.ecommerce.model.Customer">
 
-
+	    SELECT DISTINCT
+	
+	        c.user_id,
+	        c.user_name,
+	        c.user_email,
+	        c.user_phone,
+	        c.wallet_balance
+	
+	    FROM customers c
+	
+	    INNER JOIN orders o
+	        ON c.user_id = o.customer_id
+	
+	    INNER JOIN products p
+	        ON o.product_id = p.product_id
+	
+	    WHERE p.user_id = #{sellerId}
+	
+	    ORDER BY c.user_name
+	
+	</select>
+	
+	<select id="findAverageRatingBySeller"
+	        resultType="double">
+	
+	    SELECT COALESCE(
+	        AVG(r.rating),
+	        0
+	    )
+	
+	    FROM review r
+	
+	    INNER JOIN products p
+	        ON r.product_id = p.product_id
+	
+	    WHERE p.user_id = #{sellerId}
+	
+	</select>
 </mapper>

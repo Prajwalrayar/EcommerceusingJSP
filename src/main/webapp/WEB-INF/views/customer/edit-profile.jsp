@@ -1,8 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
-<%@ taglib prefix="c"
-           uri="http://java.sun.com/jsp/jstl/core" %>
-
 <c:set var="pageTitle" value="Edit Customer Profile"/>
 
 <%@ include file="../common/header.jsp" %>
@@ -11,6 +8,21 @@
 <div class="card">
 
     <h1>Edit Customer Profile</h1>
+
+
+    <!-- =====================================================
+         VALIDATION / BUSINESS ERROR
+         ===================================================== -->
+
+    <c:if test="${not empty error}">
+
+        <div class="error-message">
+
+            ${error}
+
+        </div>
+
+    </c:if>
 
 
     <form
@@ -24,13 +36,22 @@
 
         <div class="form-group">
 
-            <label>Customer ID</label>
+            <label for="userId">
+                Customer ID
+            </label>
 
             <input
+                    id="userId"
                     type="text"
                     value="${customer.userId}"
                     readonly>
 
+            <!--
+                The ID is displayed as read-only.
+
+                It is still submitted as a hidden value because
+                CustomerController receives the Customer object.
+            -->
             <input
                     type="hidden"
                     name="userId"
@@ -45,9 +66,12 @@
 
         <div class="form-group">
 
-            <label>Name</label>
+            <label for="userName">
+                Name
+            </label>
 
             <input
+                    id="userName"
                     type="text"
                     name="userName"
                     value="${customer.userName}"
@@ -62,9 +86,12 @@
 
         <div class="form-group">
 
-            <label>Email</label>
+            <label for="userEmail">
+                Email
+            </label>
 
             <input
+                    id="userEmail"
                     type="email"
                     name="userEmail"
                     value="${customer.userEmail}"
@@ -79,9 +106,12 @@
 
         <div class="form-group">
 
-            <label>Phone Number</label>
+            <label for="userPhNo">
+                Phone Number
+            </label>
 
             <input
+                    id="userPhNo"
                     type="text"
                     name="userPhNo"
                     value="${customer.userPhNo}"

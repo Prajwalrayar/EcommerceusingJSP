@@ -1,15 +1,20 @@
 package com.crimsonlogic.ecommerce.controller;
 
 import com.crimsonlogic.ecommerce.enumeration.OrderStatus;
+import com.crimsonlogic.ecommerce.exception.ValidationException;
 import com.crimsonlogic.ecommerce.model.Order;
+import com.crimsonlogic.ecommerce.model.Seller;
 import com.crimsonlogic.ecommerce.service.OrderService;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/orders")
@@ -26,7 +31,7 @@ public class OrderController {
     // =========================================================
     // CUSTOMER
     // =========================================================
-
+    
     /**
      * Displays all orders of a customer.
      */
@@ -41,7 +46,7 @@ public class OrderController {
         model.addAttribute("orders", orders);
         model.addAttribute("customerId", customerId);
 
-        return "customer/orders";
+        return "orders/customer/orders";
     }
 
 
@@ -61,7 +66,7 @@ public class OrderController {
 
         model.addAttribute("order", order);
 
-        return "customer/order-details";
+        return "orders/customer/order-details";
     }
 
 
@@ -79,7 +84,7 @@ public class OrderController {
         model.addAttribute("orders", orders);
         model.addAttribute("customerId", customerId);
 
-        return "customer/cancelable-orders";
+        return "orders/customer/cancelable-orders";
     }
 
 
@@ -122,7 +127,7 @@ public class OrderController {
         model.addAttribute("orders", orders);
         model.addAttribute("customerId", customerId);
 
-        return "customer/payment-pending-orders";
+        return "orders/customer/payment-pending-orders";
     }
 
 
@@ -144,7 +149,7 @@ public class OrderController {
         model.addAttribute("customerId", customerId);
         model.addAttribute("productName", productName);
 
-        return "customer/orders";
+        return "orders/customer/orders";
     }
 
 
@@ -166,7 +171,7 @@ public class OrderController {
         model.addAttribute("orders", orders);
         model.addAttribute("sellerId", sellerId);
 
-        return "seller/orders";
+        return "orders/seller/orders";
     }
 
 
@@ -185,7 +190,7 @@ public class OrderController {
         model.addAttribute("orders", orders);
         model.addAttribute("sellerId", sellerId);
 
-        return "seller/pending-orders";
+        return "orders/seller/pending-orders";
     }
 
 
@@ -205,7 +210,7 @@ public class OrderController {
 
         model.addAttribute("order", order);
 
-        return "seller/order-details";
+        return "orders/seller/order-details";
     }
 
 
@@ -215,29 +220,64 @@ public class OrderController {
     @PostMapping("/seller/{sellerId}/status")
     public String updateSellerOrderStatus(
             @PathVariable String sellerId,
-            @ModelAttribute Order order) {
+            @ModelAttribute Order order,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
 
-        Order existingOrder =
-                orderService.findOrderByIdAndSeller(
-                        order.getOrderId(),
-                        sellerId);
+        Object loggedInUser =
+                session.getAttribute("loggedInUser");
 
-        if (existingOrder != null) {
+        if (!(loggedInUser instanceof Seller)) {
 
-            existingOrder.setOrderStatus(
-                    order.getOrderStatus());
-
-            if (order.getOrderStatus() ==
-                    OrderStatus.DELIVERED) {
-
-                existingOrder.setDeliveredDate(
-                        LocalDateTime.now());
-            }
-
-            orderService.updateOrderStatus(existingOrder);
+            return "redirect:/";
         }
 
-        return "redirect:/orders/seller/" + sellerId;
+        Seller seller =
+                (Seller) loggedInUser;
+
+        if (!seller.getUserId().equals(sellerId)) {
+
+            return "redirect:/";
+        }
+
+        try {
+
+            Order existingOrder =
+                    orderService.findOrderByIdAndSeller(
+                            order.getOrderId(),
+                            sellerId
+                    );
+
+            if (existingOrder == null) {
+
+                throw new ValidationException(
+                        "Order not found or does not belong to you."
+                );
+            }
+
+            existingOrder.setOrderStatus(
+                    order.getOrderStatus()
+            );
+
+            orderService.updateOrderStatus(
+                    existingOrder
+            );
+
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    "Order status updated successfully."
+            );
+
+        } catch (ValidationException ex) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    ex.getMessage()
+            );
+        }
+
+        return "redirect:/orders/seller/"
+                + sellerId;
     }
 
 
@@ -259,7 +299,7 @@ public class OrderController {
         model.addAttribute("sellerId", sellerId);
         model.addAttribute("productName", productName);
 
-        return "seller/orders";
+        return "orders/seller/orders";
     }
 
 
@@ -345,5 +385,138 @@ public class OrderController {
         orderService.deleteOrder(orderId);
 
         return "redirect:/orders/admin";
+    }
+    
+    
+    @GetMapping("/seller/{sellerId}/status")
+    public String sellerOrdersByStatus(
+
+            @PathVariable String sellerId,
+
+            @RequestParam(value = "status", required = false)
+            OrderStatus status,
+
+            HttpSession session,
+
+            Model model) {
+
+        Object loggedInUser =
+                session.getAttribute("loggedInUser");
+
+        if (!(loggedInUser instanceof Seller)) {
+            return "redirect:/";
+        }
+
+        Seller seller =
+                (Seller) loggedInUser;
+
+        if (!seller.getUserId().equals(sellerId)) {
+            return "redirect:/";
+        }
+
+
+        // ==========================================================
+        // GET ORDERS
+        // ==========================================================
+
+        List<Order> orders;
+
+        if (status == null) {
+
+            // All statuses
+            orders =
+                    orderService.findOrdersBySeller(
+                            sellerId
+                    );
+
+        } else {
+
+            // Selected status
+            orders =
+                    orderService.findOrdersBySellerAndStatus(
+                            sellerId,
+                            status
+                    );
+        }
+
+
+        // ==========================================================
+        // MODEL
+        // ==========================================================
+
+        model.addAttribute(
+                "orders",
+                orders
+        );
+
+        model.addAttribute(
+                "sellerId",
+                sellerId
+        );
+
+        model.addAttribute(
+                "selectedStatus",
+                status
+        );
+
+        // IMPORTANT: dynamic dropdown
+        model.addAttribute(
+                "orderStatuses",
+                OrderStatus.values()
+        );
+
+
+        return "seller/orders";
+    }
+    
+    
+    @GetMapping("/seller/{sellerId}/search-order")
+    public String searchSellerOrdersByOrderId(
+            @PathVariable String sellerId,
+            @RequestParam String orderId,
+            HttpSession session,
+            Model model) {
+
+        Object loggedInUser =
+                session.getAttribute("loggedInUser");
+
+        if (!(loggedInUser instanceof Seller)) {
+            return "redirect:/";
+        }
+
+        Seller seller =
+                (Seller) loggedInUser;
+
+        if (!seller.getUserId().equals(sellerId)) {
+            return "redirect:/";
+        }
+
+        List<Order> orders =
+                orderService.findOrdersBySellerAndOrderId(
+                        sellerId,
+                        orderId.trim()
+                );
+
+        model.addAttribute(
+                "orders",
+                orders
+        );
+
+        model.addAttribute(
+                "sellerId",
+                sellerId
+        );
+
+        model.addAttribute(
+                "orderId",
+                orderId
+        );
+
+        model.addAttribute(
+                "orderStatuses",
+                OrderStatus.values()
+        );
+
+        return "orders/seller/orders";
     }
 }

@@ -403,6 +403,101 @@
     ORDER BY p.product_name
 
 </select>
+
+
+<!-- ===================================================== -->
+<!-- SEARCH AVAILABLE PRODUCTS WITH FILTERS -->
+<!-- ===================================================== -->
+
+<select id="searchAvailableProducts"
+        resultMap="ProductResultMap">
+
+    SELECT
+        p.product_id,
+        p.product_name,
+        p.brand,
+        p.product_description,
+        p.product_price,
+        p.category_id,
+        p.user_id,
+
+        <include refid="ProductRatingColumns"/>,
+
+        i.inventory_id,
+        COALESCE(i.quantity, 0) AS quantity,
+
+        CASE
+            WHEN COALESCE(i.quantity, 0) > 0
+                THEN 'AVAILABLE'
+            ELSE 'OUT_OF_STOCK'
+        END AS product_status,
+
+        c.category_name,
+        c.category_description,
+
+        s.user_id AS seller_id,
+        s.user_name AS seller_name,
+        s.user_email AS seller_email,
+        s.user_phone AS seller_phone,
+        s.shop_name,
+        s.shop_address
+
+    FROM products p
+
+    INNER JOIN inventory i
+        ON p.product_id = i.product_id
+
+    INNER JOIN categories c
+        ON p.category_id = c.category_id
+
+    LEFT JOIN sellers s
+        ON p.user_id = s.user_id
+
+    WHERE i.quantity > 0
+
+    <if test="keyword != null and keyword != ''">
+        AND (
+            LOWER(p.product_name)
+                LIKE LOWER(CONCAT('%', #{keyword}, '%'))
+
+            OR LOWER(p.brand)
+                LIKE LOWER(CONCAT('%', #{keyword}, '%'))
+
+            OR LOWER(p.product_description)
+                LIKE LOWER(CONCAT('%', #{keyword}, '%'))
+
+            OR LOWER(c.category_name)
+                LIKE LOWER(CONCAT('%', #{keyword}, '%'))
+
+            OR LOWER(COALESCE(s.shop_name, ''))
+                LIKE LOWER(CONCAT('%', #{keyword}, '%'))
+
+            OR LOWER(COALESCE(s.user_name, ''))
+                LIKE LOWER(CONCAT('%', #{keyword}, '%'))
+        )
+    </if>
+
+    <if test="categoryId != null and categoryId != ''">
+        AND p.category_id = #{categoryId}
+    </if>
+
+    <if test="sellerId != null and sellerId != ''">
+        AND p.user_id = #{sellerId}
+    </if>
+
+    <if test="minPrice != null">
+        AND p.product_price &gt;= #{minPrice}
+    </if>
+
+    <if test="maxPrice != null">
+        AND p.product_price &lt;= #{maxPrice}
+    </if>
+
+    ORDER BY p.product_name
+
+</select>
+
+
     <!-- ===================================================== -->
     <!-- Find Products By Status -->
     <!-- ===================================================== -->
@@ -441,15 +536,14 @@
     </select>
 
 
-    <!-- ===================================================== -->
-    <!-- Available Products -->
-    <!-- ===================================================== -->
+<!-- ===================================================== -->
+<!-- CUSTOMER AVAILABLE PRODUCTS -->
+<!-- ===================================================== -->
 
-    <select id="findAvailableProducts"
-            resultMap="ProductResultMap">
+<select id="findCustomerAvailableProducts"
+        resultMap="ProductResultMap">
 
-        SELECT
-
+    SELECT
         p.*,
 
         <include refid="ProductRatingColumns"/>,
@@ -464,19 +558,66 @@
         s.shop_name,
         s.shop_address
 
-        FROM products p
+    FROM products p
+    
+    INNER JOIN inventory i
+        ON p.product_id = i.product_id
 
-        INNER JOIN categories c
+    INNER JOIN categories c
         ON p.category_id = c.category_id
 
-        LEFT JOIN sellers s
+    LEFT JOIN sellers s
+        ON p.user_id = s.user_id
+        
+    WHERE i.quantity > 0
+
+    ORDER BY p.product_name
+
+</select>
+    <!-- ===================================================== -->
+    <!-- Available Products -->
+    <!-- ===================================================== -->
+    
+    
+<select id="findAvailableProducts"
+        resultMap="ProductResultMap">
+
+    SELECT
+        p.*,
+
+        <include refid="ProductRatingColumns"/>,
+
+        i.inventory_id,
+        i.quantity,
+
+        c.category_name,
+        c.category_description,
+
+        s.user_id AS seller_id,
+        s.user_name AS seller_name,
+        s.user_email AS seller_email,
+        s.user_phone AS seller_phone,
+        s.shop_name,
+        s.shop_address
+
+    FROM products p
+
+    INNER JOIN inventory i
+        ON p.product_id = i.product_id
+
+    INNER JOIN categories c
+        ON p.category_id = c.category_id
+
+    LEFT JOIN sellers s
         ON p.user_id = s.user_id
 
-        WHERE p.product_status = 'AVAILABLE'
+    WHERE p.product_status = 'AVAILABLE'
 
-        ORDER BY p.product_name
+      AND i.quantity > 0
 
-    </select>
+    ORDER BY p.product_name
+
+</select>
 
 
     <!-- ===================================================== -->

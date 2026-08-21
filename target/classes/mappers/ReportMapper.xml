@@ -29,9 +29,14 @@
             ) AS totalSales,
 
             COALESCE(
-                AVG(o.total_price),
-                0
-            ) AS averageOrderValue
+    AVG(o.total_price),
+    0
+) AS averageOrderValue,
+
+COALESCE(
+    AVG(o.quantity),
+    0
+) AS averageSoldQuantity
 
         FROM orders o
 

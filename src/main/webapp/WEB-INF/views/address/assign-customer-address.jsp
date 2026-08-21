@@ -8,22 +8,15 @@
 <%@ include file="../common/header.jsp" %>
 
 
+
 <div class="form-container">
 
     <h1>
-        Assign Address
+        Add Address
     </h1>
 
 
-    <p>
-
-        Assign an address to:
-
-        <strong>
-            ${customer.userName}
-        </strong>
-
-    </p>
+    <p>Add a new address for: <strong>${customer.userName}</strong></p>
 
 
     <form
@@ -31,47 +24,35 @@
             method="post">
 
 
-        <div class="form-group">
-
-            <label for="addressId">
-                Select Address
-            </label>
-
-
-            <select
-                    id="addressId"
-                    name="addressId"
-                    required>
-
-                <option value="">
-                    -- Select Address --
-                </option>
-
-
-                <c:forEach
-                        var="address"
-                        items="${addresses}">
-
-                    <option
-                            value="${address.addressId}">
-
-                        ${address.addressId}
-                        -
-                        ${address.houseNumber},
-                        ${address.street},
-                        ${address.city},
-                        ${address.state},
-                        ${address.country}
-                        -
-                        ${address.zipCode}
-
-                    </option>
-
-                </c:forEach>
-
-            </select>
-
-        </div>
+        <div>
+		    <label>House Number</label>
+		    <input type="text" name="houseNumber" required>
+		</div>
+		
+		<div>
+		    <label>Street</label>
+		    <input type="text" name="street" required>
+		</div>
+		
+		<div>
+		    <label>City</label>
+		    <input type="text" name="city" required>
+		</div>
+		
+		<div>
+		    <label>State</label>
+		    <input type="text" name="state" required>
+		</div>
+		
+		<div>
+		    <label>Country</label>
+		    <input type="text" name="country" required>
+		</div>
+		
+		<div>
+		    <label>ZIP Code</label>
+		    <input type="text" name="zipCode" required>
+		</div>
 
 
         <c:if test="${empty addresses}">
@@ -89,7 +70,7 @@
                 type="submit"
                 class="btn add-btn">
 
-            Assign Address
+            Add Address
 
         </button>
 

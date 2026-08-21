@@ -1,126 +1,444 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8"
+         language="java" %>
 
 <%@ taglib prefix="c"
            uri="http://java.sun.com/jsp/jstl/core" %>
 
-<c:set var="pageTitle" value="Seller Orders"/>
-
 <%@ include file="../../common/header.jsp" %>
 
-
-<div class="card">
-
-    <h1>Seller Orders</h1>
+<link rel="stylesheet"
+      href="${pageContext.request.contextPath}/resources/css/seller-dashboard.css">
 
 
-    <div class="nav">
+<div class="seller-page">
 
-        <a href="${pageContext.request.contextPath}/orders/seller/${sellerId}">
-            All Orders
-        </a>
+    <!-- ================================================== -->
+    <!-- PAGE HEADER -->
+    <!-- ================================================== -->
 
-        <a href="${pageContext.request.contextPath}/orders/seller/${sellerId}/pending">
-            Pending Approval
+    <div class="page-header">
+
+        <div>
+
+            <h1>Orders</h1>
+
+            <p>
+                Manage orders placed for your products
+            </p>
+
+        </div>
+
+
+        <!-- DASHBOARD BUTTON -->
+
+        <a href="${pageContext.request.contextPath}/seller/dashboard"
+           class="btn secondary-btn">
+
+            Dashboard
+
         </a>
 
     </div>
 
 
-    <!-- Search -->
+    <!-- ================================================== -->
+    <!-- SEARCH AND FILTER -->
+    <!-- ================================================== -->
 
-    <form
-            action="${pageContext.request.contextPath}/orders/seller/${sellerId}/search"
-            method="get">
-
-        <input
-                type="text"
-                name="productName"
-                value="${productName}"
-                placeholder="Search product..."/>
-
-        <button
-                type="submit"
-                class="btn edit-btn">
-
-            Search
-
-        </button>
-
-    </form>
-
-    <br/>
+    <div class="filter-panel">
 
 
-    <table>
+        <!-- ================================================== -->
+        <!-- SEARCH ORDER -->
+        <!-- ================================================== -->
 
-        <thead>
+        <form method="get"
+              action="${pageContext.request.contextPath}/orders/seller/${sellerId}/search-order">
 
-        <tr>
+            <input type="text"
+                   name="orderId"
+                   value="${orderId}"
+                   placeholder="Search Order Number"
+                   maxlength="20"
+                   required>
 
-            <th>Order ID</th>
-            <th>Customer</th>
-            <th>Product</th>
-            <th>Quantity</th>
-            <th>Total</th>
-            <th>Status</th>
-            <th>Order Date</th>
-            <th>Action</th>
+            <button type="submit"
+                    class="btn primary-btn">
 
-        </tr>
+                Search
 
-        </thead>
+            </button>
+
+        </form>
 
 
-        <tbody>
+        <!-- ================================================== -->
+        <!-- STATUS FILTER -->
+        <!-- ================================================== -->
 
-        <c:forEach
-                var="order"
-                items="${orders}">
+        <form method="get"
+              action="${pageContext.request.contextPath}/orders/seller/${sellerId}/status">
+
+            <select name="status">
+
+                <!-- ALL ORDERS -->
+
+                <option value=""
+                    <c:if test="${empty selectedStatus}">
+                        selected
+                    </c:if>>
+
+                    All Statuses
+
+                </option>
+
+
+                <!-- ORDER STATUSES -->
+
+                <c:forEach var="status"
+                           items="${orderStatuses}">
+
+                    <option value="${status}"
+                        <c:if test="${selectedStatus eq status}">
+                            selected
+                        </c:if>>
+
+                        ${status}
+
+                    </option>
+
+                </c:forEach>
+
+            </select>
+
+
+            <button type="submit"
+                    class="btn primary-btn">
+
+                Filter
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- ORDERS TABLE -->
+    <!-- ================================================== -->
+
+    <div class="table-card">
+
+        <table>
+
+            <thead>
 
             <tr>
 
-                <td>${order.orderId}</td>
+                <th>
+                    Order Number
+                </th>
 
-                <td>${order.customer.userName}</td>
+                <th>
+                    Customer
+                </th>
 
-                <td>${order.product.productName}</td>
+                <th>
+                    Product
+                </th>
 
-                <td>${order.quantity}</td>
+                <th>
+                    Quantity
+                </th>
 
-                <td>₹${order.totalPrice}</td>
+                <th>
+                    Amount
+                </th>
 
-                <td>${order.orderStatus}</td>
+                <th>
+                    Status
+                </th>
 
-                <td>${order.orderDate}</td>
+                <th>
+                    Tracking
+                </th>
 
-                <td>
-
-                    <a
-                            class="btn edit-btn"
-                            href="${pageContext.request.contextPath}/orders/seller/${sellerId}/${order.orderId}">
-
-                        View
-
-                    </a>
-
-                </td>
+                <th>
+                    Update
+                </th>
 
             </tr>
 
-        </c:forEach>
-
-        </tbody>
-
-    </table>
+            </thead>
 
 
-    <c:if test="${empty orders}">
+            <tbody>
 
-        <div class="empty-message">
-            No orders found.
-        </div>
 
-    </c:if>
+            <!-- ================================================== -->
+            <!-- DISPLAY ORDERS -->
+            <!-- ================================================== -->
+
+            <c:forEach var="order"
+                       items="${orders}">
+
+                <tr>
+
+
+                    <!-- ORDER NUMBER -->
+
+                    <td>
+
+                        <strong>
+                            ${order.orderId}
+                        </strong>
+
+                    </td>
+
+
+                    <!-- CUSTOMER -->
+
+                    <td>
+
+                        ${order.customer.userName}
+
+                    </td>
+
+
+                    <!-- PRODUCT -->
+
+                    <td>
+
+                        ${order.product.productName}
+
+                    </td>
+
+
+                    <!-- QUANTITY -->
+
+                    <td>
+
+                        ${order.quantity}
+
+                    </td>
+
+
+                    <!-- AMOUNT -->
+
+                    <td>
+
+                        ₹${order.totalPrice}
+
+                    </td>
+
+
+                    <!-- STATUS -->
+
+                    <td>
+
+                        <span class="status-badge">
+
+                            ${order.orderStatus}
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- TRACKING -->
+
+                    <td>
+
+                        <c:choose>
+
+                            <c:when test="${not empty order.trackingNumber}">
+
+                                <strong>
+                                    ${order.trackingNumber}
+                                </strong>
+
+                            </c:when>
+
+
+                            <c:otherwise>
+
+                                <span class="muted">
+
+                                    Not generated
+
+                                </span>
+
+                            </c:otherwise>
+
+                        </c:choose>
+
+                    </td>
+
+
+                    <!-- ================================================== -->
+                    <!-- UPDATE ORDER STATUS -->
+                    <!-- ================================================== -->
+
+                    <td>
+
+                        <form method="post"
+                              action="${pageContext.request.contextPath}/orders/seller/${sellerId}/status">
+
+
+                            <!-- ORDER ID -->
+
+                            <input type="hidden"
+                                   name="orderId"
+                                   value="${order.orderId}">
+
+
+                            <select name="orderStatus"
+                                    required>
+
+                                <option value="">
+
+                                    Select Status
+
+                                </option>
+
+
+                                <!-- ================================================== -->
+                                <!-- PENDING APPROVAL -->
+                                <!-- ================================================== -->
+
+                                <c:if test="${order.orderStatus eq 'PENDING_APPROVAL'}">
+
+                                    <option value="CONFIRMED">
+
+                                        Approve
+
+                                    </option>
+
+                                    <option value="CANCELLED">
+
+                                        Cancel
+
+                                    </option>
+
+                                    <option value="REJECTED">
+
+                                        Reject
+
+                                    </option>
+
+                                </c:if>
+
+
+                                <!-- ================================================== -->
+                                <!-- CONFIRMED -->
+                                <!-- ================================================== -->
+
+                                <c:if test="${order.orderStatus eq 'CONFIRMED'}">
+
+                                    <option value="SHIPPED">
+
+                                        Shipped
+
+                                    </option>
+
+                                    <option value="CANCELLED">
+
+                                        Cancel
+
+                                    </option>
+
+                                </c:if>
+
+
+                                <!-- ================================================== -->
+                                <!-- SHIPPED -->
+                                <!-- ================================================== -->
+
+                                <c:if test="${order.orderStatus eq 'SHIPPED'}">
+
+                                    <option value="IN_TRANSIT">
+
+                                        In Transit
+
+                                    </option>
+
+                                </c:if>
+
+
+                                <!-- ================================================== -->
+                                <!-- IN TRANSIT -->
+                                <!-- ================================================== -->
+
+                                <c:if test="${order.orderStatus eq 'IN_TRANSIT'}">
+
+                                    <option value="OUT_FOR_DELIVERY">
+
+                                        Out For Delivery
+
+                                    </option>
+
+                                </c:if>
+
+
+                                <!-- ================================================== -->
+                                <!-- OUT FOR DELIVERY -->
+                                <!-- ================================================== -->
+
+                                <c:if test="${order.orderStatus eq 'OUT_FOR_DELIVERY'}">
+
+                                    <option value="DELIVERED">
+
+                                        Delivered
+
+                                    </option>
+
+                                </c:if>
+
+                            </select>
+
+
+                            <button type="submit"
+                                    class="btn small-btn">
+
+                                Update
+
+                            </button>
+
+                        </form>
+
+                    </td>
+
+                </tr>
+
+            </c:forEach>
+
+
+            <!-- ================================================== -->
+            <!-- NO ORDERS -->
+            <!-- ================================================== -->
+
+            <c:if test="${empty orders}">
+
+                <tr>
+
+                    <td colspan="8"
+                        class="empty-message">
+
+                        No orders found.
+
+                    </td>
+
+                </tr>
+
+            </c:if>
+
+
+            </tbody>
+
+        </table>
+
+    </div>
 
 </div>
 

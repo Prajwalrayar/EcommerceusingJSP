@@ -51,31 +51,7 @@
             method="post">
 
 
-        <!-- ================================================= -->
-        <!-- Inventory ID -->
-        <!-- ================================================= -->
-
-        <div class="form-group">
-
-            <label for="inventoryId">
-                Inventory ID
-            </label>
-
-            <input
-                    type="text"
-                    id="inventoryId"
-                    name="inventoryId"
-                    value="${inventory.inventoryId}"
-                    required
-
-                    <c:if test="${not empty inventory.inventoryId}">
-                        readonly
-                    </c:if>
-            />
-
-        </div>
-
-
+      
         <!-- ================================================= -->
         <!-- Product -->
         <!-- ================================================= -->
@@ -136,7 +112,7 @@
                     id="quantity"
                     name="quantity"
                     value="${inventory.quantity}"
-                    min="0"
+                    min="1"
                     required
             />
 

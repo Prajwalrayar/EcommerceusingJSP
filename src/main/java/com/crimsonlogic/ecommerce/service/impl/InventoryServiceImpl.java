@@ -1,15 +1,21 @@
 package com.crimsonlogic.ecommerce.service.impl;
 
 import com.crimsonlogic.ecommerce.dao.InventoryMapper;
+import com.crimsonlogic.ecommerce.dao.ProductMapper;
+import com.crimsonlogic.ecommerce.enumeration.ProductStatus;
+import com.crimsonlogic.ecommerce.exception.ValidationException;
 import com.crimsonlogic.ecommerce.model.Inventory;
+import com.crimsonlogic.ecommerce.model.Product;
 import com.crimsonlogic.ecommerce.service.InventoryService;
+import com.crimsonlogic.ecommerce.util.IdGenerator;
+import com.crimsonlogic.ecommerce.util.ValidationUtil;
 
 import java.util.List;
 
 public class InventoryServiceImpl implements InventoryService {
 
     private InventoryMapper inventoryMapper;
-
+    private ProductMapper productMapper;
 
     public void setInventoryMapper(
             InventoryMapper inventoryMapper) {
@@ -17,10 +23,28 @@ public class InventoryServiceImpl implements InventoryService {
         this.inventoryMapper = inventoryMapper;
     }
 
+    public void setProductMapper(
+            ProductMapper productMapper) {
+        this.productMapper = productMapper;
+    }
 
     @Override
-    public void insertInventory(
-            Inventory inventory) {
+    public void insertInventory(Inventory inventory) {
+
+        if (inventory.getInventoryId() == null
+                || inventory.getInventoryId().trim().isEmpty()) {
+
+            inventory.setInventoryId(
+                    IdGenerator.generateId("INV")
+            );
+        }
+
+        if (inventory.getQuantity() < 0) {
+
+            throw new ValidationException(
+                    "Quantity cannot be negative."
+            );
+        }
 
         inventoryMapper.insertInventory(inventory);
     }
@@ -73,7 +97,55 @@ public class InventoryServiceImpl implements InventoryService {
     public void updateQuantity(
             Inventory inventory) {
 
-        inventoryMapper.updateQuantity(inventory);
+        if (inventory == null) {
+
+            throw new ValidationException(
+                    "Inventory information is required."
+            );
+        }
+
+        ValidationUtil.validateStockQuantity(
+                inventory.getQuantity()
+        );
+
+        Inventory existing =
+                inventoryMapper.findInventoryById(
+                        inventory.getInventoryId()
+                );
+
+        if (existing == null) {
+
+            throw new ValidationException(
+                    "Inventory not found."
+            );
+        }
+
+        inventoryMapper.updateQuantity(
+                inventory
+        );
+
+        Product product =
+                existing.getProduct();
+
+        if (product != null) {
+
+            if (inventory.getQuantity() > 0) {
+
+                product.setProductStatus(
+                        ProductStatus.AVAILABLE
+                );
+
+            } else {
+
+                product.setProductStatus(
+                        ProductStatus.OUT_OF_STOCK
+                );
+            }
+
+            productMapper.updateProductStatus(
+                    product
+            );
+        }
     }
 
 

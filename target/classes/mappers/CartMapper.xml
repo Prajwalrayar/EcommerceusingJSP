@@ -241,7 +241,7 @@
         INNER JOIN categories c
         ON p.category_id = c.category_id
 
-        INNER JOIN sellers s
+        LEFT JOIN sellers s
         ON p.user_id = s.user_id
 
         WHERE ct.cart_id = #{cartId}
@@ -296,7 +296,7 @@
         INNER JOIN categories c
         ON p.category_id = c.category_id
 
-        INNER JOIN sellers s
+        LEFT JOIN sellers s
         ON p.user_id = s.user_id
 
         WHERE ct.user_id = #{customerId}
@@ -353,7 +353,7 @@
         INNER JOIN categories c
         ON p.category_id = c.category_id
 
-        INNER JOIN sellers s
+        LEFT JOIN sellers s
         ON p.user_id = s.user_id
 
         WHERE ct.user_id = #{customerId}
@@ -410,7 +410,7 @@
         INNER JOIN categories c
         ON p.category_id = c.category_id
 
-        INNER JOIN sellers s
+        LEFT JOIN sellers s
         ON p.user_id = s.user_id
 
         ORDER BY cu.user_name,

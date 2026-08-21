@@ -34,6 +34,24 @@ public interface ProductMapper {
 
     List<Product> findAllProducts();
 
+    
+    List<Product> searchAvailableProducts(
+            @Param("keyword")
+            String keyword,
+
+            @Param("categoryId")
+            String categoryId,
+
+            @Param("sellerId")
+            String sellerId,
+
+            @Param("minPrice")
+            Double minPrice,
+
+            @Param("maxPrice")
+            Double maxPrice);
+    
+    List<Product> findCustomerAvailableProducts();
 
     // ==========================================================
     // SELLER PRODUCTS

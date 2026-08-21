@@ -264,77 +264,106 @@ public class ReportController {
     // ==========================================================
 
     @GetMapping("/seller/{sellerId}")
-    public String sellerReports(
-
-            @PathVariable String sellerId,
-
-            @ModelAttribute ReportFilter filter,
-
+    public String sellerReport(
+            @PathVariable("sellerId") String sellerId,
+            @ModelAttribute("filter") ReportFilter filter,
             Model model) {
 
+        // Always enforce seller ownership
+        filter.setSellerId(sellerId);
 
-        filter.setSellerId(
-                sellerId
-        );
-
-
-        // ------------------------------------------------------
-        // Seller sales summary
-        // ------------------------------------------------------
-
-        model.addAttribute(
-                "salesReport",
-                reportService.getSalesReport(
-                        filter
-                )
-        );
-
-
-        // ------------------------------------------------------
-        // Seller products
-        // ------------------------------------------------------
-
-        model.addAttribute(
-                "productReports",
-                reportService.getProductSalesReport(
-                        filter
-                )
-        );
-
-
-        // ------------------------------------------------------
-        // Seller category report
-        // ------------------------------------------------------
-
-        model.addAttribute(
-                "categoryReports",
-                reportService.getCategorySalesReport(
-                        filter
-                )
-        );
-
-
-        // ------------------------------------------------------
-        // Categories
-        // ------------------------------------------------------
-
+        // Categories for filter dropdown
         model.addAttribute(
                 "categories",
                 categoryService.findAllCategories()
         );
 
+        // Sales summary
+        SalesReport salesReport =
+                reportService.getSalesReport(filter);
+
+        // Product sales
+        List<ProductSalesReport> productReports =
+                reportService.getProductSalesReport(filter);
+
+        // Category sales
+        List<CategorySalesReport> categoryReports =
+                reportService.getCategorySalesReport(filter);
 
         model.addAttribute(
                 "sellerId",
                 sellerId
         );
 
+        model.addAttribute(
+                "filter",
+                filter
+        );
+
+        model.addAttribute(
+                "salesReport",
+                salesReport
+        );
+
+        model.addAttribute(
+                "productReports",
+                productReports
+        );
+
+        model.addAttribute(
+                "categoryReports",
+                categoryReports
+        );
+
+        return "reports/seller-reports";
+    }
+    
+    @PostMapping("/seller/{sellerId}")
+    public String applySellerReportFilter(
+            @PathVariable("sellerId") String sellerId,
+            @ModelAttribute("filter") ReportFilter filter,
+            Model model) {
+
+        filter.setSellerId(sellerId);
+
+        model.addAttribute(
+                "categories",
+                categoryService.findAllCategories()
+        );
+
+        SalesReport salesReport =
+                reportService.getSalesReport(filter);
+
+        List<ProductSalesReport> productReports =
+                reportService.getProductSalesReport(filter);
+
+        List<CategorySalesReport> categoryReports =
+                reportService.getCategorySalesReport(filter);
+
+        model.addAttribute(
+                "sellerId",
+                sellerId
+        );
 
         model.addAttribute(
                 "filter",
                 filter
         );
 
+        model.addAttribute(
+                "salesReport",
+                salesReport
+        );
+
+        model.addAttribute(
+                "productReports",
+                productReports
+        );
+
+        model.addAttribute(
+                "categoryReports",
+                categoryReports
+        );
 
         return "reports/seller-reports";
     }

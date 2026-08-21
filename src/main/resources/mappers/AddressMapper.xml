@@ -143,4 +143,57 @@
 
     </select>
 
+	
+
+<select id="findAddressesByCustomer"
+        resultMap="AddressResultMap">
+
+    SELECT
+        a.address_id,
+        a.house_number,
+        a.street,
+        a.city,
+        a.state,
+        a.country,
+        a.zip_code
+
+    FROM address a
+
+    INNER JOIN customer_address ca
+        ON a.address_id = ca.address_id
+
+    WHERE ca.customer_id = #{customerId}
+
+    ORDER BY a.city, a.state
+
+</select>
+
+
+
+
+	<insert id="assignAddressToCustomer">
+	
+	    INSERT INTO customer_address
+	    (
+	        customer_id,
+	        address_id
+	    )
+	    VALUES
+	    (
+	        #{customerId},
+	        #{addressId}
+	    )
+	
+	</insert>
+	
+	
+	<delete id="removeAddressFromCustomer">
+	
+	    DELETE FROM customer_address
+	
+	    WHERE customer_id = #{customerId}
+	
+	    AND address_id = #{addressId}
+	
+	</delete>
 </mapper>

@@ -146,4 +146,23 @@ public interface OrderService {
 
             @Param("sellerId")
             String sellerId);
+    
+    List<Order> findOrdersBySellerAndStatus(
+            String sellerId,
+            OrderStatus status);
+
+    List<Order> findOrdersBySellerAndOrderId(
+            String sellerId,
+            String orderId);
+    
+    /**
+     * Places orders for all items in customer's cart.
+     *
+     * @param customerId Customer ID
+     */
+    void placeOrder(
+            String customerId,
+            String addressId,
+            String paymentMethod,
+            String upiId);
 }
